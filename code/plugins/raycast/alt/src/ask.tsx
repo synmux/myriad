@@ -15,10 +15,7 @@ import { ChatView } from "./views/chat"
 import { ModelDropdown } from "./views/model/dropdown"
 import { QuestionForm } from "./views/question/form"
 
-export default function Ask(props: {
-  conversation?: Conversation
-  initialQuestion?: string
-}) {
+export default function Ask(props: { conversation?: Conversation; initialQuestion?: string }) {
   const conversations = useConversations()
   const models = useModel()
   const savedChats = useSavedChat()

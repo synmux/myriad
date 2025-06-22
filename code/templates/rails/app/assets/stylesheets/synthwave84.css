@@ -72,7 +72,10 @@
 
 [data-theme='synthwave84'] .card-title {
   color: var(--synthwave-pink);
-  text-shadow: 0 0 2px #100c0f, 0 0 5px rgba(242, 42, 173, 0.3), 0 0 7px rgba(242, 42, 173, 0.2);
+  text-shadow:
+    0 0 2px #100c0f,
+    0 0 5px rgba(242, 42, 173, 0.3),
+    0 0 7px rgba(242, 42, 173, 0.2);
 }
 
 [data-theme='synthwave84'] .card.image-full:before {
@@ -82,15 +85,24 @@
 
 /* Apply neon glow effect to specific elements */
 [data-theme='synthwave84'] .synthwave-glow-text {
-  text-shadow: 0 0 2px #100c0f, 0 0 5px rgba(242, 42, 173, 0.5), 0 0 10px rgba(242, 42, 173, 0.3);
+  text-shadow:
+    0 0 2px #100c0f,
+    0 0 5px rgba(242, 42, 173, 0.5),
+    0 0 10px rgba(242, 42, 173, 0.3);
 }
 
 [data-theme='synthwave84'] .synthwave-glow-blue {
-  text-shadow: 0 0 2px #001716, 0 0 3px rgba(3, 237, 249, 0.5), 0 0 5px rgba(3, 237, 249, 0.3);
+  text-shadow:
+    0 0 2px #001716,
+    0 0 3px rgba(3, 237, 249, 0.5),
+    0 0 5px rgba(3, 237, 249, 0.3);
 }
 
 [data-theme='synthwave84'] .synthwave-glow-green {
-  text-shadow: 0 0 2px #100c0f, 0 0 10px rgba(114, 241, 184, 0.5), 0 0 35px rgba(114, 241, 184, 0.3);
+  text-shadow:
+    0 0 2px #100c0f,
+    0 0 10px rgba(114, 241, 184, 0.5),
+    0 0 35px rgba(114, 241, 184, 0.3);
 }
 
 /* Define a scanline effect */
@@ -402,12 +414,17 @@
 [data-theme='synthwave84'] .modal-box {
   background-color: var(--base-200);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(3, 237, 249, 0.1);
+  box-shadow:
+    0 0 20px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(3, 237, 249, 0.1);
 }
 
 [data-theme='synthwave84'] .modal-box h3 {
   color: var(--synthwave-pink);
-  text-shadow: 0 0 2px #100c0f, 0 0 5px rgba(242, 42, 173, 0.3), 0 0 7px rgba(242, 42, 173, 0.2);
+  text-shadow:
+    0 0 2px #100c0f,
+    0 0 5px rgba(242, 42, 173, 0.3),
+    0 0 7px rgba(242, 42, 173, 0.2);
 }
 
 /* Tab styling */
@@ -459,7 +476,9 @@
 
 [data-theme='synthwave84'] a {
   color: var(--synthwave-blue);
-  transition: color 0.3s ease, text-shadow 0.3s ease;
+  transition:
+    color 0.3s ease,
+    text-shadow 0.3s ease;
 }
 
 [data-theme='synthwave84'] a:hover {

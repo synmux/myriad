@@ -1,7 +1,8 @@
 {
+  "root": false,
   "$schema": "../../../../node_modules/@biomejs/biome/configuration_schema.json",
   "files": {
-    "ignore": ["../../.trunk"]
+    "includes": ["**", "!**/../../.trunk"]
   },
   "css": {
     "formatter": {
@@ -37,11 +38,23 @@
     }
   },
   "linter": {
-    "enabled": true
+    "enabled": true,
+    "rules": {
+      "style": {
+        "noParameterAssign": "error",
+        "useAsConstAssertion": "error",
+        "useDefaultParameterLast": "error",
+        "useEnumInitializers": "error",
+        "useSelfClosingElements": "error",
+        "useSingleVarDeclarator": "error",
+        "noUnusedTemplateLiteral": "error",
+        "useNumberNamespace": "error",
+        "noInferrableTypes": "error",
+        "noUselessElse": "error"
+      }
+    }
   },
-  "organizeImports": {
-    "enabled": true
-  },
+  "assist": { "actions": { "source": { "organizeImports": "on" } } },
   "vcs": {
     "clientKind": "git",
     "defaultBranch": "main",

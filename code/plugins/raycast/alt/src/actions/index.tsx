@@ -1,13 +1,9 @@
 import { Action, Alert, Icon, type Image, type Keyboard, confirmAlert } from "@raycast/api"
 import say from "say"
 
-export const PrimaryAction = ({
-  title,
-  onAction
-}: {
-  title: string
-  onAction: () => void
-}) => <Action title={title} icon={Icon.ArrowRight} onAction={onAction} />
+export const PrimaryAction = ({ title, onAction }: { title: string; onAction: () => void }) => (
+  <Action title={title} icon={Icon.ArrowRight} onAction={onAction} />
+)
 
 export const PinAction = ({
   title,
@@ -45,13 +41,7 @@ export const SaveAction = ({
   modifiers: Keyboard.KeyModifier[]
 }) => <Action icon={Icon.Star} title={title} onAction={onAction} shortcut={{ modifiers, key: "s" }} />
 
-export const SaveAsSnippetAction = ({
-  text,
-  name
-}: {
-  text: string
-  name: string
-}) => (
+export const SaveAsSnippetAction = ({ text, name }: { text: string; name: string }) => (
   <Action.CreateSnippet
     icon={Icon.Snippets}
     title="Save as a Snippet"

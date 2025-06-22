@@ -1,10 +1,7 @@
 import { Action, ActionPanel, Form, Icon, useNavigation } from "@raycast/api"
 import { Toast, showToast } from "@raycast/api"
 
-export const ImportForm = (props: {
-  moduleName: string
-  onSubmit: (file: string) => Promise<void>
-}) => {
+export const ImportForm = (props: { moduleName: string; onSubmit: (file: string) => Promise<void> }) => {
   const { pop } = useNavigation()
   return (
     <Form

@@ -40,10 +40,7 @@ export const ModelListItem = ({
   )
 }
 
-const ModelDetailView = (props: {
-  model: Model
-  markdown?: string | null | undefined
-}) => {
+const ModelDetailView = (props: { model: Model; markdown?: string | null | undefined }) => {
   const { model, markdown } = props
   const icons = [Icon.StackedBars1, Icon.StackedBars2, Icon.StackedBars3, Icon.StackedBars4]
   const t = Number.parseFloat((model.temperature ?? "0").toString())

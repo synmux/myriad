@@ -1,10 +1,7 @@
 import { List } from "@raycast/api"
 import type { Chat } from "../type"
 
-export const AnswerDetailView = (props: {
-  chat: Chat
-  streamData?: Chat | undefined
-}) => {
+export const AnswerDetailView = (props: { chat: Chat; streamData?: Chat | undefined }) => {
   const { chat, streamData } = props
   const isStreaming = streamData && streamData.id === chat.id
 

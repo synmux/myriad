@@ -84,5 +84,9 @@
     "bun": "~1.2.14",
     "node": "22.x"
   },
-  "trustedDependencies": ["@tailwindcss/oxide", "esbuild", "sharp"]
+  "trustedDependencies": [
+    "@tailwindcss/oxide",
+    "esbuild",
+    "sharp"
+  ]
 }

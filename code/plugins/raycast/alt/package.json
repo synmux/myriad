@@ -6,8 +6,16 @@
   "icon": "icon.png",
   "author": "dave.io",
   "owner": "dave.io",
-  "contributors": ["dave.io"],
-  "categories": ["Productivity", "Developer Tools", "Web", "Fun", "Other"],
+  "contributors": [
+    "dave.io"
+  ],
+  "categories": [
+    "Productivity",
+    "Developer Tools",
+    "Web",
+    "Fun",
+    "Other"
+  ],
   "license": "MIT",
   "commands": [
     {
@@ -113,7 +121,14 @@
       "icon": "icon.png"
     }
   ],
-  "keywords": ["anthropic", "claude", "alt", "text", "alt text", "vision"],
+  "keywords": [
+    "anthropic",
+    "claude",
+    "alt",
+    "text",
+    "alt text",
+    "vision"
+  ],
   "preferences": [
     {
       "name": "apiKey",
@@ -291,5 +306,9 @@
     "publish": "bun run ray publish",
     "pull": "bun run ray pull-contributions"
   },
-  "trustedDependencies": ["@anthropic-ai/claude-code", "@biomejs/biome", "esbuild"]
+  "trustedDependencies": [
+    "@anthropic-ai/claude-code",
+    "@biomejs/biome",
+    "esbuild"
+  ]
 }

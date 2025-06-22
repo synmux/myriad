@@ -2,10 +2,7 @@ import { Toast, getPreferenceValues, getSelectedText, showToast } from "@raycast
 import { useCallback, useEffect, useMemo, useState } from "react"
 import type { QuestionHook } from "../type"
 
-export function useQuestion(props: {
-  initialQuestion: string
-  disableAutoLoad?: boolean
-}): QuestionHook {
+export function useQuestion(props: { initialQuestion: string; disableAutoLoad?: boolean }): QuestionHook {
   const { initialQuestion, disableAutoLoad } = props
   const [data, setData] = useState<string>(initialQuestion)
   const [isLoading, setLoading] = useState<boolean>(false)

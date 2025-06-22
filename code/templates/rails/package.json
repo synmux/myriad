@@ -24,7 +24,10 @@
     "stylelint-config-tailwindcss": "^1.0.0",
     "tailwindcss": "^4.1.6"
   },
-  "trustedDependencies": ["@biomejs/biome", "@tailwindcss/oxide"],
+  "trustedDependencies": [
+    "@biomejs/biome",
+    "@tailwindcss/oxide"
+  ],
   "engines": {
     "bun": "~1.2.13",
     "node": "~lts"

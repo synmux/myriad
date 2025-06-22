@@ -239,30 +239,61 @@
 /* Neon text effect - no blinking */
 .neon-text {
   color: #fff;
-  text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 15px #fff, 0 0 20px #ff00ff, 0 0 35px #ff00ff, 0 0 40px #ff00ff, 0 0
-    50px #ff00ff, 0 0 75px #ff00ff;
+  text-shadow:
+    0 0 5px #fff,
+    0 0 10px #fff,
+    0 0 15px #fff,
+    0 0 20px #ff00ff,
+    0 0 35px #ff00ff,
+    0 0 40px #ff00ff,
+    0 0 50px #ff00ff,
+    0 0 75px #ff00ff;
 }
 
 .neon-text-cyan {
   color: #fff;
-  text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 15px #fff, 0 0 20px #00ffff, 0 0 35px #00ffff, 0 0 40px #00ffff, 0 0
-    50px #00ffff, 0 0 75px #00ffff;
+  text-shadow:
+    0 0 5px #fff,
+    0 0 10px #fff,
+    0 0 15px #fff,
+    0 0 20px #00ffff,
+    0 0 35px #00ffff,
+    0 0 40px #00ffff,
+    0 0 50px #00ffff,
+    0 0 75px #00ffff;
 }
 
 .neon-text-yellow {
   color: #fff;
-  text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 15px #fff, 0 0 20px #ffff00, 0 0 35px #ffff00, 0 0 40px #ffff00, 0 0
-    50px #ffff00, 0 0 75px #ffff00;
+  text-shadow:
+    0 0 5px #fff,
+    0 0 10px #fff,
+    0 0 15px #fff,
+    0 0 20px #ffff00,
+    0 0 35px #ffff00,
+    0 0 40px #ffff00,
+    0 0 50px #ffff00,
+    0 0 75px #ffff00;
 }
 
 /* Neon border effect - thinner version with padding */
 .neon-border {
-  box-shadow: 0 0 2px #ff00ff, 0 0 4px #ff00ff, 0 0 6px #ff00ff, inset 0 0 1px #ff00ff, inset 0 0 2px #ff00ff;
+  box-shadow:
+    0 0 2px #ff00ff,
+    0 0 4px #ff00ff,
+    0 0 6px #ff00ff,
+    inset 0 0 1px #ff00ff,
+    inset 0 0 2px #ff00ff;
   padding: 4px;
 }
 
 .neon-border-cyan {
-  box-shadow: 0 0 2px #00ffff, 0 0 4px #00ffff, 0 0 6px #00ffff, inset 0 0 1px #00ffff, inset 0 0 2px #00ffff;
+  box-shadow:
+    0 0 2px #00ffff,
+    0 0 4px #00ffff,
+    0 0 6px #00ffff,
+    inset 0 0 1px #00ffff,
+    inset 0 0 2px #00ffff;
   padding: 4px;
 }
 
@@ -278,7 +309,10 @@
 
 .synthwave-mode .ticket-card:hover {
   transform: translateY(-10px) rotateX(10deg) rotateY(10deg) scale(1.05);
-  box-shadow: 0 20px 30px rgba(0, 0, 0, 0.4), 0 0 10px #ff00ff, 0 0 20px #ff00ff;
+  box-shadow:
+    0 20px 30px rgba(0, 0, 0, 0.4),
+    0 0 10px #ff00ff,
+    0 0 20px #ff00ff;
   z-index: 10;
 }
 
@@ -351,7 +385,9 @@
   white-space: nowrap;
   margin: 0;
   letter-spacing: 0.15em;
-  animation: typing 3.5s steps(40, end), blink-caret 0.75s step-end infinite;
+  animation:
+    typing 3.5s steps(40, end),
+    blink-caret 0.75s step-end infinite;
 }
 
 @keyframes typing {
@@ -518,6 +554,9 @@
 }
 
 .cyberpunk-button:hover {
-  box-shadow: 0 0 10px #ff00ff, 0 0 20px #ff00ff, 0 0 30px #ff00ff;
+  box-shadow:
+    0 0 10px #ff00ff,
+    0 0 20px #ff00ff,
+    0 0 30px #ff00ff;
   text-shadow: 0 0 5px #ff00ff;
 }

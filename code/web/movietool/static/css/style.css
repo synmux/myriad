@@ -227,7 +227,9 @@ footer {
   box-shadow: var(--neu-flat);
   padding: 1.5rem;
   margin-bottom: 2rem;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .card:hover {
@@ -794,7 +796,9 @@ button {
   padding: 4px;
   background-color: var(--overlay);
   border-radius: 4px;
-  transition: transform 0.3s ease, background-color 0.2s ease;
+  transition:
+    transform 0.3s ease,
+    background-color 0.2s ease;
 }
 
 .directory-card.expanded .toggle-icon {
@@ -807,14 +811,20 @@ button {
   overflow: hidden;
   visibility: hidden;
   opacity: 0;
-  transition: max-height 0.5s ease, opacity 0.3s ease, visibility 0s linear 0.3s;
+  transition:
+    max-height 0.5s ease,
+    opacity 0.3s ease,
+    visibility 0s linear 0.3s;
 }
 
 .directory-card.expanded .file-list {
   max-height: 3000px; /* Increased to accommodate more files */
   visibility: visible;
   opacity: 1;
-  transition: max-height 0.5s ease, opacity 0.3s ease, visibility 0s linear;
+  transition:
+    max-height 0.5s ease,
+    opacity 0.3s ease,
+    visibility 0s linear;
 }
 
 .file-item {
@@ -905,7 +915,10 @@ button {
   text-align: center;
   padding: 0;
   box-shadow: 0 2px 4px rgba(74, 84, 130, 0.25);
-  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease;
 }
 
 .compare-files-btn:hover {
@@ -1030,7 +1043,9 @@ button {
   z-index: 1000;
   opacity: 0;
   visibility: hidden;
-  transition: opacity 0.3s ease, visibility 0.3s;
+  transition:
+    opacity 0.3s ease,
+    visibility 0.3s;
 }
 
 /* File Comparison Styles */

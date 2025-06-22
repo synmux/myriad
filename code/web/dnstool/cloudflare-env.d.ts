@@ -5243,12 +5243,8 @@ declare abstract class D1PreparedStatement {
   first<T = Record<string, unknown>>(): Promise<T | null>
   run<T = Record<string, unknown>>(): Promise<D1Result<T>>
   all<T = Record<string, unknown>>(): Promise<D1Result<T>>
-  raw<T = unknown[]>(options: {
-    columnNames: true
-  }): Promise<[string[], ...T[]]>
-  raw<T = unknown[]>(options?: {
-    columnNames?: false
-  }): Promise<T[]>
+  raw<T = unknown[]>(options: { columnNames: true }): Promise<[string[], ...T[]]>
+  raw<T = unknown[]>(options?: { columnNames?: false }): Promise<T[]>
 }
 // `Disposable` was added to TypeScript's standard lib types in version 5.2.
 // To support older TypeScript versions, define an empty `Disposable` interface.
@@ -6446,11 +6442,5 @@ declare abstract class WorkflowInstance {
   /**
    * Send an event to this instance.
    */
-  public sendEvent({
-    type,
-    payload
-  }: {
-    type: string
-    payload: unknown
-  }): Promise<void>
+  public sendEvent({ type, payload }: { type: string; payload: unknown }): Promise<void>
 }

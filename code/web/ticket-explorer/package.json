@@ -81,7 +81,12 @@
     "typescript": "^5.8.3"
   },
   "packageManager": "bun@1.2.14",
-  "trustedDependencies": ["@biomejs/biome", "@tailwindcss/oxide", "sharp", "unrs-resolver"],
+  "trustedDependencies": [
+    "@biomejs/biome",
+    "@tailwindcss/oxide",
+    "sharp",
+    "unrs-resolver"
+  ],
   "engines": {
     "bun": "~1.2.14",
     "node": "22.x"

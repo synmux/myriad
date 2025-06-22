@@ -6,11 +6,7 @@ import { v4 as uuidv4 } from "uuid"
 import { getConfiguration } from "../../hooks/useChatGPT"
 import type { CSVPrompt, Model, ModelHook } from "../../type"
 
-export const ModelForm = (props: {
-  model?: Model
-  use: { models: ModelHook }
-  name?: string
-}) => {
+export const ModelForm = (props: { model?: Model; use: { models: ModelHook }; name?: string }) => {
   const { use, model } = props
   const { pop } = useNavigation()
   const { isCustomModel } = getConfiguration()
