@@ -1,4 +1,4 @@
-module github.com/daveio/myriad/projects/aaisp-exporter
+module github.com/daveio/myriad
 
 go 1.24.3
 
