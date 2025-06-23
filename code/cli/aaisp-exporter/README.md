@@ -4,21 +4,17 @@ Prometheus exporter for Andrews &amp; Arnold line data via their CHAOS API
 
 ## Installation
 
-### Download a binary
-
-Grab the relevant binary for your architecture and operating system from the latest Release.
-
 ### Build from source
 
-If you want to install from source, install Go 1.16 or later, using your package manager or from [the official Go site](https://golang.org/dl/).
+If you want to install from source, install Go 1.16 or later, using your package manager or from [the official Go site](https://golang.org/dl/), clone this repo, and change into this directory.
 
 Then simply do -
 
 ```bash
-go get -u -v -x github.com/daveio/aaisp-exporter
+go build -v ./...
 ```
 
-after which you'll have a shiny new `aaisp-exporter` (macOS, Linux) or `aaisp-exporter.exe` (Windows) binary sitting in your current directory.
+after which you'll have a shiny new `aaisp-exporter` (macOS, Linux) or `aaisp-exporter.exe` (Windows) binary sitting in this directory.
 
 ### Build a Docker container
 
