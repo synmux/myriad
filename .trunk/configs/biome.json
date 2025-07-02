@@ -40,6 +40,17 @@
   "linter": {
     "enabled": true,
     "rules": {
+      "complexity": {
+        "noExcessiveCognitiveComplexity": {
+          "level": "error",
+          "options": {
+            "maxAllowedComplexity": 5
+          }
+        },
+        "noUselessConstructor": "error",
+        "useLiteralKeys": "error",
+        "useSimplifiedLogicExpression": "error"
+      },
       "correctness": {
         "noUnusedVariables": "error"
       },

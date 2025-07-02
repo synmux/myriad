@@ -8,10 +8,10 @@ plugins:
       uri: https://github.com/trunk-io/plugins
 runtimes:
   enabled:
-    - ruby@3.4.2
-    - go@1.21.0
-    - node@22.16.0
-    - python@3.10.8
+    - ruby@3.4.4
+    - go@1.24.4
+    - node@24.3.0
+    - python@3.13.3
 lint:
   ignore:
     - linters:
@@ -36,6 +36,7 @@ lint:
         - demos
         - boneyard
         - code/cli
+        - "!code/cli/playwright-monitoring"
         - code/docker
         - code/plugins
         - code/templates

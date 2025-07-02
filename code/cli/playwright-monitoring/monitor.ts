@@ -1,310 +1,418 @@
+import type { ElementHandle, Page, Response, Route } from "playwright"
 import { chromium } from "playwright"
-import type { Browser, BrowserContext, Page, Response, Route } from "playwright"
-import { promises as fs } from "fs"
 
 interface LinkTestResult {
-    linkIndex: number;
-    success: boolean;
-    originalHref?: string;
-    finalUrl?: string;
-    redirectChain?: { from: string; to: string; status: number }[];
-    javascriptInterference?: boolean;
-    externalRedirect?: boolean;
-    aborted?: boolean;
-    error?: string;
+  linkIndex: number
+  success: boolean
+  originalHref?: string
+  finalUrl?: string
+  redirectChain?: { from: string; to: string; status: number }[]
+  javascriptInterference?: boolean
+  externalRedirect?: boolean
+  aborted?: boolean
+  error?: string
 }
 
 interface TestResults {
-    success: boolean;
-    totalLinks: number;
-    results: LinkTestResult[];
+  success: boolean
+  totalLinks: number
+  results: LinkTestResult[]
+  summary: {
+    successful: number
+    failed: number
+    externalRedirects: number
+    javascriptInterference: number
+  }
+  error?: string
+}
+
+interface FilteredLink {
+  element: ElementHandle<HTMLAnchorElement>
+  index: number
+  href: string
+}
+
+interface RedirectContext {
+  redirectChain: { from: string; to: string; status: number }[]
+  externalRedirect: boolean
+  aborted: boolean
+}
+
+// Helper function to check if domain is internal (only dave.io)
+function isInternalDomain(url: string): boolean {
+  try {
+    const domain = new URL(url).hostname
+    return domain === "dave.io"
+  } catch {
+    return false
+  }
+}
+
+// Helper function to normalize URL
+function normalizeUrl(href: string, baseUrl: string): string {
+  return href.startsWith("http") ? href : new URL(href, baseUrl).href
+}
+
+// Helper function to check if URL points to go links
+function isGoLink(url: string): boolean {
+  return url.startsWith("https://dave.io/go/")
+}
+
+async function findAllLinks(page: Page, linkSelector: string): Promise<ElementHandle<HTMLAnchorElement>[]> {
+  const allLinks = await page.$$(linkSelector)
+  if (allLinks.length === 0) {
+    throw new Error(`No links found matching selector: ${linkSelector}`)
+  }
+  return allLinks as ElementHandle<HTMLAnchorElement>[]
+}
+
+async function filterGoLinks(allLinks: ElementHandle<HTMLAnchorElement>[], baseUrl: string): Promise<FilteredLink[]> {
+  const filteredLinks: FilteredLink[] = []
+
+  for (let i = 0; i < allLinks.length; i++) {
+    const href = await allLinks[i]?.getAttribute("href")
+    if (!href) continue
+
+    const absoluteHref = normalizeUrl(href, baseUrl)
+    if (isGoLink(absoluteHref)) {
+      filteredLinks.push({ element: allLinks[i]!, index: i, href: absoluteHref })
+    }
+  }
+
+  return filteredLinks
+}
+
+function createRedirectContext(): RedirectContext {
+  return {
+    redirectChain: [],
+    externalRedirect: false,
+    aborted: false
+  }
+}
+
+function isRedirectResponse(status: number): boolean {
+  return status >= 300 && status < 400
+}
+
+function addRedirectToChain(response: Response, location: string, context: RedirectContext): void {
+  context.redirectChain.push({
+    from: response.url(),
+    to: location,
+    status: response.status()
+  })
+}
+
+function processRedirectLocation(location: string, context: RedirectContext): void {
+  if (!(location && (location.startsWith("http") || location.startsWith("//")))) return
+
+  const redirectUrl = location.startsWith("//") ? `https:${location}` : location
+  if (!isInternalDomain(redirectUrl)) {
+    context.externalRedirect = true
+  }
+}
+
+function handleRedirectResponse(response: Response, context: RedirectContext): void {
+  if (!isRedirectResponse(response.status())) return
+
+  const location = response.headers().location ?? ""
+  addRedirectToChain(response, location, context)
+  processRedirectLocation(location, context)
+}
+
+function createResponseHandler(context: RedirectContext) {
+  return (response: Response) => handleRedirectResponse(response, context)
+}
+
+function shouldContinueRequest(context: RedirectContext, requestUrl: string): boolean {
+  return !(context.externalRedirect && requestUrl.startsWith("http"))
+}
+
+function shouldAbortRequest(context: RedirectContext, requestUrl: string): boolean {
+  return context.externalRedirect && requestUrl.startsWith("http") && !isInternalDomain(requestUrl)
+}
+
+async function handleExternalRequest(route: Route, context: RedirectContext): Promise<void> {
+  const requestUrl = route.request().url()
+
+  if (shouldContinueRequest(context, requestUrl)) {
+    await route.continue()
+    return
+  }
+
+  if (shouldAbortRequest(context, requestUrl)) {
+    context.aborted = true
+    await route.abort()
+    return
+  }
+
+  await route.continue()
+}
+
+function createRequestHandler(context: RedirectContext) {
+  return async (route: Route) => handleExternalRequest(route, context)
+}
+
+async function setupPageHandlers(page: Page, context: RedirectContext): Promise<() => Promise<void>> {
+  const responseHandler = createResponseHandler(context)
+  const requestHandler = createRequestHandler(context)
+
+  page.on("response", responseHandler)
+  await page.route("**/*", requestHandler)
+
+  return async () => {
+    page.off("response", responseHandler)
+    await page.unroute("**/*", requestHandler)
+  }
+}
+
+async function waitForPageLoad(page: Page, context: RedirectContext): Promise<void> {
+  await page.waitForTimeout(1000)
+
+  if (context.externalRedirect) {
+    console.error("   🌐 External redirect detected, skipping full load")
+    return
+  }
+
+  console.error("   ⏳ Waiting for page load...")
+  try {
+    await page.waitForLoadState("networkidle", { timeout: 10000 })
+  } catch {
+    console.error("   ⚠️  Page load timeout (continuing)")
+  }
+}
+
+function logNavigationResult(page: Page, context: RedirectContext): string {
+  if (context.aborted) {
+    console.error("   ⚡ Navigation aborted to prevent hanging")
+  }
+
+  const finalUrl = page.url()
+  console.error(`   ✅ Final URL: ${finalUrl}`)
+
+  if (context.redirectChain.length > 0) {
+    console.error(`   📍 ${context.redirectChain.length} redirect(s) detected`)
+  }
+
+  return finalUrl
+}
+
+function detectJavaScriptInterference(originalHref: string, finalUrl: string, context: RedirectContext): boolean {
+  return originalHref !== finalUrl && context.redirectChain.length === 0 && !context.externalRedirect
+}
+
+function createSuccessResult(
+  linkIndex: number,
+  originalHref: string,
+  finalUrl: string,
+  context: RedirectContext
+): LinkTestResult {
+  return {
+    linkIndex,
+    success: true,
+    originalHref,
+    finalUrl,
+    redirectChain: [...context.redirectChain],
+    externalRedirect: context.externalRedirect,
+    aborted: context.aborted,
+    javascriptInterference: detectJavaScriptInterference(originalHref, finalUrl, context)
+  }
+}
+
+function createErrorResult(linkIndex: number, error: string, context: RedirectContext): LinkTestResult {
+  return {
+    linkIndex,
+    success: false,
+    externalRedirect: context.externalRedirect,
+    aborted: context.aborted,
+    error
+  }
+}
+
+async function navigateToBaseUrl(page: Page, baseUrl: string, linkIndex: number): Promise<void> {
+  if (linkIndex > 0) {
+    console.error(`   📍 Navigating back to ${baseUrl}...`)
+    await page.goto(baseUrl)
+    await page.waitForLoadState("networkidle")
+  }
+}
+
+async function getCurrentLink(
+  page: Page,
+  linkSelector: string,
+  originalIndex: number
+): Promise<ElementHandle<HTMLAnchorElement> | null> {
+  const currentLinks = await page.$$(linkSelector)
+  return currentLinks[originalIndex] as ElementHandle<HTMLAnchorElement> | null
+}
+
+async function processLinkClick(
+  page: Page,
+  currentLink: ElementHandle<HTMLAnchorElement>,
+  context: RedirectContext
+): Promise<{ originalHref: string; finalUrl: string }> {
+  const originalHref = (await currentLink.getAttribute("href")) ?? ""
+
+  console.error("   🖱️  Clicking link...")
+  await currentLink.click()
+
+  await waitForPageLoad(page, context)
+  const finalUrl = logNavigationResult(page, context)
+
+  return { originalHref, finalUrl }
+}
+
+async function testSingleLink(
+  page: Page,
+  filteredLink: FilteredLink,
+  linkIndex: number,
+  linkSelector: string,
+  baseUrl: string
+): Promise<LinkTestResult> {
+  const { index: originalIndex, href: expectedHref } = filteredLink
+
+  console.error(`\n🔗 Testing link ${linkIndex + 1}: ${expectedHref}`)
+
+  await navigateToBaseUrl(page, baseUrl, linkIndex)
+
+  const currentLink = await getCurrentLink(page, linkSelector, originalIndex)
+  if (!currentLink) {
+    return createErrorResult(originalIndex, `Link ${originalIndex} not found after navigation`, createRedirectContext())
+  }
+
+  const context = createRedirectContext()
+  const cleanup = await setupPageHandlers(page, context)
+
+  try {
+    const { originalHref, finalUrl } = await processLinkClick(page, currentLink, context)
+    return createSuccessResult(originalIndex, originalHref, finalUrl, context)
+  } catch (error: unknown) {
+    const errorMsg = error instanceof Error ? error.message : String(error)
+    console.error(`   ❌ Error: ${errorMsg}`)
+    return createErrorResult(originalIndex, errorMsg, context)
+  } finally {
+    await cleanup()
+  }
+}
+
+async function testAllLinks(
+  page: Page,
+  filteredLinks: FilteredLink[],
+  linkSelector: string,
+  baseUrl: string
+): Promise<LinkTestResult[]> {
+  const results: LinkTestResult[] = []
+
+  for (let i = 0; i < filteredLinks.length; i++) {
+    const filteredLink = filteredLinks[i]
+    if (!filteredLink) continue
+
+    const result = await testSingleLink(page, filteredLink, i, linkSelector, baseUrl)
+    results.push(result)
+  }
+
+  return results
+}
+
+function calculateSummary(results: LinkTestResult[]) {
+  return {
+    successful: results.filter((r) => r.success).length,
+    failed: results.filter((r) => !r.success).length,
+    externalRedirects: results.filter((r) => r.externalRedirect).length,
+    javascriptInterference: results.filter((r) => r.javascriptInterference).length
+  }
+}
+
+function createErrorResult_Main(error: string): TestResults {
+  return {
+    success: false,
+    totalLinks: 0,
+    results: [],
     summary: {
-        successful: number;
-        failed: number;
-        externalRedirects: number;
-        javascriptInterference: number;
-    };
-    error?: string;
+      successful: 0,
+      failed: 0,
+      externalRedirects: 0,
+      javascriptInterference: 0
+    },
+    error
+  }
 }
 
 async function testLinkRedirects(url: string, linkSelector: string): Promise<TestResults> {
-    const browser = await chromium.launch({ headless: true });
-    const context = await browser.newContext();
-    const page = await context.newPage();
+  const browser = await chromium.launch({ headless: true })
+  const context = await browser.newContext()
+  const page = await context.newPage()
 
-    try {
-        await page.goto(url);
+  try {
+    await page.goto(url)
 
-        // Find all links matching the selector
-        const allLinks = await page.$$(linkSelector);
-        if (allLinks.length === 0) {
-            return {
-                success: false,
-                totalLinks: 0,
-                results: [],
-                summary: {
-                    successful: 0,
-                    failed: 0,
-                    externalRedirects: 0,
-                    javascriptInterference: 0
-                },
-                error: `No links found matching selector: ${linkSelector}`
-            };
-        }
+    const allLinks = await findAllLinks(page, linkSelector)
+    const filteredLinks = await filterGoLinks(allLinks, url)
 
-        // Filter links to only include those pointing to https://dave.io/go/*
-        const filteredLinks: { element: any, index: number, href: string }[] = [];
-        for (let i = 0; i < allLinks.length; i++) {
-            const href = await allLinks[i]?.getAttribute('href');
-            if (href) {
-                // Handle both absolute and relative URLs
-                const absoluteHref = href.startsWith('http') ? href : new URL(href, url).href;
-                if (absoluteHref.startsWith('https://dave.io/go/')) {
-                    filteredLinks.push({ element: allLinks[i], index: i, href: absoluteHref });
-                }
-            }
-        }
-
-        if (filteredLinks.length === 0) {
-            return {
-                success: false,
-                totalLinks: allLinks.length,
-                results: [],
-                summary: {
-                    successful: 0,
-                    failed: 0,
-                    externalRedirects: 0,
-                    javascriptInterference: 0
-                },
-                error: `Found ${allLinks.length} links matching selector, but none point to https://dave.io/go/*`
-            };
-        }
-
-        console.error(`🔍 Found ${filteredLinks.length} links pointing to https://dave.io/go/* to test`);
-
-        const results: LinkTestResult[] = [];
-
-        for (let i = 0; i < filteredLinks.length; i++) {
-            const filteredLink = filteredLinks[i];
-            if (!filteredLink) { continue };
-
-            const { element: linkElement, index: originalIndex, href: expectedHref } = filteredLink;
-
-            console.error(`\n🔗 Testing link ${i + 1}/${filteredLinks.length}: ${expectedHref}`);
-
-            // Navigate back to original page for each test (except the first)
-            if (i > 0) {
-                console.error(`   📍 Navigating back to ${url}...`);
-                await page.goto(url);
-                await page.waitForLoadState('networkidle');
-            }
-
-            // Re-find the links since we navigated back
-            const currentLinks = await page.$$(linkSelector);
-            const currentLink = currentLinks[originalIndex];
-
-            if (!currentLink) {
-                results.push({
-                    linkIndex: originalIndex,
-                    success: false,
-                    error: `Link ${originalIndex} not found after navigation`
-                });
-                continue;
-            }
-
-                        // Track redirects for this specific link test
-            const redirectChain: { from: string; to: string; status: number }[] = [];
-            let externalRedirect = false;
-            let aborted = false;
-
-            const responseHandler = (response: Response) => {
-                if (response.status() >= 300 && response.status() < 400) {
-                    const location = response.headers()['location'] ?? '';
-                    redirectChain.push({
-                        from: response.url(),
-                        to: location,
-                        status: response.status()
-                    });
-
-                    // Check if redirect is taking us outside dave.io (strict domain check)
-                    if (location && (location.startsWith('http') || location.startsWith('//'))) {
-                        const redirectUrl = location.startsWith('//') ? `https:${location}` : location;
-                        try {
-                            const redirectDomain = new URL(redirectUrl).hostname;
-                            // Only https://dave.io is considered internal, not subdomains
-                            if (redirectDomain !== 'dave.io') {
-                                externalRedirect = true;
-                            }
-                        } catch {
-                            // If URL parsing fails, treat as external
-                            externalRedirect = true;
-                        }
-                    }
-                }
-            };
-
-            // Abort navigation if we detect external redirect
-            const requestHandler = async (route: Route) => {
-                const requestUrl = route.request().url();
-
-                // If this request is outside dave.io and we already detected external redirect, abort
-                if (externalRedirect && requestUrl.startsWith('http')) {
-                    try {
-                        const requestDomain = new URL(requestUrl).hostname;
-                        // Only https://dave.io is considered internal, not subdomains
-                        if (requestDomain !== 'dave.io') {
-                            aborted = true;
-                            await route.abort();
-                            return;
-                        }
-                    } catch {
-                        // If URL parsing fails, treat as external and abort
-                        aborted = true;
-                        await route.abort();
-                        return;
-                    }
-                }
-
-                await route.continue();
-            };
-
-            page.on('response', responseHandler);
-            await page.route('**/*', requestHandler);
-
-            try {
-                // Get the href before clicking
-                const originalHref = await currentLink.getAttribute('href') ?? undefined;
-
-                console.error(`   🖱️  Clicking link...`);
-                // Click and wait for navigation, but with timeout and early abort
-                await currentLink.click();
-
-                // Wait briefly for initial navigation/redirects to be detected
-                await page.waitForTimeout(1000);
-
-                // If we detected external redirect, don't wait for full load
-                if (!externalRedirect) {
-                    console.error(`   ⏳ Waiting for page load...`);
-                    try {
-                        await page.waitForLoadState('networkidle', { timeout: 10000 });
-                    } catch (e) {
-                        // Timeout is ok if we got the redirect info we needed
-                        console.error(`   ⚠️  Page load timeout (continuing)`);
-                    }
-                } else {
-                    console.error(`   🌐 External redirect detected, skipping full load`);
-                }
-
-                if (aborted) {
-                    console.error(`   ⚡ Navigation aborted to prevent hanging`);
-                }
-
-                const finalUrl = page.url();
-                console.error(`   ✅ Final URL: ${finalUrl}`);
-
-                if (redirectChain.length > 0) {
-                    console.error(`   📍 ${redirectChain.length} redirect(s) detected`);
-                }
-
-                results.push({
-                    linkIndex: originalIndex,
-                    success: true,
-                    originalHref,
-                    finalUrl,
-                    redirectChain: [...redirectChain],
-                    externalRedirect,
-                    aborted,
-                    javascriptInterference: originalHref !== finalUrl && redirectChain.length === 0 && !externalRedirect
-                });
-            } catch (error: unknown) {
-                const errorMsg = error instanceof Error ? error.message : String(error);
-                console.error(`   ❌ Error: ${errorMsg}`);
-
-                results.push({
-                    linkIndex: originalIndex,
-                    success: false,
-                    externalRedirect,
-                    aborted,
-                    error: errorMsg
-                });
-            } finally {
-                // Remove the event listeners to prevent accumulation
-                page.off('response', responseHandler);
-                await page.unroute('**/*', requestHandler);
-            }
-        }
-
-        // Calculate summary statistics
-        const successCount = results.filter(r => r.success).length;
-        const failureCount = results.filter(r => !r.success).length;
-        const externalRedirectCount = results.filter(r => r.externalRedirect).length;
-        const javascriptInterferenceCount = results.filter(r => r.javascriptInterference).length;
-
-        return {
-            success: true,
-            totalLinks: filteredLinks.length,
-            results,
-            summary: {
-                successful: successCount,
-                failed: failureCount,
-                externalRedirects: externalRedirectCount,
-                javascriptInterference: javascriptInterferenceCount
-            }
-        };
-
-    } catch (error: unknown) {
-        return {
-            success: false,
-            totalLinks: 0,
-            results: [],
-            summary: {
-                successful: 0,
-                failed: 0,
-                externalRedirects: 0,
-                javascriptInterference: 0
-            },
-            error: error instanceof Error ? error.message : String(error)
-        };
-    } finally {
-        await browser.close();
+    if (filteredLinks.length === 0) {
+      return createErrorResult_Main(
+        `Found ${allLinks.length} links matching selector, but none point to https://dave.io/go/*`
+      )
     }
+
+    console.error(`🔍 Found ${filteredLinks.length} links pointing to https://dave.io/go/* to test`)
+
+    const results = await testAllLinks(page, filteredLinks, linkSelector, url)
+    const summary = calculateSummary(results)
+
+    return {
+      success: true,
+      totalLinks: filteredLinks.length,
+      results,
+      summary
+    }
+  } catch (error: unknown) {
+    return createErrorResult_Main(error instanceof Error ? error.message : String(error))
+  } finally {
+    await browser.close()
+  }
 }
 
 // Example usage
-testLinkRedirects('https://dave.io', 'a.link-url')
-    .then(result => {
-        console.error(`\n📊 Test completed! Tested ${result.totalLinks} links pointing to https://dave.io/go/*`);
+testLinkRedirects("https://dave.io", "a.link-url")
+  .then((result) => {
+    console.error(`\n📊 Test completed! Tested ${result.totalLinks} links pointing to https://dave.io/go/*`)
 
-                if (result.success) {
-            console.error(`   ✅ ${result.summary.successful} successful`);
-            console.error(`   ❌ ${result.summary.failed} failed`);
-            console.error(`   🌐 ${result.summary.externalRedirects} external redirects`);
-            console.error(`   ⚠️  ${result.summary.javascriptInterference} JavaScript interference`);
-        } else {
-            console.error(`   ❌ Test suite failed: ${result.error}`);
-        }
+    if (result.success) {
+      console.error(`   ✅ ${result.summary.successful} successful`)
+      console.error(`   ❌ ${result.summary.failed} failed`)
+      console.error(`   🌐 ${result.summary.externalRedirects} external redirects`)
+      console.error(`   ⚠️  ${result.summary.javascriptInterference} JavaScript interference`)
+    } else {
+      console.error(`   ❌ Test suite failed: ${result.error}`)
+    }
 
-        console.error(`\n📝 Full JSON report written to STDOUT`);
+    console.error("\n📝 Full JSON report written to STDOUT")
 
-        // Output only JSON to STDOUT
-        console.log(JSON.stringify(result, null, 2));
-    })
-    .catch(error => {
-        console.error(`❌ Fatal error: ${error instanceof Error ? error.message : String(error)}`);
+    // Output only JSON to STDOUT
+    console.log(JSON.stringify(result, null, 2))
+  })
+  .catch((error) => {
+    console.error(`❌ Fatal error: ${error instanceof Error ? error.message : String(error)}`)
 
-        // Output error as JSON to STDOUT
-        console.log(JSON.stringify({
-            success: false,
-            totalLinks: 0,
-            results: [],
-            summary: {
-                successful: 0,
-                failed: 0,
-                externalRedirects: 0,
-                javascriptInterference: 0
-            },
-            error: error instanceof Error ? error.message : String(error)
-        }, null, 2));
+    // Output error as JSON to STDOUT
+    console.log(
+      JSON.stringify(
+        {
+          success: false,
+          totalLinks: 0,
+          results: [],
+          summary: {
+            successful: 0,
+            failed: 0,
+            externalRedirects: 0,
+            javascriptInterference: 0
+          },
+          error: error instanceof Error ? error.message : String(error)
+        },
+        null,
+        2
+      )
+    )
 
-        process.exit(1);
-    });
+    process.exit(1)
+  })

@@ -51,19 +51,16 @@ If bridge neteworking doesn't work on your Docker host for some reason, try `--n
 The Hentai@Home Docker image uses several environment variables to customize its operation. These are passed using the `-e` flag in the `docker run` command.
 
 - `HATH_CLIENT_ID=YOUR_HATH_CLIENT_ID`
-
   - **Purpose:** Your personal Hentai@Home client ID.
   - **Required:** Yes.
   - **Details:** Obtain this from your Hentai@Home account settings.
 
 - `HATH_CLIENT_KEY=YOUR_HATH_CLIENT_KEY`
-
   - **Purpose:** Your personal Hentai@Home client key.
   - **Required:** Yes.
   - **Details:** Obtain this from your Hentai@Home account settings.
 
 - `UMASK=000`
-
   - **Purpose:** Sets the umask for files created by the application within the container. A value of `000` is permissive; adjust as needed for your security requirements (e.g., `022`).
   - **Default:** The example shows `000`. The application's default might vary if not set.
 

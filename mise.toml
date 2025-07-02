@@ -6,7 +6,7 @@ env_file = '.env'
 
 [tools]
 python = { version = '3.13.5' }
-node = { version = '22.17.0' }
+node = { version = '24.3.0' }
 bun = { version = '1.2.17' }
 go = { version = '1.24.4' }
 'gem:neocities' = { version = '0.1.1' }
