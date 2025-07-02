@@ -13,10 +13,18 @@ interface LinkTestResult {
   error?: string
 }
 
+interface EmailTestResult {
+  success: boolean
+  finalText?: string
+  replacementTime?: number
+  error?: string
+}
+
 interface TestResults {
   success: boolean
   totalLinks: number
   results: LinkTestResult[]
+  emailTest: EmailTestResult
   summary: {
     successful: number
     failed: number
@@ -352,11 +360,97 @@ function calculateSummary(results: LinkTestResult[]) {
   }
 }
 
+async function verifyEmailLinkContent(
+  emailElement: import("playwright").Locator
+): Promise<{ valid: boolean; text?: string | null; href?: string | null }> {
+  const emailText = await emailElement.textContent()
+  const emailHref = await emailElement.getAttribute("href")
+
+  const valid = Boolean(emailText?.includes("dave@dave.io") && emailHref?.includes("mailto:dave@dave.io"))
+  return { valid, text: emailText, href: emailHref }
+}
+
+function hasTimedOut(startTime: number, maxWaitTime: number): boolean {
+  return Date.now() - startTime >= maxWaitTime
+}
+
+function createTimeoutResult(): EmailTestResult {
+  console.error("   ❌ Email link 'a.email-link' not found after 3000ms")
+  return {
+    success: false,
+    error: "Email link 'a.email-link' not found after 3000ms"
+  }
+}
+
+async function checkEmailLinkOnce(page: Page, startTime: number): Promise<EmailTestResult | null> {
+  const emailElement = await page.locator("a.email-link").first()
+  const emailExists = (await emailElement.count()) > 0
+
+  if (!emailExists) {
+    return null
+  }
+
+  const elapsedTime = Date.now() - startTime
+  const { valid, text, href } = await verifyEmailLinkContent(emailElement)
+
+  if (valid) {
+    console.error(`   ✅ Email link found and verified in ${elapsedTime}ms`)
+    return {
+      success: true,
+      finalText: "dave@dave.io",
+      replacementTime: elapsedTime
+    }
+  }
+
+  console.error(`   ❌ Email link found but content incorrect: text="${text}", href="${href}"`)
+  return {
+    success: false,
+    error: `Email link found but content incorrect: text="${text}", href="${href}"`
+  }
+}
+
+async function waitForAndCheckEmailLink(page: Page, startTime: number): Promise<EmailTestResult> {
+  console.error("   ⏳ Checking for email link (polling every 200ms, max 3000ms)...")
+
+  const maxWaitTime = 3000
+  const pollInterval = 200
+
+  while (!hasTimedOut(startTime, maxWaitTime)) {
+    const result = await checkEmailLinkOnce(page, startTime)
+    if (result) {
+      return result
+    }
+    await page.waitForTimeout(pollInterval)
+  }
+
+  return createTimeoutResult()
+}
+
+async function testEmailDecoding(page: Page): Promise<EmailTestResult> {
+  console.error("\n📧 Testing email decoding...")
+
+  try {
+    const startTime = Date.now()
+    return await waitForAndCheckEmailLink(page, startTime)
+  } catch (error: unknown) {
+    const errorMsg = error instanceof Error ? error.message : String(error)
+    console.error(`   ❌ Email test error: ${errorMsg}`)
+    return {
+      success: false,
+      error: errorMsg
+    }
+  }
+}
+
 function createErrorResult_Main(error: string): TestResults {
   return {
     success: false,
     totalLinks: 0,
     results: [],
+    emailTest: {
+      success: false,
+      error: "Test suite failed before email test could run"
+    },
     summary: {
       successful: 0,
       failed: 0,
@@ -375,13 +469,26 @@ async function testLinkRedirects(url: string, linkSelector: string): Promise<Tes
   try {
     await page.goto(url)
 
+    // Test email decoding first
+    const emailTest = await testEmailDecoding(page)
+
     const allLinks = await findAllLinks(page, linkSelector)
     const filteredLinks = await filterGoLinks(allLinks, url)
 
     if (filteredLinks.length === 0) {
-      return createErrorResult_Main(
-        `Found ${allLinks.length} links matching selector, but none point to https://dave.io/go/*`
-      )
+      return {
+        success: false,
+        totalLinks: 0,
+        results: [],
+        emailTest,
+        summary: {
+          successful: 0,
+          failed: 0,
+          externalRedirects: 0,
+          javascriptInterference: 0
+        },
+        error: `Found ${allLinks.length} links matching selector, but none point to https://dave.io/go/*`
+      }
     }
 
     console.error(`🔍 Found ${filteredLinks.length} links pointing to https://dave.io/go/* to test`)
@@ -393,6 +500,7 @@ async function testLinkRedirects(url: string, linkSelector: string): Promise<Tes
       success: true,
       totalLinks: filteredLinks.length,
       results,
+      emailTest,
       summary
     }
   } catch (error: unknown) {
@@ -407,7 +515,18 @@ testLinkRedirects("https://dave.io", "a.link-url")
   .then((result) => {
     console.error(`\n📊 Test completed! Tested ${result.totalLinks} links pointing to https://dave.io/go/*`)
 
+    // Report email test results
+    console.error("\n📧 Email decoding test:")
+    if (result.emailTest.success) {
+      console.error(`   ✅ Email decoded successfully in ${result.emailTest.replacementTime}ms`)
+      console.error(`   📝 Email link verified: '${result.emailTest.finalText}'`)
+    } else {
+      console.error(`   ❌ Email test failed: ${result.emailTest.error}`)
+    }
+
+    // Report link test results
     if (result.success) {
+      console.error("\n🔗 Link test results:")
       console.error(`   ✅ ${result.summary.successful} successful`)
       console.error(`   ❌ ${result.summary.failed} failed`)
       console.error(`   🌐 ${result.summary.externalRedirects} external redirects`)
@@ -431,6 +550,10 @@ testLinkRedirects("https://dave.io", "a.link-url")
           success: false,
           totalLinks: 0,
           results: [],
+          emailTest: {
+            success: false,
+            error: "Fatal error occurred before email test could run"
+          },
           summary: {
             successful: 0,
             failed: 0,
