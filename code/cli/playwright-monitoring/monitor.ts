@@ -66,22 +66,40 @@ async function findAllLinks(page: Page, linkSelector: string): Promise<ElementHa
   return allLinks as ElementHandle<HTMLAnchorElement>[]
 }
 
+async function processLinkElement(
+  element: ElementHandle<HTMLAnchorElement>,
+  index: number,
+  baseUrl: string
+): Promise<FilteredLink | null> {
+  const href = await element.getAttribute("href")
+  if (!href) {
+    return null
+  }
+
+  const absoluteHref = normalizeUrl(href, baseUrl)
+  if (!isGoLink(absoluteHref)) {
+    return null
+  }
+
+  return {
+    element,
+    index,
+    href: absoluteHref
+  }
+}
+
 async function filterGoLinks(allLinks: ElementHandle<HTMLAnchorElement>[], baseUrl: string): Promise<FilteredLink[]> {
   const filteredLinks: FilteredLink[] = []
 
   for (let i = 0; i < allLinks.length; i++) {
-    const href = await allLinks[i]?.getAttribute("href")
-    if (!href) {
+    const element = allLinks[i]
+    if (!element) {
       continue
     }
 
-    const absoluteHref = normalizeUrl(href, baseUrl)
-    if (isGoLink(absoluteHref)) {
-      filteredLinks.push({
-        element: allLinks[i]!,
-        index: i,
-        href: absoluteHref
-      })
+    const processedLink = await processLinkElement(element, i, baseUrl)
+    if (processedLink) {
+      filteredLinks.push(processedLink)
     }
   }
 
