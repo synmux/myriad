@@ -86,7 +86,7 @@ async function testLinkRedirects(url: string, linkSelector: string): Promise<Tes
 
         for (let i = 0; i < filteredLinks.length; i++) {
             const filteredLink = filteredLinks[i];
-            if (!filteredLink) continue;
+            if (!filteredLink) { continue };
 
             const { element: linkElement, index: originalIndex, href: expectedHref } = filteredLink;
 
