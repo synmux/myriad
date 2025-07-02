@@ -39,7 +39,6 @@ lint:
         - research/roadman-dialect/ROADMAN-SLANG-DICTIONARY.md
         - research/roadman-dialect/uk-roadman-slang-dictionary.md
   disabled:
-    - prettier
     - flake8
     - pyright
     - pylint
@@ -49,6 +48,7 @@ lint:
     - cspell
     - renovate
   enabled:
+    - prettier@3.6.2
     - trunk-toolbox@0.5.4
     - brakeman@5.4.0:
         packages:
