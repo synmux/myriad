@@ -539,6 +539,14 @@ testLinkRedirects("https://dave.io", "a.link-url")
 
     // Output only JSON to STDOUT
     console.log(JSON.stringify(result, null, 2))
+
+    // Exit with appropriate code based on test results
+    const hasFailures = !result.success || !result.emailTest.success || result.summary.failed > 0
+    if (hasFailures) {
+      process.exit(1)
+    } else {
+      process.exit(0)
+    }
   })
   .catch((error) => {
     console.error(`❌ Fatal error: ${error instanceof Error ? error.message : String(error)}`)
