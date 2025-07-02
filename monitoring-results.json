@@ -1,0 +1,117 @@
+[
+  {
+    "url": "https://dave.io",
+    "timestamp": "2025-07-02T18:51:29.978Z",
+    "tests": {
+      "redirectTest": {
+        "redirectCount": 0,
+        "redirects": [
+          {
+            "from": "https://dave.io/_nuxt/index.Bh1Hy68R.css",
+            "status": 304
+          },
+          {
+            "from": "https://dave.io/_nuxt/BLiTW64C.js",
+            "status": 304
+          },
+          {
+            "from": "https://dave.io/_nuxt/B_mdlN2s.js",
+            "status": 304
+          },
+          {
+            "from": "https://dave.io/_nuxt/pageSetup.Bbj5x70r.css",
+            "status": 304
+          },
+          {
+            "from": "https://dave.io/_nuxt/DlAUqK2U.js",
+            "status": 304
+          },
+          {
+            "from": "https://dave.io/_nuxt/DcloCnMC.js",
+            "status": 304
+          },
+          {
+            "from": "https://dave.io/_nuxt/BP0Ugt0V.js",
+            "status": 304
+          },
+          {
+            "from": "https://dave.io/_nuxt/CgkHaiOw.js",
+            "status": 304
+          },
+          {
+            "from": "https://dave.io/_fonts/emR23YfUwGjZuNZN4qn1ynsBfeFcS2_11VD1vUWwQ8Q-YNQMohFwK4BJoTtjl07dF_WgkOQzdw944WS1RADlYpM.woff",
+            "status": 304
+          },
+          {
+            "from": "https://dave.io/_fonts/g2lHrN8lc2376kdYNL70_NUzsn6O29CqAjVgK7F_sA-CkfujGVgXi6_0wCer66Rd3XV_G8CMcpfZSc_hhmpY3A.woff",
+            "status": 304
+          },
+          {
+            "from": "https://dave.io/_fonts/hc_m8AuIOFFbKm9MWW0im1uAt9196Wnz4289qDf6QUM-67eAdr_2CiA-OtVefj65kLwpVyGbTkiDd00lbv0GHlw.woff",
+            "status": 304
+          },
+          {
+            "from": "https://dave.io/_nuxt/Bx3zEAVa.js",
+            "status": 304
+          },
+          {
+            "from": "https://dave.io/_nuxt/B02yElXZ.js",
+            "status": 304
+          },
+          {
+            "from": "https://dave.io/_nuxt/B_mdlN2s.js",
+            "status": 304
+          },
+          {
+            "from": "https://dave.io/_nuxt/BP0Ugt0V.js",
+            "status": 304
+          },
+          {
+            "from": "https://dave.io/_nuxt/DlAUqK2U.js",
+            "status": 304
+          },
+          {
+            "from": "https://dave.io/_nuxt/index.Bh1Hy68R.css",
+            "status": 304
+          },
+          {
+            "from": "https://dave.io/_nuxt/CgkHaiOw.js",
+            "status": 304
+          },
+          {
+            "from": "https://dave.io/_nuxt/BLiTW64C.js",
+            "status": 304
+          },
+          {
+            "from": "https://dave.io/_nuxt/DcloCnMC.js",
+            "status": 304
+          },
+          {
+            "from": "https://dave.io/_nuxt/pageSetup.Bbj5x70r.css",
+            "status": 304
+          },
+          {
+            "from": "https://dave.io/_fonts/emR23YfUwGjZuNZN4qn1ynsBfeFcS2_11VD1vUWwQ8Q-YNQMohFwK4BJoTtjl07dF_WgkOQzdw944WS1RADlYpM.woff",
+            "status": 304
+          },
+          {
+            "from": "https://dave.io/_fonts/hc_m8AuIOFFbKm9MWW0im1uAt9196Wnz4289qDf6QUM-67eAdr_2CiA-OtVefj65kLwpVyGbTkiDd00lbv0GHlw.woff",
+            "status": 304
+          },
+          {
+            "from": "https://dave.io/_fonts/g2lHrN8lc2376kdYNL70_NUzsn6O29CqAjVgK7F_sA-CkfujGVgXi6_0wCer66Rd3XV_G8CMcpfZSc_hhmpY3A.woff",
+            "status": 304
+          }
+        ]
+      },
+      "jsContentTest": {
+        "jsModified": []
+      },
+      "performanceTest": {
+        "domContentLoaded": 0,
+        "loadComplete": 0,
+        "totalTime": 237.89999997615814
+      }
+    }
+  }
+]
