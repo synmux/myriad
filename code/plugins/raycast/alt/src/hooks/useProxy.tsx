@@ -1,5 +1,5 @@
-import type { Agent } from "http"
 import { getPreferenceValues } from "@raycast/api"
+import type { Agent } from "http"
 import { ProxyAgent } from "proxy-agent"
 
 export function useProxy(): Agent | undefined {

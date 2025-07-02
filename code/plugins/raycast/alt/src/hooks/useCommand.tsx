@@ -1,4 +1,4 @@
-import { LocalStorage, Toast, showToast } from "@raycast/api"
+import { LocalStorage, showToast, Toast } from "@raycast/api"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import type { Command, CommandHook, Model } from "../type"
 import { useModel } from "./useModel"

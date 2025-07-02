@@ -1,4 +1,4 @@
-import { ActionPanel, List, clearSearchBar, getPreferenceValues, useNavigation } from "@raycast/api"
+import { ActionPanel, clearSearchBar, getPreferenceValues, List, useNavigation } from "@raycast/api"
 import { useEffect, useState } from "react"
 import { v4 as uuidv4 } from "uuid"
 import { PrimaryAction } from "./actions"

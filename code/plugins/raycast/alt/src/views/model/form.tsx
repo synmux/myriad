@@ -1,4 +1,4 @@
-import { Action, ActionPanel, Form, Icon, Toast, showToast, useNavigation } from "@raycast/api"
+import { Action, ActionPanel, Form, Icon, showToast, Toast, useNavigation } from "@raycast/api"
 import { FormValidation, useFetch, useForm } from "@raycast/utils"
 import { parse } from "csv-parse/sync"
 import { useCallback, useState } from "react"
@@ -55,7 +55,8 @@ export const ModelForm = (props: { model?: Model; use: { models: ModelHook }; na
           if (!isNaN(numValue)) {
             if (numValue < 0) {
               return "Minimal value is 0"
-            } else if (numValue > 2) {
+            }
+            if (numValue > 2) {
               return "Maximal value is 2"
             }
           }

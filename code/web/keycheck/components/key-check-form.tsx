@@ -1,13 +1,12 @@
 "use client"
 
+import { AlertTriangle, CheckCircle2, Copy, KeyRound, Shield } from "lucide-react"
 import type React from "react"
-
+import { useState } from "react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Textarea } from "@/components/ui/textarea"
-import { AlertTriangle, CheckCircle2, Copy, KeyRound, Shield } from "lucide-react"
-import { useState } from "react"
 
 type KeyType = "PKCS#8" | "SSH" | "Unknown" | null
 
@@ -26,11 +25,11 @@ export default function KeyCheckForm() {
       key.includes("-----BEGIN EC PRIVATE KEY-----")
     ) {
       return "PKCS#8"
-    } else if (key.includes("-----BEGIN OPENSSH PRIVATE KEY-----")) {
-      return "SSH"
-    } else {
-      return "Unknown"
     }
+    if (key.includes("-----BEGIN OPENSSH PRIVATE KEY-----")) {
+      return "SSH"
+    }
+    return "Unknown"
   }
 
   const handleKeyChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {

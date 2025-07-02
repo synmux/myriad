@@ -1,7 +1,7 @@
-import path from "path"
 import { Clipboard } from "@raycast/api"
 import fs from "fs/promises"
 import { imageMeta } from "image-meta"
+import path from "path"
 import { runAppleScript } from "run-applescript"
 
 type ImageMeta = {

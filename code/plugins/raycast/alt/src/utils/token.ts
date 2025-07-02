@@ -1,7 +1,7 @@
 import { encode } from "@nem035/gpt-3-encoder"
 
 function naiveRound(num: number, decimalPlaces = 0) {
-  const p = Math.pow(10, decimalPlaces)
+  const p = 10 ** decimalPlaces
   return Math.round(num * p) / p
 }
 

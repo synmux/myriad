@@ -1,11 +1,11 @@
 "use client"
 
+import { AlertCircle, Copy, FileDown, Loader2, Terminal } from "lucide-react"
+import { useEffect, useState } from "react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { AlertCircle, Copy, FileDown, Loader2, Terminal } from "lucide-react"
-import { useEffect, useState } from "react"
 
 export function Instructions() {
   const [scriptContent, setScriptContent] = useState<string>("")

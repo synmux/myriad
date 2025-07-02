@@ -1,11 +1,5 @@
 "use client"
 
-import type React from "react"
-
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Textarea } from "@/components/ui/textarea"
-import { useAnalytics } from "@/hooks/use-analytics"
 import {
   AlertTriangle,
   Briefcase,
@@ -18,7 +12,12 @@ import {
   Shield,
   Unlock
 } from "lucide-react"
+import type React from "react"
 import { useEffect, useState } from "react"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Textarea } from "@/components/ui/textarea"
+import { useAnalytics } from "@/hooks/use-analytics"
 
 type KeyType = "PKCS#8" | "SSH" | "Unknown" | null
 type ScanState = "idle" | "scanning" | "analyzing" | "revealing" | "revealed"
@@ -44,11 +43,11 @@ export default function KeyCompromiseChecker() {
       key.includes("-----BEGIN EC PRIVATE KEY-----")
     ) {
       return "PKCS#8"
-    } else if (key.includes("-----BEGIN OPENSSH PRIVATE KEY-----")) {
-      return "SSH"
-    } else {
-      return "Unknown"
     }
+    if (key.includes("-----BEGIN OPENSSH PRIVATE KEY-----")) {
+      return "SSH"
+    }
+    return "Unknown"
   }
 
   const handleKeyChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -151,7 +150,7 @@ export default function KeyCompromiseChecker() {
 
   return (
     <Card className={`w-full relative overflow-hidden border-cyan-800 bg-gray-900/95 ${glitchClass} z-20`}>
-      <div className="absolute inset-0 bg-grid-pattern opacity-5 pointer-events-none"></div>
+      <div className="absolute inset-0 bg-grid-pattern opacity-5 pointer-events-none" />
 
       <CardHeader className="border-b border-cyan-900">
         <CardTitle className="flex items-center gap-2 text-cyan-400">
@@ -190,7 +189,7 @@ export default function KeyCompromiseChecker() {
                 <div className="relative w-16 h-16">
                   <Search className="w-16 h-16 text-cyan-400 animate-pulse" />
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
+                    <div className="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin" />
                   </div>
                 </div>
               </div>
@@ -200,7 +199,7 @@ export default function KeyCompromiseChecker() {
                 <div
                   className="absolute top-0 left-0 h-full bg-linear-to-r from-cyan-500 to-purple-500 transition-all duration-200"
                   style={{ width: `${progress}%` }}
-                ></div>
+                />
               </div>
               <p className="text-center text-xs text-cyan-400">Scanning databases ({Math.round(progress)}%)</p>
             </div>
@@ -222,9 +221,9 @@ export default function KeyCompromiseChecker() {
             <div className="space-y-4 terminal-output">
               <div className="bg-black text-green-500 p-4 font-mono text-sm rounded-md border-2 border-green-500 overflow-hidden shadow-[0_0_15px_rgba(0,255,0,0.5)]">
                 <div className="flex items-center gap-2 mb-2 pb-2 border-b border-green-500">
-                  <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                  <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-                  <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                  <div className="w-3 h-3 rounded-full bg-red-500" />
+                  <div className="w-3 h-3 rounded-full bg-yellow-500" />
+                  <div className="w-3 h-3 rounded-full bg-green-500" />
                   <span className="ml-2 text-xs text-green-400">terminal@security-alert</span>
                 </div>
                 <p className="mb-2 typewriter-heading flex items-center">

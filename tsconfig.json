@@ -1,10 +1,11 @@
 {
   "compilerOptions": {
+    "forceConsistentCasingInFileNames": true,
     "allowImportingTsExtensions": true,
     "allowJs": true,
     "jsx": "react-jsx",
-    "lib": ["ESNext"],
-    "module": "Preserve",
+    "lib": ["ESNext", "dom"],
+    "module": "ESNext",
     "moduleDetection": "force",
     "moduleResolution": "bundler",
     "noEmit": true,

@@ -1,4 +1,4 @@
-import { Toast, clearSearchBar, getPreferenceValues, showToast } from "@raycast/api"
+import { clearSearchBar, getPreferenceValues, showToast, Toast } from "@raycast/api"
 import type { ChatCompletion, ChatCompletionChunk } from "openai/resources/chat/completions"
 import type { Stream } from "openai/streaming"
 import { useCallback, useMemo, useRef, useState } from "react"

@@ -1,11 +1,11 @@
 "use client"
 
+import { ChevronDown, ChevronRight } from "lucide-react"
+import { useEffect, useState } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Card } from "@/components/ui/card"
 import { buildTicketHierarchy } from "@/lib/data-utils"
 import type { Ticket } from "@/lib/types"
-import { ChevronDown, ChevronRight } from "lucide-react"
-import { useEffect, useState } from "react"
 
 interface RelationshipViewProps {
   tickets: Ticket[]

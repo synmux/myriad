@@ -114,7 +114,7 @@ async function discoverRepositories(targetRepo?: string): Promise<string[]> {
 
     if (targetRepo) {
       // Sanitize targetRepo to prevent path traversal attacks
-      const sanitizedTargetRepo = targetRepo.replace(/\.\./g, "").replace(/[\/\\]/g, "")
+      const sanitizedTargetRepo = targetRepo.replace(/\.\./g, "").replace(/[/\\]/g, "")
       const repoPath = path.isAbsolute(sanitizedTargetRepo)
         ? sanitizedTargetRepo
         : path.join(baseDir, sanitizedTargetRepo)

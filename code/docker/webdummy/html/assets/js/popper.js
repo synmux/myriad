@@ -264,9 +264,8 @@
     var element1root = getRoot(element1)
     if (element1root.host) {
       return findCommonOffsetParent(element1root.host, element2)
-    } else {
-      return findCommonOffsetParent(element1, getRoot(element2).host)
     }
+    return findCommonOffsetParent(element1, getRoot(element2).host)
   }
 
   /**
@@ -337,7 +336,7 @@
    * @memberof Popper.Utils
    * @returns {Boolean} isIE10
    */
-  var isIE10 = undefined
+  var isIE10
 
   var isIE10$1 = () => {
     if (isIE10 === undefined) {
@@ -418,7 +417,7 @@
         var source = arguments[i]
 
         for (var key in source) {
-          if (Object.prototype.hasOwnProperty.call(source, key)) {
+          if (Object.hasOwn(source, key)) {
             target[key] = source[key]
           }
         }
@@ -1400,7 +1399,8 @@
   function getOppositeVariation(variation) {
     if (variation === "end") {
       return "start"
-    } else if (variation === "start") {
+    }
+    if (variation === "start") {
       return "end"
     }
     return variation
@@ -1637,7 +1637,7 @@
    */
   function toValue(str, measurement, popperOffsets, referenceOffsets) {
     // separate value from unit
-    var split = str.match(/((?:\-|\+)?\d*\.?\d*)(.*)/)
+    var split = str.match(/((?:-|\+)?\d*\.?\d*)(.*)/)
     var value = +split[1]
     var unit = split[2]
 
@@ -1660,7 +1660,8 @@
 
       var rect = getClientRect(element)
       return (rect[measurement] / 100) * value
-    } else if (unit === "vh" || unit === "vw") {
+    }
+    if (unit === "vh" || unit === "vw") {
       // if is a vh or vw, we calculate the size based on the viewport
       var size = void 0
       if (unit === "vh") {
@@ -1669,11 +1670,10 @@
         size = Math.max(document.documentElement.clientWidth, window.innerWidth || 0)
       }
       return (size / 100) * value
-    } else {
-      // if is an explicit pixel unit, we get rid of the unit and keep the value
-      // if is an implicit unit, it's px, and we return just the value
-      return value
     }
+    // if is an explicit pixel unit, we get rid of the unit and keep the value
+    // if is an implicit unit, it's px, and we return just the value
+    return value
   }
 
   /**
@@ -1697,7 +1697,7 @@
 
     // Split the offset string to obtain a list of values and operands
     // The regex addresses values with the plus or minus sign in front (+10, -20, etc)
-    var fragments = offset.split(/(\+|\-)/).map((frag) => frag.trim())
+    var fragments = offset.split(/(\+|-)/).map((frag) => frag.trim())
 
     // Detect if the offset string contains a pair of values or a single one
     // they could be separated by comma or space
@@ -1732,13 +1732,13 @@
               a[a.length - 1] = b
               mergeWithPrevious = true
               return a
-            } else if (mergeWithPrevious) {
+            }
+            if (mergeWithPrevious) {
               a[a.length - 1] += b
               mergeWithPrevious = false
               return a
-            } else {
-              return a.concat(b)
             }
+            return a.concat(b)
           }, [])
           // Here we convert the string values into number values (in px)
           .map((str) => toValue(str, measurement, popperOffsets, referenceOffsets))

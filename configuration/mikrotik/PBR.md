@@ -204,24 +204,20 @@ Deploy the full configuration:
 ### Common Issues
 
 1. **"Gateway not reachable"**
-
    - Check alternative gateway IP and interface
    - Verify network connectivity
    - Disable gateway validation temporarily: `validateGateways = false`
 
 2. **"Interface not found"**
-
    - Verify interface name: `/interface print`
    - Check interface status: `/interface monitor`
 
 3. **"Configuration validation failed"**
-
    - Check all placeholder values are replaced
    - Verify IP address formats
    - Ensure interface exists
 
 4. **"Backup creation failed"**
-
    - Check available storage: `/system resource print`
    - Verify write permissions
    - Disable backup creation temporarily: `createBackup = false`

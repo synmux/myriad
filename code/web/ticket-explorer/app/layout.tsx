@@ -1,10 +1,10 @@
 import type React from "react"
 import "./globals.css"
 import "./synthwave.css"
-import { ThemeProvider } from "@/components/theme-provider"
 import { Analytics } from "@vercel/analytics/react"
 import type { Metadata, Viewport } from "next"
 import { Inter, Orbitron } from "next/font/google"
+import { ThemeProvider } from "@/components/theme-provider"
 
 // Optimize font loading by specifying only the weights and subsets we need
 const inter = Inter({

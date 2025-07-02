@@ -1,4 +1,4 @@
-import { Action, ActionPanel, Detail, Toast, getPreferenceValues, showToast } from "@raycast/api"
+import { Action, ActionPanel, Detail, getPreferenceValues, showToast, Toast } from "@raycast/api"
 import { Stream } from "openai/streaming"
 import { useEffect, useState } from "react"
 

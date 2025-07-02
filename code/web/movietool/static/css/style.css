@@ -11,7 +11,8 @@
 }
 
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans',
+  font-family:
+    'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans',
     'Helvetica Neue', sans-serif;
   font-size: 16px;
   line-height: 1.5;
@@ -31,7 +32,8 @@ body::before {
   bottom: 0;
   z-index: -1;
   opacity: 0.03;
-  background-image: radial-gradient(circle at 25% 25%, var(--accent) 0.5%, transparent 8%),
+  background-image:
+    radial-gradient(circle at 25% 25%, var(--accent) 0.5%, transparent 8%),
     radial-gradient(circle at 75% 75%, var(--green) 0.5%, transparent 8%),
     radial-gradient(circle at 10% 90%, var(--red) 0.5%, transparent 10%),
     radial-gradient(circle at 90% 10%, var(--mauve) 0.5%, transparent 10%);

@@ -4,10 +4,10 @@ import {
   ActionPanel,
   Clipboard,
   Form,
-  Icon,
-  Toast,
   getSelectedFinderItems,
+  Icon,
   showToast,
+  Toast,
   useNavigation
 } from "@raycast/api"
 import { useCallback, useEffect, useMemo, useState } from "react"

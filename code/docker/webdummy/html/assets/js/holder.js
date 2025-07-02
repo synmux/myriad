@@ -101,7 +101,7 @@ var Holder = Holder || {}
       }
     },
     colors: {
-      regex: /#([0-9a-f]{3,})\:#([0-9a-f]{3,})/i,
+      regex: /#([0-9a-f]{3,}):#([0-9a-f]{3,})/i,
       output: function (val) {
         var exec = this.regex.exec(val)
         return {
@@ -112,13 +112,13 @@ var Holder = Holder || {}
       }
     },
     text: {
-      regex: /text\:(.*)/,
+      regex: /text:(.*)/,
       output: function (val) {
         return this.regex.exec(val)[1]
       }
     },
     font: {
-      regex: /font\:(.*)/,
+      regex: /font:(.*)/,
       output: function (val) {
         return this.regex.exec(val)[1]
       }
@@ -127,7 +127,7 @@ var Holder = Holder || {}
       regex: /^auto$/
     },
     textmode: {
-      regex: /textmode\:(.*)/,
+      regex: /textmode:(.*)/,
       output: function (val) {
         return this.regex.exec(val)[1]
       }
@@ -159,7 +159,7 @@ var Holder = Holder || {}
       return (
         (this.el = e),
         (this.getPropertyValue = (t) => {
-          var n = /(\-([a-z]){1})/g
+          var n = /(-([a-z]){1})/g
           return (
             t == "float" && (t = "styleFloat"),
             n.test(t) && (t = t.replace(n, () => arguments[2].toUpperCase())),
@@ -220,12 +220,12 @@ var Holder = Holder || {}
   function extend(a, b) {
     var c = {}
     for (var i in a) {
-      if (a.hasOwnProperty(i)) {
+      if (Object.hasOwn(a, i)) {
         c[i] = a[i]
       }
     }
     for (var i in b) {
-      if (b.hasOwnProperty(i)) {
+      if (Object.hasOwn(b, i)) {
         c[i] = b[i]
       }
     }
@@ -389,16 +389,14 @@ var Holder = Holder || {}
     if (!dimensions.height && !dimensions.width) {
       if (el.hasAttribute("data-holder-invisible")) {
         throw new Error("Holder: placeholder is not visible")
-      } else {
-        el.setAttribute("data-holder-invisible", true)
-        setTimeout(function () {
-          callback.call(this, el)
-        }, 1)
-        return null
       }
-    } else {
-      el.removeAttribute("data-holder-invisible")
+      el.setAttribute("data-holder-invisible", true)
+      setTimeout(function () {
+        callback.call(this, el)
+      }, 1)
+      return null
     }
+    el.removeAttribute("data-holder-invisible")
     return dimensions
   }
 
@@ -410,7 +408,7 @@ var Holder = Holder || {}
       images = [element]
     }
     for (var i in images) {
-      if (!images.hasOwnProperty(i)) {
+      if (!Object.hasOwn(images, i)) {
         continue
       }
       var el = images[i]
@@ -468,7 +466,7 @@ var Holder = Holder || {}
         ret.theme = app.flags.colors.output(flag)
       } else if (options.themes[flag]) {
         //If a theme is specified, it will override custom colors
-        if (options.themes.hasOwnProperty(flag)) {
+        if (Object.hasOwn(options.themes, flag)) {
           ret.theme = extend(options.themes[flag], {})
         }
       } else if (app.flags.font.match(flag)) {
@@ -483,7 +481,7 @@ var Holder = Holder || {}
   }
 
   for (var flag in app.flags) {
-    if (!app.flags.hasOwnProperty(flag)) continue
+    if (!Object.hasOwn(app.flags, flag)) continue
     app.flags[flag].match = function (val) {
       return val.match(this.regex)
     }

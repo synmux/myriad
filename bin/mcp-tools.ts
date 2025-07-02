@@ -1,10 +1,10 @@
 #!/usr/bin/env bun
 
+import { Client } from "@modelcontextprotocol/sdk/client/index.js"
+import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js"
 import { readFileSync } from "fs"
 import { homedir } from "os"
 import { join } from "path"
-import { Client } from "@modelcontextprotocol/sdk/client/index.js"
-import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js"
 
 interface McpServer {
   command: string

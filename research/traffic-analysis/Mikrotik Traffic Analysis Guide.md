@@ -205,7 +205,6 @@ netflow2ng is a free, open-source tool specifically created as an alternative fo
 **Setup Guide:**
 
 1. **Installing ntopng Community Edition:**
-
    - It's recommended to install ntopng on a Linux server or in a Docker container. The user's server or container host would be suitable.
    - For Ubuntu/Debian, instructions typically involve adding the official ntop repository and then installing the ntopng package along with its dependencies, such as redis (used by ntopng for caching and short-term data storage).23
      Bash
@@ -218,7 +217,6 @@ netflow2ng is a free, open-source tool specifically created as an alternative fo
    - Basic ntopng configuration is done in /etc/ntopng/ntopng.conf. Key parameters include the network interface(s) ntopng should listen on (though for netflow2ng, this will be a ZMQ endpoint) and the web server port (default is 3000).
 
 2. **Installing and Configuring netflow2ng:**
-
    - netflow2ng can be built from its Go source code or run from a Docker image.22 The Docker approach is generally simpler.
 
      ```bash
@@ -239,7 +237,6 @@ netflow2ng is a free, open-source tool specifically created as an alternative fo
      - The GitHub repository ThePlexus/ntopng-docker 25 provides a Docker setup that bundles ntopng and netflow2ng, which could simplify deployment. It specifies UDP port 2055 for NetFlow collection.
 
 3. **Connecting Mikrotik NetFlow to netflow2ng:**
-
    - On the Mikrotik router, ensure the /ip traffic-flow target configuration has:
      - dst-address: The IP address of the host running netflow2ng.
      - port: The UDP port netflow2ng is listening on (e.g., 2055).

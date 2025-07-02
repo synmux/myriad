@@ -1,5 +1,7 @@
 "use client"
 
+import { ArrowLeft, Download } from "lucide-react"
+import { useState } from "react"
 import { DeviceBreakdown } from "@/components/device-breakdown"
 import { DomainAnalysis } from "@/components/domain-analysis"
 import { StatsOverview } from "@/components/stats-overview"
@@ -8,8 +10,6 @@ import { TimeSeriesChart } from "@/components/time-series-chart"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import type { AnalysisData } from "@/lib/types"
-import { ArrowLeft, Download } from "lucide-react"
-import { useState } from "react"
 
 interface DashboardProps {
   analysisData: AnalysisData

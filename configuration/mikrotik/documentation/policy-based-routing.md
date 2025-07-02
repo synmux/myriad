@@ -319,13 +319,11 @@ flowchart TD
 ### VRF Gotchas That Will Ruin Your Day
 
 1. **The "Why Can't I Ping?" Classic**
-
    - Services in different VRFs can't see each other
    - Yes, this includes your management access
    - Hope you have console access!
 
 2. **The "My DNS Broke" Surprise**
-
    - Each VRF needs its own DNS config
    - Or explicit routes to shared DNS
 
@@ -1357,15 +1355,12 @@ add name=test-traffic interface=ether1 packet-size=1000 count=10000
    ```
 
 2. **Thou Shalt Not Overlap Subnets Unnecessarily**
-
    - Having both 10.0.0.0/8 and 10.0.0.0/24 in the same list is just wasteful
 
 3. **Thou Shalt Test Before Production**
-
    - Your users don't appreciate being your guinea pigs
 
 4. **Thou Shalt Have a Rollback Plan**
-
    - Export your config before making changes
    - Know how to access your router when you break routing
 

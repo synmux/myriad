@@ -1,4 +1,4 @@
-import { Toast, getPreferenceValues, getSelectedText, showToast } from "@raycast/api"
+import { getPreferenceValues, getSelectedText, showToast, Toast } from "@raycast/api"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import type { QuestionHook } from "../type"
 

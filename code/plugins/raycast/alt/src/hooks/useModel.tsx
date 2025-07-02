@@ -1,4 +1,4 @@
-import { LocalStorage, Toast, showToast } from "@raycast/api"
+import { LocalStorage, showToast, Toast } from "@raycast/api"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import type { Model, ModelHook } from "../type"
 import { getConfiguration, useChatGPT } from "./useChatGPT"

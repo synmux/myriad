@@ -5,7 +5,6 @@ This repository contains RouterOS configuration files for MikroTik network devic
 ## Repository Structure
 
 - `fw-16c/` - Configuration for the MikroTik RB5009UPr+S+ router
-
   - Full configuration files in various formats:
 
     | Format  | Description                   | Use Case               |
@@ -19,7 +18,6 @@ This repository contains RouterOS configuration files for MikroTik network devic
   - `sensitive/` - Encrypted configuration files
 
 - `fw-7t54/` - Configuration for the MikroTik RB4011iGS+5HacQ2HnD router
-
   - `dhcp.rsc` - DHCP server configuration
   - `firewall.rsc` - Firewall ruleset
   - `sensitive/` - Encrypted configuration files

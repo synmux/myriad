@@ -1,4 +1,4 @@
-import { LocalStorage, Toast, showToast } from "@raycast/api"
+import { LocalStorage, showToast, Toast } from "@raycast/api"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import type { Chat, HistoryHook } from "../type"
 

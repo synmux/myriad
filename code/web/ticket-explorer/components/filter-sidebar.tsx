@@ -1,5 +1,7 @@
 "use client"
 
+import { AlertTriangle, CheckCircle, ChevronUp, Filter, GitBranch, Search, Tag, X } from "lucide-react"
+import { useEffect, useState } from "react"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -7,8 +9,6 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import type { FilterState, Ticket } from "@/lib/types"
-import { AlertTriangle, CheckCircle, ChevronUp, Filter, GitBranch, Search, Tag, X } from "lucide-react"
-import { useEffect, useState } from "react"
 
 interface FilterSidebarProps {
   tickets: Ticket[]

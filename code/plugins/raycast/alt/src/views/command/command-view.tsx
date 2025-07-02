@@ -3,11 +3,11 @@ import {
   ActionPanel,
   type Application,
   Detail,
+  getFrontmostApplication,
   Icon,
   type LaunchProps,
   List,
   type Navigation,
-  getFrontmostApplication,
   open,
   useNavigation
 } from "@raycast/api"
@@ -237,7 +237,7 @@ ${this.error || ""}`
       />
     )
     const copyToClipboard = (
-      <Action.CopyToClipboard key="copyToClipboard" title={`Copy Response`} content={this.aiAnswer || ""} />
+      <Action.CopyToClipboard key="copyToClipboard" title={"Copy Response"} content={this.aiAnswer || ""} />
     )
     const continueInChat = (
       <Action
@@ -290,7 +290,7 @@ function buildCommandNotFoundView(commandId: string) {
     <Detail
       markdown={
         `AI command with id=${commandId} not found. This AI command may have been deleted.` +
-        `You need to remove this quicklink, create the AI command again, and then create the quicklink once more.`
+        "You need to remove this quicklink, create the AI command again, and then create the quicklink once more."
       }
     />
   )

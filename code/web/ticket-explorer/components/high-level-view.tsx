@@ -1,13 +1,13 @@
 "use client"
 
+import { motion } from "framer-motion"
+import { FileCode, FileText, Layers } from "lucide-react"
+import { useState } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import type { HighLevelTicket } from "@/lib/high-level-data"
 import { findRelatedTickets } from "@/lib/high-level-data"
 import type { Ticket } from "@/lib/types"
-import { motion } from "framer-motion"
-import { FileCode, FileText, Layers } from "lucide-react"
-import { useState } from "react"
 
 interface HighLevelViewProps {
   highLevelTickets: HighLevelTicket[]

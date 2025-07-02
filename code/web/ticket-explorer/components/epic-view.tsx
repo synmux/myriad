@@ -1,14 +1,14 @@
 "use client"
 
+import { motion } from "framer-motion"
+import { ArrowRight, Clock, FileText, Layers } from "lucide-react"
+import { useState } from "react"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import type { Epic } from "@/lib/high-level-data"
 import { findEpicRelatedTickets } from "@/lib/high-level-data"
 import type { Ticket } from "@/lib/types"
-import { motion } from "framer-motion"
-import { ArrowRight, Clock, FileText, Layers } from "lucide-react"
-import { useState } from "react"
 
 interface EpicViewProps {
   epics: Epic[]

@@ -363,7 +363,6 @@ To simplify the integration, consider these tools and packages:
 - **Testing and Linting:** Use ESLint for Vue/Nuxt code and RuboCop for Ruby code to keep consistency. They will be in the same repo, so maybe segregate config or use package-specific commands.
 
 - **gotchas/edge cases:**
-
   - **Asset path differences:** If Rails serves assets, ensure Nuxt is configured to not also expect to serve them. For example, if using Nuxt static generation, by default it might expect to serve from root. But if you mount your app under a subdirectory or via rails, adjust `router.base` or asset URLs accordingly.
   - **Time zone and locale:** Both Rails and Nuxt may have localization. If you plan to use Rails for i18n (e.g., error messages from Devise) and Nuxt for UI, you might want to share locales or at least ensure consistency. There’s no automatic bridging, but you could generate a JSON of Rails i18n and use it in Nuxt.
   - **Date formats & JSON serialization:** When Rails sends JSON (like a model to_json), it might include e.g. created_at in a certain format. Make sure your front-end can parse it (perhaps use libraries like Day.js or date-fns to format). Similarly, if using Mongo, the ObjectIDs will be strings – plan if you need to expose them.
@@ -535,7 +534,6 @@ Alternatively, run `npm ci --production` in the runner stage to install just pro
 **One container vs two in Kubernetes:**
 
 - If using **two containers** (Rails and Nuxt separate), you’d create two Deployments (or one Deployment with two containers, but better separate for independent scaling). For instance, `deployment/rails-deployment.yaml` and `deployment/nuxt-deployment.yaml`. Each would have its own pods, maybe in the same namespace. Then use a Kubernetes **Ingress** or **Service** setup:
-
   - A Service for Rails (clusterIP, name it “rails-api”) and one for Nuxt (name “nuxt-web”).
   - The Ingress (assuming using an Nginx ingress controller or similar) with rules:
 

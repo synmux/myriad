@@ -3,7 +3,7 @@
   "debug.javascript.defaultRuntimeExecutable": {
     "pwa-node": "/Users/dave/.local/share/mise/shims/node"
   },
-  "python.defaultInterpreterPath": "/Users/dave/.local/share/mise/installs/python/3.13.4/bin/python",
+  "python.defaultInterpreterPath": "/Users/dave/.local/share/mise/installs/python/3.13.5/bin/python",
   "go.alternateTools": {
     "go": "/Users/dave/.local/share/mise/shims/go",
     "gopls": "/Users/dave/.local/share/mise/shims/gopls"

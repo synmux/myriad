@@ -1,10 +1,10 @@
 "use client"
 
+import { ArrowDownRight, ArrowUpRight, Calendar, FileText, Tag, User, Users, X } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import type { Ticket } from "@/lib/types"
-import { ArrowDownRight, ArrowUpRight, Calendar, FileText, Tag, User, Users, X } from "lucide-react"
 
 interface TicketDetailProps {
   ticket: Ticket

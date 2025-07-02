@@ -1,4 +1,4 @@
-import { Action, Alert, Icon, type Image, type Keyboard, confirmAlert } from "@raycast/api"
+import { Action, Alert, confirmAlert, Icon, type Image, type Keyboard } from "@raycast/api"
 import say from "say"
 
 export const PrimaryAction = ({ title, onAction }: { title: string; onAction: () => void }) => (

@@ -1,11 +1,11 @@
 import type React from "react"
 import "@/app/globals.css"
-import DigitalRain from "@/components/digital-rain"
-import { ThemeProvider } from "@/components/theme-provider"
 import { config } from "@fortawesome/fontawesome-svg-core"
 import { Analytics } from "@vercel/analytics/react"
 import { Inter } from "next/font/google"
 import { Suspense } from "react"
+import DigitalRain from "@/components/digital-rain"
+import { ThemeProvider } from "@/components/theme-provider"
 import "@fortawesome/fontawesome-svg-core/styles.css"
 
 const inter = Inter({ subsets: ["latin"] })

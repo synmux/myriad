@@ -1,10 +1,10 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
-import { useAnalytics } from "@/hooks/use-analytics"
 import { Moon, Sun } from "lucide-react"
 import { useTheme } from "next-themes"
 import { useEffect, useState } from "react"
+import { Button } from "@/components/ui/button"
+import { useAnalytics } from "@/hooks/use-analytics"
 
 interface ThemeToggleProps {
   isSynthwaveMode?: boolean

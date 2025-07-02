@@ -463,7 +463,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const units = ["B", "KB", "MB", "GB", "TB"]
     const i = Math.floor(Math.log(bytes) / Math.log(1024))
 
-    return `${(bytes / Math.pow(1024, i)).toFixed(2)} ${units[i]}`
+    return `${(bytes / 1024 ** i).toFixed(2)} ${units[i]}`
   }
 
   /**
@@ -498,7 +498,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const progress = Math.min(elapsed / duration, 1)
 
       // Easing function for a more natural animation
-      const easeOutQuart = 1 - Math.pow(1 - progress, 4)
+      const easeOutQuart = 1 - (1 - progress) ** 4
       const currentValue = Math.floor(start + range * easeOutQuart)
 
       element.textContent = currentValue

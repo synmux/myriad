@@ -10,8 +10,8 @@
       ? define(["exports", "jquery", "popper.js"], factory)
       : ((global = global || self), factory((global.bootstrap = {}), global.jQuery, global.Popper))
 })(this, (exports, $, Popper) => {
-  $ = $ && $.hasOwnProperty("default") ? $["default"] : $
-  Popper = Popper && Popper.hasOwnProperty("default") ? Popper["default"] : Popper
+  $ = $ && Object.hasOwn($, "default") ? $["default"] : $
+  Popper = Popper && Object.hasOwn(Popper, "default") ? Popper["default"] : Popper
 
   function _defineProperties(target, props) {
     for (var i = 0; i < props.length; i++) {
@@ -186,7 +186,7 @@
     },
     typeCheckConfig: function typeCheckConfig(componentName, config, configTypes) {
       for (var property in configTypes) {
-        if (Object.prototype.hasOwnProperty.call(configTypes, property)) {
+        if (Object.hasOwn(configTypes, property)) {
           var expectedTypes = configTypes[property]
           var value = config[property]
           var valueType = value && Util.isElement(value) ? "element" : toType(value)

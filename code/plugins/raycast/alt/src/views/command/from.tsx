@@ -1,10 +1,9 @@
-import { Action, ActionPanel, Form, Icon, Toast, showToast, useNavigation } from "@raycast/api"
+import { Action, ActionPanel, Form, Icon, showToast, Toast, useNavigation } from "@raycast/api"
 import { FormValidation, useForm } from "@raycast/utils"
 import { v4 as uuidv4 } from "uuid"
-import type { Command, CommandContentSource, CommandHook } from "../../type"
-
 import { getConfiguration } from "../../hooks/useChatGPT"
 import { useModel } from "../../hooks/useModel"
+import type { Command, CommandContentSource, CommandHook } from "../../type"
 
 export const CommandForm = (props: {
   cmd?: Command
@@ -52,7 +51,8 @@ export const CommandForm = (props: {
           if (!isNaN(numValue)) {
             if (numValue < 0) {
               return "Minimal value is 0"
-            } else if (numValue > 2) {
+            }
+            if (numValue > 2) {
               return "Maximal value is 2"
             }
           }

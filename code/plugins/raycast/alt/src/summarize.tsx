@@ -1,5 +1,4 @@
-import { Action, ActionPanel, Form, Icon, List, useNavigation } from "@raycast/api"
-import { open } from "@raycast/api"
+import { Action, ActionPanel, Form, Icon, List, open, useNavigation } from "@raycast/api"
 import { showFailureToast } from "@raycast/utils"
 import { useEffect, useState } from "react"
 import { v4 as uuidv4 } from "uuid"

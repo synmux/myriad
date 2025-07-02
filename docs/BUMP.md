@@ -81,37 +81,30 @@ bump --unsafe
 ## ⚙️ How It Works
 
 1. **Repository Discovery**
-
    - Find all git repositories under `/Users/dave/src/github.com/daveio/`
    - Or focus on a specific repository provided as an argument
 
 2. **Git Operations**
-
    - Fetch all branches, tags, and prune
    - Pull with rebase
 
 3. **Dependency Reading**
-
    - Parse dependency files based on language
    - Extract dependency names and versions
 
 4. **Update Check**
-
    - Query package manager APIs for latest versions
    - Determine update type (patch, minor, major)
 
 5. **Apply Updates**
-
    - Update files with new versions based on update rules
    - Respect original file formatting
 
 6. **Update Lockfiles**
-
    - Run appropriate package manager commands
    - Ensure dependencies are properly locked
 
 7. **Commit & Push**
-
    - Add all changes
    - Commit using OpenCommit
    - Push to remote

@@ -1,15 +1,14 @@
 "use client"
 
+import { AlertCircle, FileJson, UploadIcon } from "lucide-react"
 import type React from "react"
-
+import { useState } from "react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import type { AnalysisData } from "@/lib/types"
-import { AlertCircle, FileJson, UploadIcon } from "lucide-react"
-import { useState } from "react"
 
 interface UploadProps {
   setAnalysisData: (data: AnalysisData) => void

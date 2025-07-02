@@ -43,7 +43,7 @@ export default function DigitalRain({ opacity = 0.15 }: DigitalRainProps) {
     // Draw function
     const draw = () => {
       // Semi-transparent black background to create fade effect
-      ctx.fillStyle = `rgba(0, 0, 0, 0.05)`
+      ctx.fillStyle = "rgba(0, 0, 0, 0.05)"
       ctx.fillRect(0, 0, canvas.width, canvas.height)
 
       // Set text style

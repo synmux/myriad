@@ -1,4 +1,4 @@
-import { ActionPanel, Icon, List, clearSearchBar } from "@raycast/api"
+import { ActionPanel, clearSearchBar, Icon, List } from "@raycast/api"
 import { v4 as uuidv4 } from "uuid"
 import { DestructiveAction, PrimaryAction, TextToSpeechAction } from "../actions"
 import { CopyActionSection } from "../actions/copy"

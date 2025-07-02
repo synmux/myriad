@@ -1,5 +1,4 @@
-import { Action, ActionPanel, Form, Icon, useNavigation } from "@raycast/api"
-import { Toast, showToast } from "@raycast/api"
+import { Action, ActionPanel, Form, Icon, showToast, Toast, useNavigation } from "@raycast/api"
 
 export const ImportForm = (props: { moduleName: string; onSubmit: (file: string) => Promise<void> }) => {
   const { pop } = useNavigation()
@@ -14,7 +13,7 @@ export const ImportForm = (props: { moduleName: string; onSubmit: (file: string)
               const file = values.files[0]
               if (!file) {
                 showToast({
-                  title: `No file selected`,
+                  title: "No file selected",
                   message: `Please select a file to import ${props.moduleName}`,
                   style: Toast.Style.Failure
                 })
