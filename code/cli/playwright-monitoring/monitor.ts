@@ -71,11 +71,17 @@ async function filterGoLinks(allLinks: ElementHandle<HTMLAnchorElement>[], baseU
 
   for (let i = 0; i < allLinks.length; i++) {
     const href = await allLinks[i]?.getAttribute("href")
-    if (!href) continue
+    if (!href) {
+      continue
+    }
 
     const absoluteHref = normalizeUrl(href, baseUrl)
     if (isGoLink(absoluteHref)) {
-      filteredLinks.push({ element: allLinks[i]!, index: i, href: absoluteHref })
+      filteredLinks.push({
+        element: allLinks[i]!,
+        index: i,
+        href: absoluteHref
+      })
     }
   }
 
@@ -103,7 +109,9 @@ function addRedirectToChain(response: Response, location: string, context: Redir
 }
 
 function processRedirectLocation(location: string, context: RedirectContext): void {
-  if (!(location && (location.startsWith("http") || location.startsWith("//")))) return
+  if (!(location && (location.startsWith("http") || location.startsWith("//")))) {
+    return
+  }
 
   const redirectUrl = location.startsWith("//") ? `https:${location}` : location
   if (!isInternalDomain(redirectUrl)) {
@@ -112,7 +120,9 @@ function processRedirectLocation(location: string, context: RedirectContext): vo
 }
 
 function handleRedirectResponse(response: Response, context: RedirectContext): void {
-  if (!isRedirectResponse(response.status())) return
+  if (!isRedirectResponse(response.status())) {
+    return
+  }
 
   const location = response.headers().location ?? ""
   addRedirectToChain(response, location, context)
@@ -304,7 +314,9 @@ async function testAllLinks(
 
   for (let i = 0; i < filteredLinks.length; i++) {
     const filteredLink = filteredLinks[i]
-    if (!filteredLink) continue
+    if (!filteredLink) {
+      continue
+    }
 
     const result = await testSingleLink(page, filteredLink, i, linkSelector, baseUrl)
     results.push(result)
