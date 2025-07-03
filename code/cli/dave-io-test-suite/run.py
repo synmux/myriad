@@ -85,7 +85,7 @@ def deploy_job(run_client: run_v2.JobsClient, image_name: str) -> None:
     parent = f"projects/{GCP_PROJECT_ID}/locations/{GCP_REGION}"
     job_path = f"{parent}/jobs/{JOB_NAME}"
 
-    container = run_v2.Container(image=image_name, args=["--force-fail"])
+    container = run_v2.Container(image=image_name)
     template = run_v2.ExecutionTemplate(
         template=run_v2.TaskTemplate(containers=[container], max_retries=0)
     )
@@ -160,8 +160,15 @@ def get_job_logs(logging_client: logging_v2.Client, execution_name_short: str) -
         f'labels."run.googleapis.com/execution_name"="{execution_name_short}"'
     )
 
+    # Wait for logs to be fully indexed in Cloud Logging
+    log_status("Waiting for logs to settle...")
+    time.sleep(10)
+
     log_status("Fetching final results and logs...")
-    entries = logging_client.list_entries(filter_=log_filter)  # type: ignore
+    entries = list(logging_client.list_entries(filter_=log_filter))  # type: ignore
+
+    # Sort entries by timestamp to ensure proper chronological order
+    entries.sort(key=lambda entry: entry.timestamp)
 
     messages = [entry.payload for entry in entries if isinstance(entry.payload, str)]  # type: ignore
 
@@ -175,7 +182,13 @@ def get_job_logs(logging_client: logging_v2.Client, execution_name_short: str) -
         if cleaned_message:  # Only add non-empty messages
             filtered_messages.append(cleaned_message)
 
-    return "".join(filtered_messages)
+    result = "".join(filtered_messages)
+
+    # Basic validation: if we have content but it doesn't start with '{', it's likely truncated
+    if result and not result.strip().startswith("{"):
+        log_status("Warning: Log output appears to be truncated (missing JSON start)")
+
+    return result
 
 
 def main() -> None:
@@ -204,11 +217,22 @@ def main() -> None:
             exit_code = task_details.last_attempt_result.exit_code
 
     final_condition = execution_details.conditions[-1]
-    status = (
-        "Succeeded"
-        if final_condition.state == final_condition.State.CONDITION_SUCCEEDED
-        else "Failed"
+
+    # Determine status based on actual application result, not just Cloud Run execution
+    cloud_run_succeeded = (
+        final_condition.state == final_condition.State.CONDITION_SUCCEEDED
     )
+    app_succeeded = exit_code == 0
+
+    if not cloud_run_succeeded:
+        # Cloud Run itself failed (container couldn't start, etc.)
+        status = "fail:cloud_run"
+    elif app_succeeded:
+        # Cloud Run succeeded and application exited cleanly
+        status = "pass"
+    else:
+        # Cloud Run succeeded but application failed (exit code != 0)
+        status = "fail:app"
 
     container_output_json: Dict[str, Any]
     try:
