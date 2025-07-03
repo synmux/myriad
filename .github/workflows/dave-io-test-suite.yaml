@@ -62,7 +62,14 @@ jobs:
             echo "org.opencontainers.image.revision=${{ github.sha }}"
             echo "org.opencontainers.image.created=$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
             echo "org.opencontainers.image.title=${{ env.IMAGE_NAME }}"
-            echo "org.opencontainers.image.description=HTTP test server for development and testing"
+            echo "org.opencontainers.image.description=Test suite for dave.io frontend"
+            echo "EOF"
+            echo "annotations<<EOF"
+            echo "org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}"
+            echo "org.opencontainers.image.revision=${{ github.sha }}"
+            echo "org.opencontainers.image.created=$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+            echo "org.opencontainers.image.title=${{ env.IMAGE_NAME }}"
+            echo "org.opencontainers.image.description=Test suite for dave.io frontend"
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
       - name: build
@@ -74,6 +81,7 @@ jobs:
           push: true
           tags: ${{ steps.metadata.outputs.tags }}
           labels: ${{ steps.metadata.outputs.labels }}
+          annotations: ${{ steps.metadata.outputs.annotations }}
           platforms: linux/amd64,linux/arm64
           provenance: mode=max
           sbom: true

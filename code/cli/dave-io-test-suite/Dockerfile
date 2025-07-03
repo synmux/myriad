@@ -1,5 +1,9 @@
 FROM oven/bun:1 AS base
-WORKDIR /usr/src/app
+
+# OCI labels for proper container image metadata
+LABEL org.opencontainers.image.description="Test suite for dave.io frontend"
+LABEL org.opencontainers.image.source="https://github.com/daveio/myriad"
+LABEL org.opencontainers.image.title="dave-io-test-suite"
 
 # Install system dependencies required for Chromium with pinned versions
 RUN apt-get update && apt-get install --no-install-recommends -y \
