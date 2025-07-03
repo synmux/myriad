@@ -1,4 +1,4 @@
-FROM oven/bun:1 AS base
+FROM ghcr.io/astral-sh/uv:0.7.19-python3.12-bookworm AS base
 
 # OCI labels for proper container image metadata
 LABEL org.opencontainers.image.description="Test suite for dave.io frontend"
@@ -6,50 +6,41 @@ LABEL org.opencontainers.image.source="https://github.com/daveio/myriad"
 LABEL org.opencontainers.image.title="dave-io-test-suite"
 LABEL org.opencontainers.image.licenses="MIT"
 
-# Install system dependencies required for Chromium with pinned versions
-RUN apt-get update && apt-get install --no-install-recommends -y \
-    # Core libraries
-    libgtk-3-0=3.24.38-2~deb12u3 \
-    libgbm1=22.3.6-1+deb12u1 \
-    libnss3=2:3.87.1-1+deb12u1 \
-    libxss1=1:1.2.3-1 \
-    libasound2=1.2.8-1+b1 \
-    # Fonts
-    fonts-liberation=1:1.07.4-11 \
-    fonts-noto-color-emoji=2.042-0+deb12u1 \
-    # Additional dependencies
-    libatk-bridge2.0-0=2.46.0-5 \
-    libdrm2=2.4.114-1+b1 \
-    libxcomposite1=1:0.4.5-1 \
-    libxdamage1=1:1.1.6-1 \
-    libxrandr2=2:1.5.2-2+b1 \
-    libxkbcommon0=1.5.0-1 \
-    ca-certificates=20230311+deb12u1 \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+# No deps required due to `uv run playwright install-deps [...]`
 
-RUN mkdir -p /app && chown -R bun:bun /app
+# Create a non-root user for security
+RUN groupadd --gid 1000 suite && \
+    useradd --uid 1000 --gid suite --shell /bin/bash --create-home suite
 
-# Set environment variables for Playwright and install browsers as bun user
-USER bun
-
-ENV PLAYWRIGHT_BROWSERS_PATH=/app/playwright
-ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=0
-
+# Set up working directory
 WORKDIR /app
 
-# Copy the monitoring script
-COPY monitor.ts .
+# Copy project files
+COPY pyproject.toml uv.lock* /app/
+COPY monitor.py /app/
 
-# Initialize a new Bun project and install Playwright
-RUN bun init --yes && \
-    bun add playwright && \
-    bun install && \
-    bun run playwright install chromium
+# Install Python dependencies and the project
+RUN uv run playwright install-deps chromium-headless-shell && \
+    chown -R suite:suite /app
+
+# Switch to non-root user
+USER suite
+
+RUN uv sync --frozen --no-cache && \
+    uv run playwright install chromium-headless-shell
+
+# # Set environment variables for Playwright to use system Chromium
+# ENV PLAYWRIGHT_BROWSERS_PATH=0
+# ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
 
 # Add health check that verifies Chromium can launch
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
-    CMD bun -e "import{chromium}from'playwright';(async()=>{const b=await chromium.launch({headless:true});await b.close()})().catch(()=>process.exit(1))"
+    CMD uv run python -c "import asyncio; from playwright.async_api import async_playwright; \
+    async def test(): \
+        async with async_playwright() as p: \
+            browser = await p.chromium.launch(headless=True, executable_path='/usr/bin/chromium'); \
+            await browser.close(); \
+    asyncio.run(test())"
 
 # Run the monitoring script
-ENTRYPOINT ["bun", "monitor.ts"]
+ENTRYPOINT ["uv", "run", "python", "monitor.py"]

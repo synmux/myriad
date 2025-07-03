@@ -1,0 +1,16 @@
+[project]
+name = "dave-io-test-suite"
+version = "0.1.0"
+description = "Run the dave.io test suite on Google Cloud Run"
+requires-python = ">=3.12"
+dependencies = [
+  "google-cloud-run >= 0.10.18",
+  "google-cloud-artifact-registry >= 1.16.1",
+  "google-cloud-logging >= 3.12.1",
+  "google-api-python-client >= 2.174.0",
+  "playwright>=1.48.0",
+  "types-requests>=2.32.4.20250611",
+  "click>=8.2.1",
+]
+authors = [{ name = "Dave Williams", email = "dave@dave.io" }]
+license = { text = "MIT" }
