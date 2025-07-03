@@ -1,4 +1,5 @@
 import json
+import re
 import sys
 import time
 from typing import Any, Dict
@@ -84,9 +85,9 @@ def deploy_job(run_client: run_v2.JobsClient, image_name: str) -> None:
     parent = f"projects/{GCP_PROJECT_ID}/locations/{GCP_REGION}"
     job_path = f"{parent}/jobs/{JOB_NAME}"
 
-    container = run_v2.Container(image=image_name)
+    container = run_v2.Container(image=image_name, args=["--force-fail"])
     template = run_v2.ExecutionTemplate(
-        template=run_v2.TaskTemplate(containers=[container])
+        template=run_v2.TaskTemplate(containers=[container], max_retries=0)
     )
     job_definition = run_v2.Job(template=template)
 
@@ -163,7 +164,18 @@ def get_job_logs(logging_client: logging_v2.Client, execution_name_short: str) -
     entries = logging_client.list_entries(filter_=log_filter)  # type: ignore
 
     messages = [entry.payload for entry in entries if isinstance(entry.payload, str)]  # type: ignore
-    return "".join(messages)
+
+    # Filter out "Container called exit(N)." messages
+    filtered_messages = []
+    exit_pattern = re.compile(r"Container called exit\(\d+\)\.$")
+
+    for message in messages:
+        # Remove the exit pattern from the end of each message
+        cleaned_message = exit_pattern.sub("", message)
+        if cleaned_message:  # Only add non-empty messages
+            filtered_messages.append(cleaned_message)
+
+    return "".join(filtered_messages)
 
 
 def main() -> None:
