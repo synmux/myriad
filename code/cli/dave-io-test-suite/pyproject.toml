@@ -2,7 +2,7 @@
 name = "dave-io-test-suite"
 version = "0.1.0"
 description = "Run the dave.io test suite on Google Cloud Run"
-requires-python = ">=3.13"
+requires-python = ">=3.12"
 dependencies = [
   "google-cloud-run >= 0.10.18",
   "google-cloud-artifact-registry >= 1.16.1",
