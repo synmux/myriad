@@ -147,6 +147,7 @@ SUPPORTED_EXTENSIONS = {
     ".heics",
     ".heifs",
     ".hif",
+    ".dng",
 }
 
 

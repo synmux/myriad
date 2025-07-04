@@ -68,12 +68,15 @@ def validate_file_operations(
         sys.exit(1)
 
     # Validate target directory writability for non-dry-run operations
-    if operation_type and not dry_run:
-        if not check_target_directory_writable(target_directory):
-            click.echo(
-                f"Error: Cannot write to target directory: {target_directory}", err=True
-            )
-            sys.exit(1)
+    if (
+        operation_type
+        and not dry_run
+        and not check_target_directory_writable(target_directory)
+    ):
+        click.echo(
+            f"Error: Cannot write to target directory: {target_directory}", err=True
+        )
+        sys.exit(1)
 
     return operation_type, target_directory
 

@@ -139,6 +139,53 @@ class OutputFormatter:
             "displayed_results": len(filtered_results),
         }
 
+    def _calculate_percentage(self, count: int, total: int) -> float:
+        """
+        Calculate percentage with zero division protection.
+
+        Args:
+            count: Count value
+            total: Total value
+
+        Returns:
+            Percentage as float, 0.0 if total is 0
+        """
+        return (count / total) * 100 if total > 0 else 0.0
+
+    def _build_dimension_data(
+        self, results: List[DimensionStats], summary: Dict, max_samples: int = 5
+    ) -> List[Dict]:
+        """
+        Build dimension data structure with calculated percentages.
+
+        Args:
+            results: List of dimension statistics
+            summary: Summary statistics dictionary
+            max_samples: Maximum number of sample files to include
+
+        Returns:
+            List of dimension data dictionaries
+        """
+        dimensions_data = []
+        for stats in results:
+            percentage = self._calculate_percentage(
+                stats.count, summary["total_images"]
+            )
+
+            dimensions_data.append(
+                {
+                    "width": stats.width,
+                    "height": stats.height,
+                    "dimensions": stats.dimensions_str,
+                    "count": stats.count,
+                    "percentage": round(percentage, 1),
+                    "total_size_bytes": stats.total_size,
+                    "total_size": stats.formatted_size,
+                    "sample_files": stats.files[:max_samples],
+                }
+            )
+        return dimensions_data
+
     def _output_text_format(
         self, results: List[DimensionStats], summary: Dict, output_file: Optional[Path]
     ) -> None:
@@ -174,33 +221,7 @@ class OutputFormatter:
 
         # Results table
         if results:
-            results_table = Table(
-                title=f"Image Dimensions Analysis - {summary['total_images']:,} images",
-                show_header=True,
-            )
-            results_table.add_column("Dimensions", style="yellow", width=15)
-            results_table.add_column("Count", style="green", justify="right", width=7)
-            results_table.add_column(
-                "Percentage", style="blue", justify="right", width=12
-            )
-            results_table.add_column(
-                "Total Size", style="magenta", justify="right", width=12
-            )
-            results_table.add_column("Sample Files", style="white", width=40)
-
-            for stats in results:
-                percentage = (stats.count / summary["total_images"]) * 100
-                sample_files = truncate_file_list(stats.files, 3)
-
-                results_table.add_row(
-                    stats.dimensions_str,
-                    f"{stats.count:,}",
-                    f"{percentage:.1f}%",
-                    stats.formatted_size,
-                    sample_files,
-                )
-
-            output_console.print(results_table)
+            self.print_results(summary, results, output_console)
         else:
             output_console.print(
                 "[yellow]No results match the specified criteria.[/yellow]"
@@ -208,6 +229,43 @@ class OutputFormatter:
 
         if output_file:
             output_console.file.close()
+
+    def print_results(self, summary, results, output_console):
+        """
+        Print results in rich text format.
+
+        Args:
+            summary: Summary statistics
+            results: Filtered dimension statistics
+            output_console: Console instance
+        """
+        results_table = Table(
+            title=f"Image Dimensions Analysis - {summary['total_images']:,} images",
+            show_header=True,
+        )
+        results_table.add_column("Dimensions", style="yellow", width=15)
+        results_table.add_column("Count", style="green", justify="right", width=7)
+        results_table.add_column("Percentage", style="blue", justify="right", width=12)
+        results_table.add_column(
+            "Total Size", style="magenta", justify="right", width=12
+        )
+        results_table.add_column("Sample Files", style="white", width=40)
+
+        for stats in results:
+            percentage = self._calculate_percentage(
+                stats.count, summary["total_images"]
+            )
+            sample_files = truncate_file_list(stats.files, 3)
+
+            results_table.add_row(
+                stats.dimensions_str,
+                f"{stats.count:,}",
+                f"{percentage:.1f}%",
+                stats.formatted_size,
+                sample_files,
+            )
+
+        output_console.print(results_table)
 
     def _output_json_format(
         self, results: List[DimensionStats], summary: Dict, output_file: Optional[Path]
@@ -221,27 +279,7 @@ class OutputFormatter:
             output_file: Optional output file
         """
         # Convert results to JSON-serializable format
-        dimensions_data = []
-        for stats in results:
-            percentage = (
-                (stats.count / summary["total_images"]) * 100
-                if summary["total_images"] > 0
-                else 0
-            )
-
-            dimensions_data.append(
-                {
-                    "width": stats.width,
-                    "height": stats.height,
-                    "dimensions": stats.dimensions_str,
-                    "count": stats.count,
-                    "percentage": round(percentage, 1),
-                    "total_size_bytes": stats.total_size,
-                    "total_size": stats.formatted_size,
-                    "sample_files": stats.files[:5],  # Limit to 5 samples for JSON
-                }
-            )
-
+        dimensions_data = self._build_dimension_data(results, summary, max_samples=5)
         output_data = {"summary": summary, "dimensions": dimensions_data}
 
         # Output JSON
@@ -266,27 +304,7 @@ class OutputFormatter:
             output_file: Optional output file
         """
         # Convert results to YAML-serializable format
-        dimensions_data = []
-        for stats in results:
-            percentage = (
-                (stats.count / summary["total_images"]) * 100
-                if summary["total_images"] > 0
-                else 0
-            )
-
-            dimensions_data.append(
-                {
-                    "width": stats.width,
-                    "height": stats.height,
-                    "dimensions": stats.dimensions_str,
-                    "count": stats.count,
-                    "percentage": round(percentage, 1),
-                    "total_size_bytes": stats.total_size,
-                    "total_size": stats.formatted_size,
-                    "sample_files": stats.files[:5],  # Limit to 5 samples for YAML
-                }
-            )
-
+        dimensions_data = self._build_dimension_data(results, summary, max_samples=5)
         output_data = {"summary": summary, "dimensions": dimensions_data}
 
         # Output YAML

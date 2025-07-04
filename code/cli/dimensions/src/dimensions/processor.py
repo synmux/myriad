@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Callable, Dict, List, Optional, Tuple
 
 import pillow_heif
+import rawpy
 import structlog
 
 # Import Pillow and HEIC support
@@ -19,6 +20,11 @@ from .utils import format_file_size, get_file_size
 # Enable loading of truncated images and register HEIF opener
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 pillow_heif.register_heif_opener()
+
+# Disable PIL's MAX_IMAGE_PIXELS limit to handle large images
+# This allows processing of very large images that would otherwise be rejected
+# as potential decompression bomb attacks
+Image.MAX_IMAGE_PIXELS = None
 
 
 @dataclass
@@ -154,6 +160,32 @@ class ImageProcessor:
             progress_callback(1)
         return result
 
+    def _create_and_store_image_info(
+        self, path_str: str, width: int, height: int, file_size: int
+    ) -> ImageInfo:
+        """
+        Create ImageInfo object and store it in processed files list.
+
+        Args:
+            path_str: Path as string
+            width: Image width in pixels
+            height: Image height in pixels
+            file_size: File size in bytes
+
+        Returns:
+            Created ImageInfo object
+        """
+        info = ImageInfo(
+            path=path_str,
+            width=width,
+            height=height,
+            file_size=file_size,
+            dimensions_str="",
+        )
+        with self._progress_lock:
+            self.processed_files.append(info)
+        return info
+
     def _process_single_image(self, image_path: Path) -> Optional[ImageInfo]:
         """
         Process a single image file to extract dimensions.
@@ -170,36 +202,35 @@ class ImageProcessor:
             if path_str in self._dimension_cache:
                 width, height = self._dimension_cache[path_str]
                 file_size = get_file_size(image_path)
-                info = ImageInfo(
-                    path=path_str,
-                    width=width,
-                    height=height,
-                    file_size=file_size,
-                    dimensions_str="",
-                )
-                with self._progress_lock:
-                    self.processed_files.append(info)
-                return info
-
-            # Open and get dimensions
-            with Image.open(image_path) as img:
-                width, height = img.size
-                file_size = get_file_size(image_path)
-
-                # Cache the result
-                self._dimension_cache[path_str] = (width, height)
-
-                info = ImageInfo(
-                    path=path_str,
-                    width=width,
-                    height=height,
-                    file_size=file_size,
-                    dimensions_str="",
+                return self._create_and_store_image_info(
+                    path_str, width, height, file_size
                 )
 
-                with self._progress_lock:
-                    self.processed_files.append(info)
-                return info
+            # Handle DNG files (RAW format) using rawpy
+            if image_path.suffix.lower() == ".dng":
+                with rawpy.imread(str(image_path)) as raw:
+                    # Get RAW image dimensions from the RAW file
+                    width, height = raw.sizes.raw_width, raw.sizes.raw_height
+                    file_size = get_file_size(image_path)
+
+                    # Cache the result
+                    self._dimension_cache[path_str] = (width, height)
+
+                    return self._create_and_store_image_info(
+                        path_str, width, height, file_size
+                    )
+            else:
+                # Open and get dimensions for regular image files
+                with Image.open(image_path) as img:
+                    width, height = img.size
+                    file_size = get_file_size(image_path)
+
+                    # Cache the result
+                    self._dimension_cache[path_str] = (width, height)
+
+                    return self._create_and_store_image_info(
+                        path_str, width, height, file_size
+                    )
 
         except Exception as e:
             self.logger.warning(
@@ -276,7 +307,13 @@ def get_image_dimensions(image_path: Path) -> Optional[Tuple[int, int]]:
         Tuple of (width, height) or None if failed
     """
     try:
-        with Image.open(image_path) as img:
-            return img.size
+        # Handle DNG files (RAW format) using rawpy
+        if image_path.suffix.lower() == ".dng":
+            with rawpy.imread(str(image_path)) as raw:
+                return (raw.sizes.raw_width, raw.sizes.raw_height)
+        else:
+            # Handle regular image files using PIL
+            with Image.open(image_path) as img:
+                return img.size
     except Exception:
         return None

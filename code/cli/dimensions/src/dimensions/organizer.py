@@ -111,6 +111,39 @@ class FileOrganizer:
 
         self.logger.info(f"[DRY RUN] Total files to {operation.value}: {total_files}")
 
+    def _create_directory_with_error_handling(
+        self, directory: Path, error_message: str, failure_count_increment: int = 0
+    ) -> bool:
+        """
+        Create directory with standardized error handling.
+
+        Args:
+            directory: Directory path to create
+            error_message: Error message prefix for logging
+            failure_count_increment: Amount to increment failure count on error
+
+        Returns:
+            True if directory was created successfully, False otherwise
+        """
+        try:
+            ensure_directory(directory)
+            if (
+                failure_count_increment == 0
+            ):  # Only log success for dimension directories
+                self.logger.info(
+                    "Created dimension directory", directory=str(directory)
+                )
+            return True
+        except OSError as e:
+            self.logger.error(
+                error_message,
+                directory=str(directory),
+                error=str(e),
+            )
+            if failure_count_increment > 0:
+                self.failure_count += failure_count_increment
+            return False
+
     def _execute_operations(
         self,
         results: Dict[str, DimensionStats],
@@ -125,19 +158,12 @@ class FileOrganizer:
             target_directory: Base directory for organized files
             operation: Type of operation
         """
-        self.success_count = 0
-        self.failure_count = 0
-        self.failed_operations.clear()
+        self.reset_counters()
 
         # Ensure target directory exists
-        try:
-            ensure_directory(target_directory)
-        except OSError as e:
-            self.logger.error(
-                "Cannot create target directory",
-                directory=str(target_directory),
-                error=str(e),
-            )
+        if not self._create_directory_with_error_handling(
+            target_directory, "Cannot create target directory"
+        ):
             return
 
         for dimension_str, stats in results.items():
@@ -145,23 +171,54 @@ class FileOrganizer:
             dimension_dir = target_directory / safe_dim
 
             # Create dimension subdirectory
-            try:
-                ensure_directory(dimension_dir)
-                self.logger.info(
-                    "Created dimension directory", directory=str(dimension_dir)
-                )
-            except OSError as e:
-                self.logger.error(
-                    "Cannot create dimension directory",
-                    directory=str(dimension_dir),
-                    error=str(e),
-                )
-                self.failure_count += len(stats.files)
+            if not self._create_directory_with_error_handling(
+                dimension_dir, "Cannot create dimension directory", len(stats.files)
+            ):
                 continue
 
             # Process files in this dimension
             for file_path in stats.files:
                 self._process_single_file(Path(file_path), dimension_dir, operation)
+
+    def _execute_file_operation(
+        self,
+        operation_func,
+        source_path: Path,
+        target_path: Path,
+        operation: OperationType,
+    ) -> None:
+        """
+        Execute a file operation with standardized error handling.
+
+        Args:
+            operation_func: Function to execute the file operation
+            source_path: Source file path
+            target_path: Target file path
+            operation: Type of operation
+        """
+        try:
+            operation_func()
+            self.success_count += 1
+            self.logger.debug(
+                f"Successfully {operation.value}d file",
+                source=str(source_path),
+                target=str(target_path),
+            )
+        except Exception as e:
+            self.failure_count += 1
+            error_info = {
+                "source": str(source_path),
+                "target": str(target_path),
+                "operation": operation.value,
+                "error": str(e),
+            }
+            self.failed_operations.append(error_info)
+            self.logger.warning(
+                f"Failed to {operation.value} file",
+                source=str(source_path),
+                target=str(target_path),
+                error=str(e),
+            )
 
     def _process_single_file(
         self, source_path: Path, target_dir: Path, operation: OperationType
@@ -180,7 +237,7 @@ class FileOrganizer:
         if target_path.exists():
             target_path = self._resolve_filename_conflict(target_path)
 
-        try:
+        def execute_operation():
             if operation == OperationType.MOVE:
                 shutil.move(str(source_path), str(target_path))
             elif operation == OperationType.COPY:
@@ -196,28 +253,9 @@ class FileOrganizer:
                     # Use absolute path if relative doesn't work
                     target_path.symlink_to(source_path.resolve())
 
-            self.success_count += 1
-            self.logger.debug(
-                f"Successfully {operation.value}d file",
-                source=str(source_path),
-                target=str(target_path),
-            )
-
-        except Exception as e:
-            self.failure_count += 1
-            error_info = {
-                "source": str(source_path),
-                "target": str(target_path),
-                "operation": operation.value,
-                "error": str(e),
-            }
-            self.failed_operations.append(error_info)
-            self.logger.warning(
-                f"Failed to {operation.value} file",
-                source=str(source_path),
-                target=str(target_path),
-                error=str(e),
-            )
+        self._execute_file_operation(
+            execute_operation, source_path, target_path, operation
+        )
 
     def _resolve_filename_conflict(self, target_path: Path) -> Path:
         """
