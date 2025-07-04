@@ -19,9 +19,11 @@ Use modern Python project structure with `uv`:
 - Type hints throughout (use Python 3.13+ features)
 - Add .gitignore for Python projects
 - You are in a monorepo.
-  - Your code should live in `code/cli/dimensions/`.
+  - Your code should live in `code/cli/dimensions/`, including Markdown documentation.
     - For example, the `src/` directory should be at `code/cli/dimensions/src/`.
-  - The `pyproject.toml` file is in the root directory. Add to it at will, but don't break the other projects using it.
+    - For example, the `README.md` file should be at `code/cli/dimensions/README.md`.
+  - The `pyproject.toml` file is in the root directory.
+    - Add to it at will, but don't break the other projects using it.
 
 ## Dependencies & Tools
 
