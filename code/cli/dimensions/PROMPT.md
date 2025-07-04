@@ -75,7 +75,7 @@ Options:
 - Progress bar should show: current file, files/sec, ETA, dimension count
 - Use parallel processing if `--threads` is specified.
   - Default to a single threads if `--threads` is not specified.
-- Add support for HEIC images, pulling in libraries and checking context7 for them as necessary.
+- Add support for HEIC images, pulling in libraries and searching the Web for their documentation as necessary.
   - `pillow-heif` is a good option - `pillow` does not support HEIC by default.
 - Support file operations:
   - Move files to directories by dimensions (e.g., `1000x1000/`), `--move [DIR]`
@@ -85,7 +85,7 @@ Options:
 
 ## Code Quality
 
-- Research all libraries - use context7 before implementation
+- Research all libraries - search the Web thoroughly for documentation and examples.
 - Use latest stable versions of all dependencies
 - Follow PEP 8 and use black for formatting
   - Add black to dev dependencies
@@ -100,7 +100,7 @@ Start by researching the latest best practices for the main libraries you'll use
 - Make sure that all dependencies are at their latest versions.
   - If anything needs to be updated, update it. That includes major versions.
   - Ideally, we'll be using latest versions from the start, but you sometimes add older versions.
-  - Use context7 to understand the migration and any breaking changes.
+  - Search the Web for documentation to understand the migration and any breaking changes.
 - Systematically check all the code and tests for bugs.
   - Fix any issues you find.
 - Ensure all documentation is up to date, including docstrings and Markdown files.
