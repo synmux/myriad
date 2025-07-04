@@ -4,7 +4,18 @@ version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
-dependencies = ["broadlink>=0.19.0", "python-rtmidi>=1.5.8", "rich>=14.0.0"]
+dependencies = [
+  "broadlink>=0.19.0", 
+  "python-rtmidi>=1.5.8", 
+  "rich>=14.0.0",
+  "click>=8.1.8",
+  "tqdm>=4.67.0",
+  "pillow>=11.0.0",
+  "pyyaml>=6.0.2",
+  "orjson>=3.10.20",
+  "structlog>=25.1.0",
+  "pillow-heif>=1.0.0"
+]
 
 [dependency-groups]
 dev = [
@@ -17,3 +28,6 @@ dev = [
   "ruff>=0.11.13",
   "types-pyyaml>=6.0.12.20250516",
 ]
+
+[project.scripts]
+dimensions = "dimensions.cli:main"
