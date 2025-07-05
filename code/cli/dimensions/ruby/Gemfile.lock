@@ -56,19 +56,9 @@ GEM
     rubocop-ast (1.45.1)
       parser (>= 3.3.7.2)
       prism (~> 1.4)
-    rubocop-capybara (2.22.1)
+    rubocop-rspec (3.6.0)
       lint_roller (~> 1.1)
       rubocop (~> 1.72, >= 1.72.1)
-    rubocop-factory_bot (2.27.1)
-      lint_roller (~> 1.1)
-      rubocop (~> 1.72, >= 1.72.1)
-    rubocop-rspec (2.31.0)
-      rubocop (~> 1.40)
-      rubocop-capybara (~> 2.17)
-      rubocop-factory_bot (~> 2.22)
-      rubocop-rspec_rails (~> 2.28)
-    rubocop-rspec_rails (2.29.1)
-      rubocop (~> 1.61)
     ruby-progressbar (1.13.0)
     simplecov (0.22.0)
       docile (~> 1.1)
@@ -102,18 +92,21 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  commander (~> 5.0)
-  json (~> 2.8)
-  mini_magick (~> 5.0)
-  parallel (~> 1.27)
-  pastel (~> 0.8)
-  psych (~> 5.2)
-  rspec (~> 3.13)
-  rubocop (~> 1.60)
-  rubocop-rspec (~> 2.20)
-  simplecov (~> 0.22)
-  tty-progressbar (~> 0.18)
-  tty-table (~> 0.12)
+  commander
+  json
+  mini_magick
+  parallel
+  pastel
+  psych
+  rspec
+  rubocop
+  rubocop-rspec
+  simplecov
+  tty-progressbar
+  tty-table
+
+RUBY VERSION
+   ruby 3.4.4p34
 
 BUNDLED WITH
    2.6.9

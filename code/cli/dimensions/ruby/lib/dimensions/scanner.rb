@@ -20,34 +20,28 @@ module Dimensions
     # Scan directory recursively for image files
     def scan_directory(directory)
       dir_path = Pathname.new(directory)
-      
-      unless dir_path.exist?
-        raise Errno::ENOENT, "Directory does not exist: #{directory}"
-      end
-      
-      unless dir_path.directory?
-        raise ArgumentError, "Path is not a directory: #{directory}"
-      end
+
+      raise Errno::ENOENT, "Directory does not exist: #{directory}" unless dir_path.exist?
+
+      raise ArgumentError, "Path is not a directory: #{directory}" unless dir_path.directory?
 
       @logger.info("Starting directory scan: #{directory}")
-      
+
       image_files = []
-      
+
       begin
         Find.find(directory) do |path|
           next if path == directory
-          
+
           path_obj = Pathname.new(path)
-          
+
           # Skip hidden directories and common system directories
           if path_obj.directory?
             basename = path_obj.basename.to_s
-            if basename.start_with?('.') || %w[__pycache__ node_modules .git .svn .hg].include?(basename)
-              Find.prune
-            end
+            Find.prune if basename.start_with?('.') || %w[__pycache__ node_modules .git .svn .hg].include?(basename)
             next
           end
-          
+
           # Process files
           begin
             if path_obj.file?
@@ -66,9 +60,9 @@ module Dimensions
         @logger.error("Permission denied accessing directory: #{directory} - #{e.message}")
         raise
       end
-      
+
       @logger.info("Directory scan completed - failed: #{@failed_files.length}, skipped: #{@skipped_files.length}")
-      
+
       image_files
     end
 

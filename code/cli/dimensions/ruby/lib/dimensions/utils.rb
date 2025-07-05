@@ -80,7 +80,7 @@ module Dimensions
     def setup_logging(level = 'INFO')
       logger = Logger.new($stderr)
       logger.level = Logger.const_get(level.upcase)
-      
+
       # Custom formatter for cleaner output
       logger.formatter = proc do |severity, datetime, _progname, msg|
         timestamp = datetime.strftime('%Y-%m-%d %H:%M:%S')
@@ -93,7 +93,7 @@ module Dimensions
           "[#{timestamp}] #{severity}: #{msg}\n"
         end
       end
-      
+
       logger
     end
   end

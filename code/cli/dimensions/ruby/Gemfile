@@ -2,28 +2,30 @@
 
 source 'https://rubygems.org'
 
+ruby '3.4.4'
+
 # CLI framework
-gem 'commander', '~> 5.0'
+gem 'commander'
 
 # Image processing - using mini_magick for simplicity and speed
-gem 'mini_magick', '~> 5.0'
+gem 'mini_magick'
 
 # Terminal UI components
-gem 'tty-progressbar', '~> 0.18'
-gem 'tty-table', '~> 0.12'
-gem 'pastel', '~> 0.8'  # Terminal colors
+gem 'pastel'
+gem 'tty-progressbar'
+gem 'tty-table'
 
 # Data formats
-gem 'json', '~> 2.8'
-gem 'psych', '~> 5.2'  # YAML
+gem 'json'
+gem 'psych' # YAML
 
 # Parallel processing
-gem 'parallel', '~> 1.27'
+gem 'parallel'
 
 # Development dependencies
 group :development, :test do
-  gem 'rspec', '~> 3.13'
-  gem 'rubocop', '~> 1.60'
-  gem 'rubocop-rspec', '~> 2.20'
-  gem 'simplecov', '~> 0.22'
+  gem 'rspec'
+  gem 'rubocop'
+  gem 'rubocop-rspec'
+  gem 'simplecov'
 end

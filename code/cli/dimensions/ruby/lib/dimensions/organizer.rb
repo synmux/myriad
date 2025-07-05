@@ -36,7 +36,7 @@ module Dimensions
     # Organize files by dimensions into subdirectories
     def organize_files(results, target_directory, operation, dry_run = false)
       target_dir = Pathname.new(target_directory)
-      
+
       @logger.info("Starting file organization - operation: #{operation}, " \
                    "target: #{target_directory}, dry_run: #{dry_run}, " \
                    "dimensions: #{results.length}")
@@ -70,10 +70,10 @@ module Dimensions
     # Check if target directory is writable
     def self.check_target_directory_writable(target_dir)
       dir = Pathname.new(target_dir)
-      
+
       begin
         dir.mkpath unless dir.exist?
-        
+
         # Test write permissions by creating a temporary file
         test_file = dir / '.dimensions_write_test'
         test_file.write('')
@@ -107,9 +107,7 @@ module Dimensions
           @logger.info("[DRY RUN] #{source} -> #{target}")
         end
 
-        if stats.files.length > 3
-          @logger.info("[DRY RUN] ... and #{stats.files.length - 3} more files")
-        end
+        @logger.info("[DRY RUN] ... and #{stats.files.length - 3} more files") if stats.files.length > 3
       end
 
       @logger.info("[DRY RUN] Total files to #{operation}: #{total_files}")
@@ -174,7 +172,6 @@ module Dimensions
 
         @success_count += 1
         @logger.debug("Successfully #{operation}d file: #{source_path} -> #{target_path}")
-
       rescue StandardError => e
         @failure_count += 1
         error_info = {
@@ -199,6 +196,7 @@ module Dimensions
         new_name = "#{base_name}_#{counter}#{extension}"
         new_path = parent / new_name
         return new_path unless new_path.exist?
+
         counter += 1
       end
     end

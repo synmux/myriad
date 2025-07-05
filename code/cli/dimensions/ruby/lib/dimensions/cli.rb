@@ -64,10 +64,8 @@ module Dimensions
     def execute_analysis(paths, options)
       # Validate inputs
       operation_type, target_directory = validate_file_operations(options)
-      
-      if options.threads < 1
-        error_exit('Number of threads must be at least 1')
-      end
+
+      error_exit('Number of threads must be at least 1') if options.threads < 1
 
       # Set up logging and components
       logger = setup_logging(options.log_level)
@@ -92,7 +90,7 @@ module Dimensions
 
         # Phase 3: File operations (if requested)
         handle_file_operations(
-          organizer, results, operation_type, target_directory, 
+          organizer, results, operation_type, target_directory,
           options.dry_run, !options.no_progress, logger
         )
 
@@ -119,7 +117,6 @@ module Dimensions
         logger.info("Analysis completed successfully - processed: #{processor.processed_files.length}, " \
                     "failed: #{processor.failed_files.length}, unique dimensions: #{results.length}, " \
                     "time: #{'%.2f' % processing_time}s")
-
       rescue Interrupt
         error_exit("\nOperation cancelled by user.")
       rescue StandardError => e
@@ -130,10 +127,8 @@ module Dimensions
 
     def validate_file_operations(options)
       file_operations = [options.move, options.copy, options.symlink].compact
-      
-      if file_operations.length > 1
-        error_exit('Only one of --move, --copy, or --symlink can be specified')
-      end
+
+      error_exit('Only one of --move, --copy, or --symlink can be specified') if file_operations.length > 1
 
       # Determine operation type and target directory
       operation_type = nil
@@ -156,7 +151,7 @@ module Dimensions
       end
 
       # Validate target directory writability for non-dry-run operations
-      if operation_type && !options.dry_run && 
+      if operation_type && !options.dry_run &&
          !FileOrganizer.check_target_directory_writable(target_directory)
         error_exit("Cannot write to target directory: #{target_directory}")
       end
@@ -167,9 +162,10 @@ module Dimensions
     def scan_for_images(scanner, paths, show_progress)
       if show_progress
         if paths.length == 1
-          $stderr.puts 'Scanning for image files...'
+          $stderr.warn 'Scanning for image files...'
         else
-          $stderr.puts "Scanning #{paths.length} directories for image files..."
+          $stderr.warn "Scanning #{paths.length} directories for image files..."
+          $stderr.warn
         end
       end
 
@@ -180,7 +176,7 @@ module Dimensions
       end
 
       if image_files.empty?
-        $stderr.puts 'No image files found in the specified directories.'
+        $stderr.warn 'No image files found in the specified directories.'
         exit 0
       end
 
@@ -189,7 +185,7 @@ module Dimensions
 
     def process_images_with_progress(processor, image_files, threads, show_progress)
       if show_progress
-        $stderr.puts "Processing #{image_files.length} image files..."
+        $stderr.warn "Processing #{image_files.length} image files..."
 
         progress_bar = TTY::ProgressBar.new(
           'Processing images [:bar] :current/:total :percent :elapsed :rate/s',
@@ -211,13 +207,11 @@ module Dimensions
       results
     end
 
-    def handle_file_operations(organizer, results, operation_type, target_directory, 
-                              dry_run, show_progress, logger)
+    def handle_file_operations(organizer, results, operation_type, target_directory,
+                               dry_run, show_progress, logger)
       return unless operation_type && organizer
 
-      if show_progress
-        $stderr.puts "\n#{operation_type.capitalize}ing files by dimensions..."
-      end
+      $stderr.warn "\n#{operation_type.capitalize}ing files by dimensions..." if show_progress
 
       organizer.organize_files(results, target_directory, operation_type, dry_run)
 
@@ -227,7 +221,7 @@ module Dimensions
         logger.info('Dry run completed - no files were actually moved/copied/linked')
       else
         logger.info("File organization statistics: #{stats}")
-        
+
         if organizer.failed_operations.any?
           logger.warn("Some file operations failed: #{organizer.failed_operations.length}")
         end
@@ -235,7 +229,7 @@ module Dimensions
     end
 
     def error_exit(message)
-      $stderr.puts message
+      $stderr.warn message
       exit 1
     end
   end

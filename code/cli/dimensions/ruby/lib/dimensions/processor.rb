@@ -105,7 +105,6 @@ module Dimensions
         end
 
         create_and_store_image_info(path_str, width, height, file_size)
-
       rescue StandardError => e
         @logger.warn("Failed to process image: #{path_str} - #{e.message}")
         @mutex.synchronize do
@@ -122,11 +121,11 @@ module Dimensions
         height: height,
         file_size: file_size
       )
-      
+
       @mutex.synchronize do
         @processed_files << info
       end
-      
+
       info
     end
 

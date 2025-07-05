@@ -17,11 +17,11 @@ module Dimensions
     end
 
     # Format and output results in the specified format
-    def format_results(results:, format_type: 'text', sort_by: 'count', 
-                      min_count: 1, max_results: nil, output_file: nil)
+    def format_results(results:, format_type: 'text', sort_by: 'count',
+                       min_count: 1, max_results: nil, output_file: nil)
       # Filter and sort results
       filtered_results = filter_and_sort_results(results, sort_by, min_count, max_results)
-      
+
       # Generate summary statistics
       summary = generate_summary(results, filtered_results)
 
@@ -40,15 +40,15 @@ module Dimensions
 
     # Show processing summary to stderr
     def show_progress_summary(total_processed:, total_failed:, processing_time:)
-      $stderr.puts "\n#{@pastel.green('Processing completed!')}"
-      $stderr.puts "  Processed: #{total_processed.to_s.gsub(/(\d)(?=(\d{3})+(?!\d))/, '\\1,')} images"
+      warn "\n#{@pastel.green('Processing completed!')}"
+      warn "  Processed: #{total_processed.to_s.gsub(/(\d)(?=(\d{3})+(?!\d))/, '\\1,')} images"
       if total_failed.positive?
-        $stderr.puts "  #{@pastel.yellow("Failed: #{total_failed.to_s.gsub(/(\d)(?=(\d{3})+(?!\d))/, '\\1,')} images")}"
+        warn "  #{@pastel.yellow("Failed: #{total_failed.to_s.gsub(/(\d)(?=(\d{3})+(?!\d))/, '\\1,')} images")}"
       end
-      $stderr.puts "  Time: #{'%.2f' % processing_time} seconds"
+      warn "  Time: #{'%.2f' % processing_time} seconds"
       if total_processed.positive?
         rate = total_processed / processing_time
-        $stderr.puts "  Rate: #{'%.1f' % rate} images/second"
+        warn "  Rate: #{'%.1f' % rate} images/second"
       end
       $stderr.puts
     end
@@ -99,6 +99,7 @@ module Dimensions
     # Calculate percentage with zero division protection
     def calculate_percentage(count, total)
       return 0.0 if total.zero?
+
       (count.to_f / total) * 100
     end
 
@@ -112,16 +113,18 @@ module Dimensions
 
       # Summary table
       summary_table = TTY::Table.new(
-        header: ['Metric', 'Value'],
+        header: %w[Metric Value],
         rows: [
           ['Total Images', summary['total_images'].to_s.gsub(/(\d)(?=(\d{3})+(?!\d))/, '\\1,')],
           ['Unique Dimensions', summary['unique_dimensions'].to_s.gsub(/(\d)(?=(\d{3})+(?!\d))/, '\\1,')],
           ['Total Size', summary['total_size']],
-          ['Most Common', "#{summary['most_common_dimension']} (#{summary['most_common_count'].to_s.gsub(/(\d)(?=(\d{3})+(?!\d))/, '\\1,')} images)"]
+          ['Most Common',
+           "#{summary['most_common_dimension']} (#{summary['most_common_count'].to_s.gsub(/(\d)(?=(\d{3})+(?!\d))/,
+                                                                                          '\\1,')} images)"]
         ]
       )
 
-      output.puts @pastel.bold("Summary Statistics")
+      output.puts @pastel.bold('Summary Statistics')
       output.puts summary_table.render(:unicode, padding: [0, 1])
       output.puts
 
@@ -129,7 +132,7 @@ module Dimensions
       if results.any?
         print_results(summary, results, output)
       else
-        output.puts @pastel.yellow("No results match the specified criteria.")
+        output.puts @pastel.yellow('No results match the specified criteria.')
       end
 
       output.close if output_file
@@ -155,7 +158,8 @@ module Dimensions
         rows: rows
       )
 
-      title = "Image Dimensions Analysis - #{summary['total_images'].to_s.gsub(/(\d)(?=(\d{3})+(?!\d))/, '\\1,')} images"
+      title = "Image Dimensions Analysis - #{summary['total_images'].to_s.gsub(/(\d)(?=(\d{3})+(?!\d))/,
+                                                                               '\\1,')} images"
       output.puts @pastel.bold(title)
       output.puts results_table.render(:unicode, padding: [0, 1])
     end

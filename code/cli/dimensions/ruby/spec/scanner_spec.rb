@@ -17,7 +17,7 @@ RSpec.describe Dimensions::DirectoryScanner do
       Dir.mktmpdir do |tmpdir|
         file_path = File.join(tmpdir, 'test.txt')
         File.write(file_path, 'test')
-        
+
         expect { scanner.scan_directory(file_path) }.to raise_error(ArgumentError)
       end
     end
@@ -29,12 +29,12 @@ RSpec.describe Dimensions::DirectoryScanner do
         image_files.each do |filename|
           File.write(File.join(tmpdir, filename), 'fake image data')
         end
-        
+
         # Create non-image files
         File.write(File.join(tmpdir, 'test.txt'), 'text file')
-        
+
         result = scanner.scan_directory(tmpdir)
-        
+
         expect(result.length).to eq(3)
         expect(result.map(&:basename).map(&:to_s).sort).to eq(image_files.sort)
       end
@@ -45,12 +45,12 @@ RSpec.describe Dimensions::DirectoryScanner do
         # Create nested directory structure
         subdir = File.join(tmpdir, 'subdir')
         FileUtils.mkdir_p(subdir)
-        
+
         File.write(File.join(tmpdir, 'root.jpg'), 'image')
         File.write(File.join(subdir, 'nested.png'), 'image')
-        
+
         result = scanner.scan_directory(tmpdir)
-        
+
         expect(result.length).to eq(2)
         expect(result.map(&:basename).map(&:to_s).sort).to eq(['nested.png', 'root.jpg'])
       end
@@ -61,12 +61,12 @@ RSpec.describe Dimensions::DirectoryScanner do
         # Create hidden directory
         hidden_dir = File.join(tmpdir, '.hidden')
         FileUtils.mkdir_p(hidden_dir)
-        
+
         File.write(File.join(tmpdir, 'visible.jpg'), 'image')
         File.write(File.join(hidden_dir, 'hidden.png'), 'image')
-        
+
         result = scanner.scan_directory(tmpdir)
-        
+
         expect(result.length).to eq(1)
         expect(result.first.basename.to_s).to eq('visible.jpg')
       end
@@ -77,9 +77,9 @@ RSpec.describe Dimensions::DirectoryScanner do
     it 'clears failed and skipped files' do
       scanner.instance_variable_set(:@failed_files, ['file1'])
       scanner.instance_variable_set(:@skipped_files, ['file2'])
-      
+
       scanner.reset_counters
-      
+
       expect(scanner.failed_files).to be_empty
       expect(scanner.skipped_files).to be_empty
     end
