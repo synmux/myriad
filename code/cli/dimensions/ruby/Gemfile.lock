@@ -103,6 +103,7 @@ DEPENDENCIES
   rubocop-rspec
   simplecov
   tty-progressbar
+  tty-screen
   tty-table
 
 RUBY VERSION

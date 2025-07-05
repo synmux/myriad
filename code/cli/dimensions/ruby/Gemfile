@@ -13,6 +13,7 @@ gem 'mini_magick'
 # Terminal UI components
 gem 'pastel'
 gem 'tty-progressbar'
+gem 'tty-screen'
 gem 'tty-table'
 
 # Data formats

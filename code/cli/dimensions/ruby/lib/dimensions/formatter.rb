@@ -3,6 +3,7 @@
 require 'json'
 require 'psych'
 require 'tty-table'
+require 'tty-screen'
 require 'pastel'
 require_relative 'utils'
 
@@ -140,6 +141,39 @@ module Dimensions
 
     # Print results table
     def print_results(summary, results, output)
+      # Check if we can fit the full table within terminal width
+      term_width = terminal_width
+      use_compact_mode = should_use_compact_mode(results, term_width)
+
+      if use_compact_mode
+        print_compact_results(summary, results, output)
+      else
+        print_full_results(summary, results, output)
+      end
+    end
+
+    # Print results in compact vertical format
+    def print_compact_results(summary, results, output)
+      title = "Image Dimensions Analysis - #{summary['total_images'].to_s.gsub(/(\d)(?=(\d{3})+(?!\d))/,
+                                                                               '\\1,')} images"
+      output.puts @pastel.bold(title)
+      output.puts 'The table size exceeds the currently set width. Using vertical orientation.'
+      output.puts
+
+      results.each_with_index do |stats, index|
+        percentage = calculate_percentage(stats.count, summary['total_images'])
+        sample_files = truncate_file_list(stats.files, 2)
+
+        output.puts "#{index + 1}. #{@pastel.bold(stats.dimensions_str)}"
+        output.puts "   Count: #{stats.count.to_s.gsub(/(\d)(?=(\d{3})+(?!\d))/, '\\1,')} (#{'%.1f' % percentage}%)"
+        output.puts "   Size: #{stats.formatted_size}"
+        output.puts "   Sample: #{sample_files}"
+        output.puts
+      end
+    end
+
+    # Print results in full table format
+    def print_full_results(summary, results, output)
       rows = results.map do |stats|
         percentage = calculate_percentage(stats.count, summary['total_images'])
         sample_files = truncate_file_list(stats.files, 3)
@@ -162,6 +196,42 @@ module Dimensions
                                                                                '\\1,')} images"
       output.puts @pastel.bold(title)
       output.puts results_table.render(:unicode, padding: [0, 1])
+    end
+
+    # Get terminal width, fallback to 80 if unable to determine
+    def terminal_width
+      TTY::Screen.cols
+    rescue StandardError
+      80
+    end
+
+    # Determine if we should use compact mode based on estimated table width
+    def should_use_compact_mode(results, terminal_width)
+      return false if results.empty?
+
+      # Estimate the width needed for the table
+      # Headers: 'Dimensions', 'Count', 'Percentage', 'Total Size', 'Sample Files'
+      # Add padding and borders
+      max_dimensions_width = results.map { |r| r.dimensions_str.length }.max || 10
+      max_count_width = results.map { |r| r.count.to_s.length }.max || 5
+      max_size_width = results.map { |r| r.formatted_size.length }.max || 8
+      max_sample_width = results.map { |r| truncate_file_list(r.files, 3).length }.max || 20
+
+      # Estimate total width: columns + padding + borders
+      # Using header lengths as minimums
+      header_widths = [10, 5, 10, 10, 12] # Dimensions, Count, Percentage, Total Size, Sample Files
+      column_widths = [
+        [max_dimensions_width, header_widths[0]].max,
+        [max_count_width, header_widths[1]].max,
+        [10, header_widths[2]].max, # Percentage is always "XX.X%"
+        [max_size_width, header_widths[3]].max,
+        [max_sample_width, header_widths[4]].max
+      ]
+
+      # Add padding (2 per column) and borders (6 for unicode table)
+      estimated_width = column_widths.sum + (column_widths.length * 2) + 6
+
+      estimated_width > terminal_width
     end
 
     # Build dimension data structure
