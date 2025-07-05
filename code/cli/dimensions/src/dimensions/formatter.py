@@ -153,7 +153,10 @@ class OutputFormatter:
         return (count / total) * 100 if total > 0 else 0.0
 
     def _build_dimension_data(
-        self, results: List[DimensionStats], summary: Dict, max_samples: int = 5
+        self,
+        results: List[DimensionStats],
+        summary: Dict,
+        include_all_files: bool = False,
     ) -> List[Dict]:
         """
         Build dimension data structure with calculated percentages.
@@ -161,7 +164,7 @@ class OutputFormatter:
         Args:
             results: List of dimension statistics
             summary: Summary statistics dictionary
-            max_samples: Maximum number of sample files to include
+            include_all_files: Whether to include all files or just samples
 
         Returns:
             List of dimension data dictionaries
@@ -172,18 +175,22 @@ class OutputFormatter:
                 stats.count, summary["total_images"]
             )
 
-            dimensions_data.append(
-                {
-                    "width": stats.width,
-                    "height": stats.height,
-                    "dimensions": stats.dimensions_str,
-                    "count": stats.count,
-                    "percentage": round(percentage, 1),
-                    "total_size_bytes": stats.total_size,
-                    "total_size": stats.formatted_size,
-                    "sample_files": stats.files[:max_samples],
-                }
-            )
+            dimension_entry = {
+                "width": stats.width,
+                "height": stats.height,
+                "dimensions": stats.dimensions_str,
+                "count": stats.count,
+                "percentage": round(percentage, 1),
+                "total_size_bytes": stats.total_size,
+                "total_size": stats.formatted_size,
+            }
+
+            if include_all_files:
+                dimension_entry["files"] = stats.files
+            else:
+                dimension_entry["sample_files"] = stats.files[:5]
+
+            dimensions_data.append(dimension_entry)
         return dimensions_data
 
     def _output_text_format(
@@ -278,8 +285,10 @@ class OutputFormatter:
             summary: Summary statistics
             output_file: Optional output file
         """
-        # Convert results to JSON-serializable format
-        dimensions_data = self._build_dimension_data(results, summary, max_samples=5)
+        # Convert results to JSON-serializable format with all files included
+        dimensions_data = self._build_dimension_data(
+            results, summary, include_all_files=True
+        )
         output_data = {"summary": summary, "dimensions": dimensions_data}
 
         # Output JSON
@@ -303,8 +312,10 @@ class OutputFormatter:
             summary: Summary statistics
             output_file: Optional output file
         """
-        # Convert results to YAML-serializable format
-        dimensions_data = self._build_dimension_data(results, summary, max_samples=5)
+        # Convert results to YAML-serializable format with all files included
+        dimensions_data = self._build_dimension_data(
+            results, summary, include_all_files=True
+        )
         output_data = {"summary": summary, "dimensions": dimensions_data}
 
         # Output YAML

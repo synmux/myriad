@@ -82,14 +82,14 @@ def validate_file_operations(
 
 
 def scan_for_images(
-    scanner: DirectoryScanner, path: Path, show_progress: bool
+    scanner: DirectoryScanner, paths: list[Path], show_progress: bool
 ) -> list[Path]:
     """
-    Scan directory for image files.
+    Scan directories for image files.
 
     Args:
         scanner: DirectoryScanner instance
-        path: Directory to scan
+        paths: List of directories to scan
         show_progress: Whether to show progress messages
 
     Returns:
@@ -99,12 +99,20 @@ def scan_for_images(
         SystemExit: If no images found
     """
     if show_progress:
-        click.echo("Scanning for image files...", err=True)
+        if len(paths) == 1:
+            click.echo("Scanning for image files...", err=True)
+        else:
+            click.echo(
+                f"Scanning {len(paths)} directories for image files...", err=True
+            )
 
-    image_files = list(scanner.scan_directory(path))
+    image_files = []
+    for path in paths:
+        scanner.reset_counters()  # Reset counters for each directory
+        image_files.extend(list(scanner.scan_directory(path)))
 
     if not image_files:
-        click.echo("No image files found in the specified directory.", err=True)
+        click.echo("No image files found in the specified directories.", err=True)
         sys.exit(0)
 
     return image_files
@@ -210,7 +218,10 @@ def handle_file_operations(
 
 @click.command()
 @click.argument(
-    "path", type=click.Path(exists=True, path_type=Path), default=Path.cwd()
+    "paths",
+    nargs=-1,
+    type=click.Path(exists=True, path_type=Path, resolve_path=True),
+    required=False,
 )
 @click.option(
     "--format",
@@ -266,7 +277,7 @@ def handle_file_operations(
 )
 @click.version_option(version=__version__)
 def main(
-    path: Path,
+    paths: tuple[Path, ...],
     output_format: str,
     sort_by: str,
     min_count: int,
@@ -281,10 +292,13 @@ def main(
     dry_run: bool,
 ) -> None:
     """
-    Analyze image dimensions in a directory.
+    Analyze image dimensions in directories.
 
-    PATH: Directory to analyze (default: current directory)
+    PATHS: Directories to analyze (default: current directory)
     """
+    # If no paths provided, use current directory
+    if not paths:
+        paths = (Path.cwd(),)
     # Validate inputs
     operation_type, target_directory = validate_file_operations(
         move, copy, symlink, dry_run
@@ -304,10 +318,15 @@ def main(
     try:
         # Start timing
         start_time = time.time()
-        logger.info("Starting image dimension analysis", directory=str(path))
+        if len(paths) == 1:
+            logger.info("Starting image dimension analysis", directory=str(paths[0]))
+        else:
+            logger.info(
+                "Starting image dimension analysis", directories=[str(p) for p in paths]
+            )
 
         # Phase 1: Scan for image files
-        image_files = scan_for_images(scanner, path, not no_progress)
+        image_files = scan_for_images(scanner, list(paths), not no_progress)
         logger.info("Found image files", count=len(image_files))
 
         # Phase 2: Process images
