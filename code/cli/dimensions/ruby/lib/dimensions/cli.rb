@@ -162,10 +162,10 @@ module Dimensions
     def scan_for_images(scanner, paths, show_progress)
       if show_progress
         if paths.length == 1
-          $stderr.warn 'Scanning for image files...'
+          warn 'Scanning for image files...'
         else
-          $stderr.warn "Scanning #{paths.length} directories for image files..."
-          $stderr.warn
+          warn "Scanning #{paths.length} directories for image files..."
+          $stderr.puts
         end
       end
 
@@ -176,7 +176,7 @@ module Dimensions
       end
 
       if image_files.empty?
-        $stderr.warn 'No image files found in the specified directories.'
+        warn 'No image files found in the specified directories.'
         exit 0
       end
 
@@ -185,7 +185,7 @@ module Dimensions
 
     def process_images_with_progress(processor, image_files, threads, show_progress)
       if show_progress
-        $stderr.warn "Processing #{image_files.length} image files..."
+        warn "Processing #{image_files.length} image files..."
 
         progress_bar = TTY::ProgressBar.new(
           'Processing images [:bar] :current/:total :percent :elapsed :rate/s',
@@ -211,7 +211,7 @@ module Dimensions
                                dry_run, show_progress, logger)
       return unless operation_type && organizer
 
-      $stderr.warn "\n#{operation_type.capitalize}ing files by dimensions..." if show_progress
+      warn "\n#{operation_type.capitalize}ing files by dimensions..." if show_progress
 
       organizer.organize_files(results, target_directory, operation_type, dry_run)
 
@@ -229,7 +229,7 @@ module Dimensions
     end
 
     def error_exit(message)
-      $stderr.warn message
+      warn message
       exit 1
     end
   end
