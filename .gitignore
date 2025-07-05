@@ -138,4 +138,8 @@ fabric.properties
 
 # Built Visual Studio Code Extensions
 *.vsix
-.env
+
+### Manually added
+**/.env*
+!**/.env.example
+
