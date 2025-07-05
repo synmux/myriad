@@ -64,7 +64,6 @@ module Dimensions
     def execute_analysis(paths, options)
       # Validate inputs
       operation_type, target_directory = validate_file_operations(options)
-
       error_exit('Number of threads must be at least 1') if options.threads < 1
 
       # Set up logging and components
@@ -73,6 +72,8 @@ module Dimensions
       processor = ImageProcessor.new(logger)
       formatter = OutputFormatter.new(logger)
       organizer = FileOrganizer.new(logger) if operation_type
+
+      logger.info('WARNING: This is VERY slow single threaded. Set --threads to 8 or more.') if options.threads < 8
 
       begin
         start_time = Time.now
