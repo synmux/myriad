@@ -17,3 +17,5 @@ go = { version = '1.24.4' }
 'netflow:down' = { run = "docker compose -f code/docker/netflow/docker-compose.template.yml down" }
 'netflow:logs' = { run = "docker compose -f code/docker/netflow/docker-compose.template.yml logs -f" }
 'netflow:rm' = { run = "docker compose -f code/docker/netflow/docker-compose.template.yml rm" }
+'shotdetect' = { run = "cd code/cli/shotdetect/src && uv run python -m shotdetect.cli" }
+'dimensions' = { run = "cd code/cli/dimensions/src && uv run python -m dimensions.cli" }
