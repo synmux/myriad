@@ -1,0 +1,29 @@
+# frozen_string_literal: true
+
+source 'https://rubygems.org'
+
+# CLI framework
+gem 'commander', '~> 5.0'
+
+# Image processing - using mini_magick for simplicity and speed
+gem 'mini_magick', '~> 5.0'
+
+# Terminal UI components
+gem 'tty-progressbar', '~> 0.18'
+gem 'tty-table', '~> 0.12'
+gem 'pastel', '~> 0.8'  # Terminal colors
+
+# Data formats
+gem 'json', '~> 2.8'
+gem 'psych', '~> 5.2'  # YAML
+
+# Parallel processing
+gem 'parallel', '~> 1.27'
+
+# Development dependencies
+group :development, :test do
+  gem 'rspec', '~> 3.13'
+  gem 'rubocop', '~> 1.60'
+  gem 'rubocop-rspec', '~> 2.20'
+  gem 'simplecov', '~> 0.22'
+end
