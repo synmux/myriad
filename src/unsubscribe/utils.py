@@ -1,7 +1,6 @@
 """Utility functions for the unsubscribe tool."""
 
 import re
-from typing import Optional, Tuple
 from urllib.parse import urlparse
 
 

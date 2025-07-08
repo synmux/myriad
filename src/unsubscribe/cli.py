@@ -119,7 +119,7 @@ def run(
 
         results = processor.process_unsubscribes(csv_file, resume=resume)
 
-        console.print(f"[green]Processing completed![/green]")
+        console.print("[green]Processing completed![/green]")
         console.print(f"  • Processed: {results['processed']}")
         console.print(f"  • Successful: {results['successful']}")
         console.print(f"  • Failed: {results['failed']}")

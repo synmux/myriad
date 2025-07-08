@@ -3,7 +3,7 @@
 import time
 import webbrowser
 from pathlib import Path
-from typing import Any, Dict
+from typing import Dict
 
 import pandas as pd
 import requests
@@ -161,7 +161,7 @@ Original sender: {sender_name} <{from_address}>
                 )
 
             console.print(
-                f"[blue]Email mode: Will send unsubscribe emails via Gmail[/blue]"
+                "[blue]Email mode: Will send unsubscribe emails via Gmail[/blue]"
             )
 
             if not Confirm.ask("\n[bold]Proceed with processing?[/bold]"):

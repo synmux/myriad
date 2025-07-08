@@ -6,7 +6,6 @@ import time
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional, Set, Tuple
-from urllib.parse import urlparse
 
 import pandas as pd
 from rich.console import Console

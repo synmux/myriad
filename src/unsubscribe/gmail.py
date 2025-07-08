@@ -1,6 +1,5 @@
 """Gmail API integration module."""
 
-import os
 import pickle
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -157,7 +156,7 @@ class GmailClient:
 
             send_message = {"raw": raw_message}
 
-            result = (
+            (
                 self.service.users()
                 .messages()
                 .send(userId="me", body=send_message)
