@@ -1,13 +1,7 @@
 name: devskim
 on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
-  schedule:
-    - cron: 37 7 * * 3
+  push: null
+  pull_request: null
 permissions:
   actions: read
   contents: read
