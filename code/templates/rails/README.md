@@ -1,3 +1,0 @@
-# .rails
-
-Rails template

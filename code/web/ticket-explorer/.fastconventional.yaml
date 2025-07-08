@@ -1,8 +1,0 @@
-use_angular: true
-require_scope: true
-types:
-  - experiment
-scopes:
-  - logic
-  - admin
-  - ops

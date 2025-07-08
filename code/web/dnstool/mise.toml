@@ -1,3 +1,0 @@
-[tasks]
-'rules' = { run = '/usr/bin/env python3 scripts/rules.py' }
-'deploy' = { run = 'bun run deploy' }

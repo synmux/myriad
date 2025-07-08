@@ -1,5 +1,0 @@
-[tasks]
-'push' = { run = 'neocities push --prune src/' }
-'info' = { run = 'neocities info' }
-'pull' = { run = 'neocities pull' }
-'browse' = { run = 'open https://daveio.neocities.org' }

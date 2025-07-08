@@ -1,5 +1,0 @@
-# Block all
-
-User-agent: *
-Disallow: /
-Disallow: *
