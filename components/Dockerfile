@@ -28,12 +28,12 @@ RUN --mount=type=cache,target=/root/.cache/git,sharing=locked \
     echo "Cloning nDPI with sparse checkout..."; \
     git clone --filter=blob:none --depth 1 --branch "${NDPI_VERSION}" https://github.com/ntop/nDPI.git nDPI && \
     git -C nDPI sparse-checkout init --cone && \
-    git -C nDPI sparse-checkout set src configure.ac Makefile.in autogen.sh && \
+    git -C nDPI sparse-checkout set src m4 && \
     echo "Cloning ntopng with sparse checkout..."; \
     git clone --filter=blob:none --depth 1 --branch "${NTOP_VERSION}" https://github.com/ntop/ntopng.git ntopng && \
     git -C ntopng sparse-checkout init --cone && \
-    git -C ntopng sparse-checkout set src configure.ac Makefile.in autogen.sh include scripts && \
-    echo "Cloning netflow2ng (full clone needed for Go modules)..."; \
+    git -C ntopng sparse-checkout set src include scripts m4 && \
+    echo "Cloning netflow2ng (small repo, full clone)..."; \
     git clone --depth 1 --branch "v${NETFLOW2NG_VERSION}" https://github.com/synfinatic/netflow2ng.git netflow2ng && \
     echo "All repositories cloned successfully"
 
