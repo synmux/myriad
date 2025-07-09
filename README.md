@@ -1,5 +1,7 @@
 # ntopng with netflow2ng - Build-time GeoIP Edition
 
+[![container](https://github.com/daveio/myriad/actions/workflows/container.yaml/badge.svg)](https://github.com/daveio/myriad/actions/workflows/container.yaml)
+
 A Docker container for ntopng traffic analysis with netflow2ng support and build-time GeoIP database integration.
 
 ## Features
