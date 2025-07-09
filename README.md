@@ -1,13 +1,30 @@
-# Myriad 🌈
+# keycheck
 
-[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/daveio/myriad)
+_Automatically synced with your [v0.dev](https://v0.dev) deployments_
 
-_One repository to rule them all, one repository to find them..._
+[![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel)](https://vercel.com/dave-io/v0-keycheck)
+[![Built with v0](https://img.shields.io/badge/Built%20with-v0.dev-black?style=for-the-badge)](https://v0.dev/chat/projects/jfuDywq0ecJ)
 
-`myriad` is a grab-bag of experiments, prototypes, scripts, and other things I've written over the years.
+## Overview
 
-If any of it is useful to you, have at it.
+This repository will stay in sync with your deployed chats on [v0.dev](https://v0.dev).
+Any changes you make to your deployed app will be automatically pushed to this repository from [v0.dev](https://v0.dev).
 
-All the goodies are in their own Git branches. Check out what you want and go to town.
+## Deployment
 
-If you want something I haven't migrated to a branch yet, you can check out the [`meta/monorepo`](https://github.com/daveio/myriad/tree/meta/monorepo) branch, which is how things used to be.
+Your project is live at:
+
+**[https://vercel.com/dave-io/v0-keycheck](https://vercel.com/dave-io/v0-keycheck)**
+
+## Build your app
+
+Continue building your app on:
+
+**[https://v0.dev/chat/projects/jfuDywq0ecJ](https://v0.dev/chat/projects/jfuDywq0ecJ)**
+
+## How It Works
+
+1. Create and modify your project using [v0.dev](https://v0.dev)
+2. Deploy your chats from the v0 interface
+3. Changes are automatically pushed to this repository
+4. Vercel deploys the latest version from this repository
