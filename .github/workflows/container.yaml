@@ -17,129 +17,8 @@ env:
   NETFLOW2NG_VERSION: 0.0.5
 
 jobs:
-  prefetch:
-    runs-on: ${{ matrix.runner }}
-    strategy:
-      matrix:
-        include:
-          - runner: ubuntu-latest
-            platform: linux/amd64
-            arch: amd64
-          - runner: ubuntu-24.04-arm
-            platform: linux/arm64
-            arch: arm64
-    outputs:
-      cache-key: ${{ steps.cache-key.outputs.key }}
-      dockerfile-hash: ${{ steps.cache-key.outputs.dockerfile-hash }}
-      packages-hash: ${{ steps.cache-key.outputs.packages-hash }}
-    steps:
-      - name: checkout
-        uses: actions/checkout@v4
-
-      - name: cache-key
-        id: cache-key
-        run: |
-          # Validate required files exist
-          if [ ! -f "components/Dockerfile" ]; then
-            echo "Error: components/Dockerfile not found"
-            exit 1
-          fi
-
-          DOCKERFILE_HASH=$(sha256sum components/Dockerfile | cut -d' ' -f1)
-          PATCH_HASH="${{ hashFiles('components/allow-flows-from-netflow2ng.patch') }}"
-          CACHE_KEY="deps-${{ matrix.arch }}-${{ env.NDPI_VERSION }}-${{ env.NTOP_VERSION }}-${{ env.NETFLOW2NG_VERSION }}-${{ env.GO_VERSION }}-${DOCKERFILE_HASH}-${PATCH_HASH}"
-
-          echo "Generated cache key for ${{ matrix.arch }}: $CACHE_KEY"
-          echo "key=$CACHE_KEY" >> "$GITHUB_OUTPUT"
-          echo "dockerfile-hash=${DOCKERFILE_HASH}" >> "$GITHUB_OUTPUT"
-          echo "packages-hash=$(echo '${{ env.GO_VERSION }}-${{ matrix.arch }}' | sha256sum | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
-
-      - name: dependency-cache
-        id: dependency-cache
-        uses: actions/cache@v4
-        with:
-          path: /tmp/prefetch-cache
-          key: ${{ steps.cache-key.outputs.key }}
-          restore-keys: |
-            deps-${{ matrix.arch }}-${{ env.NDPI_VERSION }}-${{ env.NTOP_VERSION }}-${{ env.NETFLOW2NG_VERSION }}-${{ env.GO_VERSION }}-
-            deps-${{ matrix.arch }}-${{ env.NDPI_VERSION }}-${{ env.NTOP_VERSION }}-${{ env.NETFLOW2NG_VERSION }}-
-
-      - name: package-metadata-cache
-        id: package-metadata-cache
-        uses: actions/cache@v4
-        with:
-          path: /tmp/apt-metadata-cache
-          key: packages-metadata-${{ matrix.arch }}-${{ steps.cache-key.outputs.packages-hash }}-${{ steps.cache-key.outputs.dockerfile-hash }}
-          restore-keys: |
-            packages-metadata-${{ matrix.arch }}-${{ steps.cache-key.outputs.packages-hash }}-
-            packages-metadata-${{ matrix.arch }}-
-
-      - name: buildx
-        if: steps.dependency-cache.outputs.cache-hit != 'true' || steps.package-metadata-cache.outputs.cache-hit != 'true'
-        uses: docker/setup-buildx-action@v3
-        with:
-          driver-opts: |
-            network=host
-            image=moby/buildkit:buildx-stable-1
-          buildkitd-config-inline: |
-            [worker.oci]
-              max-parallelism = ${{ matrix.arch == 'arm64' && '2' || '4' }}
-            [worker.containerd]
-              max-parallelism = ${{ matrix.arch == 'arm64' && '2' || '4' }}
-
-      - name: prefetch-dependencies
-        if: steps.dependency-cache.outputs.cache-hit != 'true'
-        timeout-minutes: 20
-        run: |
-          echo "Prefetching dependencies for ${{ matrix.arch }}..."
-          mkdir -p /tmp/prefetch-cache
-
-          if ! docker buildx build \
-            --platform ${{ matrix.platform }} \
-            --target dependency-prefetch \
-            --build-arg NDPI_VERSION=${{ env.NDPI_VERSION }} \
-            --build-arg NTOP_VERSION=${{ env.NTOP_VERSION }} \
-            --build-arg NETFLOW2NG_VERSION=${{ env.NETFLOW2NG_VERSION }} \
-            --output type=local,dest=/tmp/prefetch-cache \
-            --progress=plain \
-            ./components; then
-            echo "Error: Failed to prefetch dependencies for ${{ matrix.arch }}"
-            exit 1
-          fi
-
-          # Validate that prefetch cache was created
-          if [ ! -d "/tmp/prefetch-cache" ] || [ -z "$(ls -A /tmp/prefetch-cache)" ]; then
-            echo "Error: Prefetch cache directory is empty or doesn't exist"
-            exit 1
-          fi
-
-          echo "Dependencies prefetched successfully for ${{ matrix.arch }}"
-
-      - name: prefetch-package-metadata
-        if: steps.package-metadata-cache.outputs.cache-hit != 'true'
-        run: |
-          echo "Prefetching package metadata for ${{ matrix.arch }}..."
-          mkdir -p /tmp/apt-metadata-cache
-
-          if ! docker run --rm --platform ${{ matrix.platform }} --entrypoint=/bin/bash \
-            -v /tmp/apt-metadata-cache:/cache \
-            ubuntu:22.04 \
-            -c "apt-get update && cp -r /var/lib/apt/lists /cache/ && cp -r /var/cache/apt /cache/ && rm -f /cache/apt/archives/lock /cache/lists/lock && rm -rf /cache/apt/archives/partial /cache/lists/partial"; then
-            echo "Error: Failed to prefetch package metadata for ${{ matrix.arch }}"
-            exit 1
-          fi
-
-          # Validate that metadata cache was created
-          if [ ! -d "/tmp/apt-metadata-cache" ] || [ -z "$(ls -A /tmp/apt-metadata-cache)" ]; then
-            echo "Error: Package metadata cache directory is empty or doesn't exist"
-            exit 1
-          fi
-
-          echo "Package metadata prefetched successfully for ${{ matrix.arch }}"
-
   build:
     runs-on: ${{ matrix.runner }}
-    needs: prefetch
     strategy:
       matrix:
         include:
@@ -179,24 +58,6 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: dependency-cache-restore
-        uses: actions/cache/restore@v4
-        with:
-          path: /tmp/prefetch-cache
-          key: deps-${{ matrix.arch }}-${{ env.NDPI_VERSION }}-${{ env.NTOP_VERSION }}-${{ env.NETFLOW2NG_VERSION }}-${{ env.GO_VERSION }}-${{ needs.prefetch.outputs.dockerfile-hash }}-${{ hashFiles('components/allow-flows-from-netflow2ng.patch') }}
-          restore-keys: |
-            deps-${{ matrix.arch }}-${{ env.NDPI_VERSION }}-${{ env.NTOP_VERSION }}-${{ env.NETFLOW2NG_VERSION }}-${{ env.GO_VERSION }}-
-            deps-${{ matrix.arch }}-${{ env.NDPI_VERSION }}-${{ env.NTOP_VERSION }}-${{ env.NETFLOW2NG_VERSION }}-
-
-      - name: package-metadata-cache-restore
-        uses: actions/cache/restore@v4
-        with:
-          path: /tmp/apt-metadata-cache
-          key: packages-metadata-${{ matrix.arch }}-${{ needs.prefetch.outputs.packages-hash }}-${{ needs.prefetch.outputs.dockerfile-hash }}
-          restore-keys: |
-            packages-metadata-${{ matrix.arch }}-${{ needs.prefetch.outputs.packages-hash }}-
-            packages-metadata-${{ matrix.arch }}-
-
       - name: generate-metadata
         id: metadata
         uses: docker/metadata-action@v5
@@ -219,22 +80,22 @@ jobs:
           annotations: ${{ steps.metadata.outputs.annotations }}
           cache-from: |
             type=gha,scope=${{ matrix.arch }}-main
-            type=gha,scope=${{ matrix.arch }}-runtime-deps-${{ needs.prefetch.outputs.cache-key }}
-            type=gha,scope=${{ matrix.arch }}-build-deps-${{ needs.prefetch.outputs.cache-key }}
-            type=gha,scope=${{ matrix.arch }}-mise-tools-${{ needs.prefetch.outputs.cache-key }}
+            type=gha,scope=${{ matrix.arch }}-runtime-deps
+            type=gha,scope=${{ matrix.arch }}-build-deps
+            type=gha,scope=${{ matrix.arch }}-mise-tools
             type=gha,scope=${{ matrix.arch }}-shared-mise-go-${{ env.GO_VERSION }}
-            type=gha,scope=${{ matrix.arch }}-shared-deps-${{ needs.prefetch.outputs.cache-key }}
-            type=gha,scope=${{ matrix.arch }}-shared-packages-${{ needs.prefetch.outputs.cache-key }}
-            type=gha,scope=${{ matrix.arch }}-shared-geoip-buildtime-${{ needs.prefetch.outputs.cache-key }}
+            type=gha,scope=${{ matrix.arch }}-shared-deps
+            type=gha,scope=${{ matrix.arch }}-shared-packages
+            type=gha,scope=${{ matrix.arch }}-shared-geoip-buildtime
           cache-to: |
             type=gha,mode=max,scope=${{ matrix.arch }}-main
-            type=gha,mode=max,scope=${{ matrix.arch }}-runtime-deps-${{ needs.prefetch.outputs.cache-key }}
-            type=gha,mode=max,scope=${{ matrix.arch }}-build-deps-${{ needs.prefetch.outputs.cache-key }}
-            type=gha,mode=max,scope=${{ matrix.arch }}-mise-tools-${{ needs.prefetch.outputs.cache-key }}
+            type=gha,mode=max,scope=${{ matrix.arch }}-runtime-deps
+            type=gha,mode=max,scope=${{ matrix.arch }}-build-deps
+            type=gha,mode=max,scope=${{ matrix.arch }}-mise-tools
             type=gha,mode=max,scope=${{ matrix.arch }}-shared-mise-go-${{ env.GO_VERSION }}
-            type=gha,mode=max,scope=${{ matrix.arch }}-shared-deps-${{ needs.prefetch.outputs.cache-key }}
-            type=gha,mode=max,scope=${{ matrix.arch }}-shared-packages-${{ needs.prefetch.outputs.cache-key }}
-            type=gha,mode=max,scope=${{ matrix.arch }}-shared-geoip-buildtime-${{ needs.prefetch.outputs.cache-key }}
+            type=gha,mode=max,scope=${{ matrix.arch }}-shared-deps
+            type=gha,mode=max,scope=${{ matrix.arch }}-shared-packages
+            type=gha,mode=max,scope=${{ matrix.arch }}-shared-geoip-buildtime
           provenance: mode=max
           sbom: true
           build-args: |
@@ -244,9 +105,6 @@ jobs:
             NETFLOW2NG_VERSION=${{ env.NETFLOW2NG_VERSION }}
             GEOIPUPDATE_ACCOUNT_ID=${{ secrets.GEOIPUPDATE_ACCOUNT_ID || '0' }}
             GEOIPUPDATE_LICENSE_KEY=${{ secrets.GEOIPUPDATE_LICENSE_KEY || '' }}
-          no-cache-filters: dependency-prefetch
-          secrets: |
-            APT_METADATA_CACHE=/tmp/apt-metadata-cache
 
       - name: export-digest
         run: |
@@ -265,7 +123,6 @@ jobs:
   merge:
     runs-on: ubuntu-latest
     needs:
-      - prefetch
       - build
     outputs:
       image: ${{ steps.metadata.outputs.tags }}
@@ -378,7 +235,7 @@ jobs:
           echo "### Build Details:" >> $GITHUB_STEP_SUMMARY
           echo "- **Platforms:** linux/amd64, linux/arm64" >> $GITHUB_STEP_SUMMARY
           echo "- **Digest:** \`${{ steps.merge.outputs.digest }}\`" >> $GITHUB_STEP_SUMMARY
-          echo "- **Cache key:** \`${{ needs.prefetch.outputs.cache-key }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Build Date:** \`$(date -u +%Y-%m-%d)\`" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Component Versions:" >> $GITHUB_STEP_SUMMARY
           echo "- **Go:** ${{ env.GO_VERSION }}" >> $GITHUB_STEP_SUMMARY
@@ -398,7 +255,6 @@ jobs:
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Features:" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ Architecture-specific dependency and package caching" >> $GITHUB_STEP_SUMMARY
           echo "- ✅ Native ARM64 builds (no emulation)" >> $GITHUB_STEP_SUMMARY
           echo "- ✅ Proper OCI labels and annotations (manifest + index level)" >> $GITHUB_STEP_SUMMARY
           echo "- ✅ Minimal tagging: latest tag only, use digest addressing for specificity" >> $GITHUB_STEP_SUMMARY

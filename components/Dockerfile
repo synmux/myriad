@@ -17,25 +17,6 @@ ARG GEOIPUPDATE_LICENSE_KEY
 # Enable BuildKit features
 ARG BUILDKIT_INLINE_CACHE=1
 
-# Dependency prefetch stage - downloads all sources first
-FROM base AS dependency-prefetch
-
-WORKDIR /prefetch
-
-# Prefetch all source repositories with shallow clones and sparse checkout for optimization
-RUN --mount=type=cache,target=/root/.cache/git,sharing=locked \
-    set -e; \
-    echo "Cloning nDPI with sparse checkout..."; \
-    git clone --filter=blob:none --depth 1 --branch "${NDPI_VERSION}" https://github.com/ntop/nDPI.git nDPI && \
-    git -C nDPI sparse-checkout init --cone && \
-    git -C nDPI sparse-checkout set src m4 && \
-    echo "Cloning ntopng with sparse checkout..."; \
-    git clone --filter=blob:none --depth 1 --branch "${NTOP_VERSION}" https://github.com/ntop/ntopng.git ntopng && \
-    git -C ntopng sparse-checkout init --cone && \
-    git -C ntopng sparse-checkout set src include scripts m4 && \
-    echo "Cloning netflow2ng (small repo, full clone)..."; \
-    git clone --depth 1 --branch "v${NETFLOW2NG_VERSION}" https://github.com/synfinatic/netflow2ng.git netflow2ng && \
-    echo "All repositories cloned successfully"
 
 # GeoIP data fetch stage
 FROM base AS geoip-fetcher
@@ -257,8 +238,16 @@ FROM mise-tools AS source-prepared
 
 WORKDIR /src
 
-# Copy prefetched sources
-COPY --from=dependency-prefetch /prefetch/ ./
+# Clone source repositories directly with shallow clones for optimization
+RUN --mount=type=cache,target=/root/.cache/git,sharing=locked \
+    set -e; \
+    echo "Cloning nDPI..."; \
+    git clone --depth 1 --branch "${NDPI_VERSION}" https://github.com/ntop/nDPI.git nDPI && \
+    echo "Cloning ntopng..."; \
+    git clone --depth 1 --branch "${NTOP_VERSION}" https://github.com/ntop/ntopng.git ntopng && \
+    echo "Cloning netflow2ng..."; \
+    git clone --depth 1 --branch "v${NETFLOW2NG_VERSION}" https://github.com/synfinatic/netflow2ng.git netflow2ng && \
+    echo "All repositories cloned successfully"
 
 # Copy patch file
 COPY allow-flows-from-netflow2ng.patch ntopng/
