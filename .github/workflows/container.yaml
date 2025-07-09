@@ -1,10 +1,12 @@
-name: container-beta
+name: container
 
 on:
   push:
-    branches: [docker/netflow]
+    branches:
+      - docker/netflow
   pull_request:
-    branches: [docker/netflow]
+    branches:
+      - docker/netflow
 
 env:
   REGISTRY: ghcr.io
