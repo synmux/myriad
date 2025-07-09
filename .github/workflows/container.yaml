@@ -77,9 +77,19 @@ jobs:
       - name: buildx
         if: steps.dependency-cache.outputs.cache-hit != 'true' || steps.package-metadata-cache.outputs.cache-hit != 'true'
         uses: docker/setup-buildx-action@v3
+        with:
+          driver-opts: |
+            network=host
+            image=moby/buildkit:buildx-stable-1
+          buildkitd-config-inline: |
+            [worker.oci]
+              max-parallelism = ${{ matrix.arch == 'arm64' && '2' || '4' }}
+            [worker.containerd]
+              max-parallelism = ${{ matrix.arch == 'arm64' && '2' || '4' }}
 
       - name: prefetch-dependencies
         if: steps.dependency-cache.outputs.cache-hit != 'true'
+        timeout-minutes: 20
         run: |
           echo "Prefetching dependencies for ${{ matrix.arch }}..."
           mkdir -p /tmp/prefetch-cache
@@ -91,6 +101,7 @@ jobs:
             --build-arg NTOP_VERSION=${{ env.NTOP_VERSION }} \
             --build-arg NETFLOW2NG_VERSION=${{ env.NETFLOW2NG_VERSION }} \
             --output type=local,dest=/tmp/prefetch-cache \
+            --progress=plain \
             ./components; then
             echo "Error: Failed to prefetch dependencies for ${{ matrix.arch }}"
             exit 1

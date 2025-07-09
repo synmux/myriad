@@ -22,11 +22,20 @@ FROM base AS dependency-prefetch
 
 WORKDIR /prefetch
 
-# Prefetch all source repositories with shallow clones and caching
+# Prefetch all source repositories with shallow clones and sparse checkout for optimization
 RUN --mount=type=cache,target=/root/.cache/git,sharing=locked \
-    git clone --depth 1 --branch "${NDPI_VERSION}" https://github.com/ntop/nDPI.git nDPI \
-    && git clone --depth 1 --branch "${NTOP_VERSION}" https://github.com/ntop/ntopng.git ntopng \
-    && git clone --depth 1 --branch "v${NETFLOW2NG_VERSION}" https://github.com/synfinatic/netflow2ng.git netflow2ng
+    set -e; \
+    echo "Cloning nDPI with sparse checkout..."; \
+    git clone --filter=blob:none --depth 1 --branch "${NDPI_VERSION}" https://github.com/ntop/nDPI.git nDPI && \
+    git -C nDPI sparse-checkout init --cone && \
+    git -C nDPI sparse-checkout set src configure.ac Makefile.* autogen.sh && \
+    echo "Cloning ntopng with sparse checkout..."; \
+    git clone --filter=blob:none --depth 1 --branch "${NTOP_VERSION}" https://github.com/ntop/ntopng.git ntopng && \
+    git -C ntopng sparse-checkout init --cone && \
+    git -C ntopng sparse-checkout set src configure.ac Makefile.* autogen.sh include scripts && \
+    echo "Cloning netflow2ng (full clone needed for Go modules)..."; \
+    git clone --depth 1 --branch "v${NETFLOW2NG_VERSION}" https://github.com/synfinatic/netflow2ng.git netflow2ng && \
+    echo "All repositories cloned successfully"
 
 # GeoIP data fetch stage
 FROM base AS geoip-fetcher
