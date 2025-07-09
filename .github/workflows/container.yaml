@@ -184,31 +184,15 @@ jobs:
             packages-metadata-${{ matrix.arch }}-${{ needs.prefetch.outputs.packages-hash }}-
             packages-metadata-${{ matrix.arch }}-
 
-      - name: generate-labels
-        id: generate-labels
-        run: |
-          # Generate tag-safe branch name for version
-          TAG_SAFE_BRANCH="${{ github.ref_name }}"
-          TAG_SAFE_BRANCH="${TAG_SAFE_BRANCH##*/}"
-          TAG_SAFE_BRANCH="${TAG_SAFE_BRANCH//[^a-zA-Z0-9._-]/-}"
-
-          # Create timestamp for created label
-          CREATED_TIME=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
-
-          {
-            echo "labels<<EOF"
-            echo "org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}"
-            echo "org.opencontainers.image.revision=${{ github.sha }}"
-            echo "org.opencontainers.image.created=${CREATED_TIME}"
-            echo "org.opencontainers.image.title=${{ env.IMAGE_NAME }}"
-            echo "org.opencontainers.image.description=Docker ntopng traffic analysis with netflow2ng support and build-time GeoIP"
-            echo "org.opencontainers.image.vendor=${{ github.repository_owner }}"
-            echo "org.opencontainers.image.version=${TAG_SAFE_BRANCH}"
-            echo "org.opencontainers.image.url=${{ github.server_url }}/${{ github.repository }}"
-            echo "org.opencontainers.image.documentation=${{ github.server_url }}/${{ github.repository }}"
-            echo "org.opencontainers.image.licenses=MIT"
-            echo "EOF"
-          } >> "$GITHUB_OUTPUT"
+      - name: generate-metadata
+        id: metadata
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/docker/netflow' }}
+        env:
+          DOCKER_METADATA_ANNOTATIONS_LEVELS: manifest,index
 
       - name: build
         id: build
@@ -218,7 +202,8 @@ jobs:
           file: ./components/Dockerfile
           platforms: ${{ matrix.platform }}
           outputs: type=image,name=${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }},push-by-digest=true,name-canonical=true,push=true
-          labels: ${{ steps.generate-labels.outputs.labels }}
+          labels: ${{ steps.metadata.outputs.labels }}
+          annotations: ${{ steps.metadata.outputs.annotations }}
           cache-from: |
             type=gha,scope=${{ matrix.arch }}-main
             type=gha,scope=${{ matrix.arch }}-runtime-deps-${{ needs.prefetch.outputs.cache-key }}
@@ -300,22 +285,13 @@ jobs:
 
       - name: metadata
         id: metadata
-        run: |
-          # Generate tag-safe branch name
-          TAG_SAFE_BRANCH="${{ github.ref_name }}"
-          TAG_SAFE_BRANCH="${TAG_SAFE_BRANCH##*/}"
-          TAG_SAFE_BRANCH="${TAG_SAFE_BRANCH//[^a-zA-Z0-9._-]/-}"
-
-          {
-            echo "tags<<EOF"
-            echo "${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ github.sha }}"
-            if [ "${{ github.ref }}" = "refs/heads/docker/netflow" ]; then
-              echo "${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:latest"
-            fi
-            echo "${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${TAG_SAFE_BRANCH}"
-            echo "EOF"
-            echo "cache-image=${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:cache"
-          } >> "$GITHUB_OUTPUT"
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/docker/netflow' }}
+        env:
+          DOCKER_METADATA_ANNOTATIONS_LEVELS: index
 
       - name: merge
         id: merge
@@ -330,15 +306,6 @@ jobs:
 
           echo "Found digest files: ${digest_files[*]}"
 
-          # Create manifest list and push
-          TAGS=""
-          while IFS= read -r tag; do
-            [ -n "$tag" ] && TAGS="$TAGS -t $tag"
-          done <<< "${{ steps.metadata.outputs.tags }}"
-
-          # Add cache tag
-          TAGS="$TAGS -t ${{ steps.metadata.outputs.cache-image }}"
-
           # Build digest references
           DIGEST_REFS=""
           for digest_file in "${digest_files[@]}"; do
@@ -347,11 +314,24 @@ jobs:
             fi
           done
 
-          echo "Creating manifest for tags: $TAGS"
           echo "Using digest references: $DIGEST_REFS"
 
-          # Create manifest with all tags and capture digest
-          DIGEST=$(docker buildx imagetools create $TAGS $DIGEST_REFS \
+          # Create manifest with all tags, annotations, and capture digest
+          TAGS=$(echo '${{ steps.metadata.outputs.tags }}' | tr '\n' ' ' | sed 's/^/-t /' | sed 's/ / -t /g')
+          echo "Creating manifest for tags: $TAGS"
+
+          # Build annotations from metadata action
+          ANNOTATIONS=""
+          if [ -n "${{ steps.metadata.outputs.annotations }}" ]; then
+            while IFS= read -r annotation; do
+              if [ -n "$annotation" ]; then
+                ANNOTATIONS="$ANNOTATIONS --annotation index:$annotation"
+              fi
+            done <<< "${{ steps.metadata.outputs.annotations }}"
+          fi
+
+          # Create manifest with dry-run first to get digest
+          DIGEST=$(docker buildx imagetools create $TAGS $DIGEST_REFS $ANNOTATIONS \
             --dry-run 2>/dev/null | grep -o 'sha256:[a-f0-9]*' | head -1)
 
           if [ -z "$DIGEST" ]; then
@@ -360,7 +340,7 @@ jobs:
           fi
 
           # Actually create the manifest
-          docker buildx imagetools create $TAGS $DIGEST_REFS
+          docker buildx imagetools create $TAGS $DIGEST_REFS $ANNOTATIONS
 
           echo "digest=$DIGEST" >> "$GITHUB_OUTPUT"
 
@@ -373,19 +353,14 @@ jobs:
 
       - name: summary
         run: |
-          # Extract tag-safe branch name (part after last slash)
-          TAG_SAFE_BRANCH="${{ github.ref_name }}"
-          TAG_SAFE_BRANCH="${TAG_SAFE_BRANCH##*/}"
-          TAG_SAFE_BRANCH="${TAG_SAFE_BRANCH//[^a-zA-Z0-9._-]/-}"
-
           echo "## Multi-arch Container Build Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Images Created:" >> $GITHUB_STEP_SUMMARY
-          echo "- \`${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
           if [ "${{ github.ref }}" = "refs/heads/docker/netflow" ]; then
             echo "- \`${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:latest\`" >> $GITHUB_STEP_SUMMARY
           fi
-          echo "- \`${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${TAG_SAFE_BRANCH}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- \`${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}@${{ steps.merge.outputs.digest }}\`" >> $GITHUB_STEP_SUMMARY
+
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Build Details:" >> $GITHUB_STEP_SUMMARY
           echo "- **Platforms:** linux/amd64, linux/arm64" >> $GITHUB_STEP_SUMMARY
@@ -398,9 +373,22 @@ jobs:
           echo "- **ntopng:** ${{ env.NTOP_VERSION }}" >> $GITHUB_STEP_SUMMARY
           echo "- **netflow2ng:** ${{ env.NETFLOW2NG_VERSION }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Usage Examples:" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
+          echo "# For testing/development - use latest tag" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ github.ref }}" = "refs/heads/docker/netflow" ]; then
+            echo "docker pull ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:latest" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "# For production - use specific digest" >> $GITHUB_STEP_SUMMARY
+          echo "docker pull ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}@${{ steps.merge.outputs.digest }}" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Features:" >> $GITHUB_STEP_SUMMARY
           echo "- ✅ Architecture-specific dependency and package caching" >> $GITHUB_STEP_SUMMARY
           echo "- ✅ Native ARM64 builds (no emulation)" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Proper OCI labels and annotations (manifest + index level)" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Minimal tagging: latest tag only, use digest addressing for specificity" >> $GITHUB_STEP_SUMMARY
           echo "- ✅ GeoIP databases downloaded at build time" >> $GITHUB_STEP_SUMMARY
           echo "- ✅ SBOM and provenance attestations generated" >> $GITHUB_STEP_SUMMARY
           echo "- ✅ Multi-architecture support (AMD64, ARM64)" >> $GITHUB_STEP_SUMMARY
