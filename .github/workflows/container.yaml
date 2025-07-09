@@ -65,6 +65,12 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}
           tags: |
             type=raw,value=latest,enable=${{ github.ref == 'refs/heads/docker/netflow' }}
+          labels: |
+            org.opencontainers.image.title=netflow
+            org.opencontainers.image.description=ntopng with netflow2ng support - fully optimized multi-arch build with build-time GeoIP
+            org.opencontainers.image.licenses=MIT
+            org.opencontainers.image.source=https://github.com/daveio/myriad
+            org.opencontainers.image.url=https://github.com/daveio/myriad
         env:
           DOCKER_METADATA_ANNOTATIONS_LEVELS: manifest,index
 
@@ -160,6 +166,12 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}
           tags: |
             type=raw,value=latest,enable=${{ github.ref == 'refs/heads/docker/netflow' }}
+          labels: |
+            org.opencontainers.image.title=netflow
+            org.opencontainers.image.description=ntopng with netflow2ng support - fully optimized multi-arch build with build-time GeoIP
+            org.opencontainers.image.licenses=MIT
+            org.opencontainers.image.source=https://github.com/daveio/myriad
+            org.opencontainers.image.url=https://github.com/daveio/myriad
         env:
           DOCKER_METADATA_ANNOTATIONS_LEVELS: index
 

@@ -365,12 +365,12 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
 ENTRYPOINT ["/opt/ntopng.bash"]
 
 LABEL \
-    org.opencontainers.image.title="ntopng" \
+    org.opencontainers.image.title="netflow" \
     org.opencontainers.image.description="ntopng with zeromq patch - fully optimized build with build-time GeoIP" \
     org.opencontainers.image.authors="Dave Williams <dave@dave.io>" \
     org.opencontainers.image.licenses="MIT" \
-    org.opencontainers.image.url="https://github.com/daveio/ntopng" \
-    org.opencontainers.image.source="https://github.com/daveio/ntopng" \
+    org.opencontainers.image.url="https://github.com/daveio/myriad" \
+    org.opencontainers.image.source="https://github.com/daveio/myriad" \
     org.opencontainers.image.version="6.4-002-buildtime-geoip" \
     org.opencontainers.image.base.digest="sha256:cff42e2bf1063ae6a8729c148a1003357d5befa2fe7656c5d0c99e62b68aab7d" \
     netflow.go.version="${GO_VERSION}" \
