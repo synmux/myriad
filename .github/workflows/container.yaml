@@ -45,10 +45,12 @@ jobs:
         id: metadata
         run: |
           {
+            # Extract tag-safe branch name (part after last slash)
+            TAG_SAFE_BRANCH="${GITHUB_REF_NAME##*/}"
             echo "tags<<EOF"
             echo "${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ github.sha }}"
             echo "${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:latest"
-            echo "${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }}"
+            echo "${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${TAG_SAFE_BRANCH}"
             echo "EOF"
             echo "labels<<EOF"
             echo "org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}"
@@ -80,9 +82,11 @@ jobs:
       - name: summary
         id: summary
         run: |
+          # Extract tag-safe branch name (part after last slash)
+          TAG_SAFE_BRANCH="${GITHUB_REF_NAME##*/}"
           echo "Multi-arch images created:"
           echo "  - ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ github.sha }}"
           echo "  - ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:latest"
-          echo "  - ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }}"
+          echo "  - ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${TAG_SAFE_BRANCH}"
           echo "Platforms: linux/amd64, linux/arm64"
           echo "Digest: ${{ steps.build.outputs.digest }}"
