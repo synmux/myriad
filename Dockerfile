@@ -1,4 +1,4 @@
-FROM golang:1.24.4-alpine3.21
+FROM golang:1.24.5-alpine3.21
 HEALTHCHECK CMD "aaisp-exporter"
 RUN adduser -h /go/src/app -D aaisp && \
     chown -R aaisp /go
