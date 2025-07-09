@@ -8,7 +8,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG NDPI_VERSION="4.14"
 ARG NTOP_VERSION="6.4"
 ARG NETFLOW2NG_VERSION="0.0.5"
-ARG GO_VERSION="1.24.3"
+ARG GO_VERSION="1.24.5"
 
 # GeoIP credentials for build-time download
 ARG GEOIPUPDATE_ACCOUNT_ID

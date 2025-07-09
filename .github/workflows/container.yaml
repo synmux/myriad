@@ -177,40 +177,50 @@ jobs:
           echo "Found digest files: ${digest_files[*]}"
 
           # Build digest references
-          DIGEST_REFS=""
+          DIGEST_REFS=()
           for digest_file in "${digest_files[@]}"; do
             if [ -f "$digest_file" ]; then
-              DIGEST_REFS="$DIGEST_REFS ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}@sha256:$digest_file"
+              DIGEST_REFS+=("${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}@sha256:$digest_file")
             fi
           done
 
-          echo "Using digest references: $DIGEST_REFS"
+          echo "Using digest references: ${DIGEST_REFS[*]}"
 
-          # Create manifest with all tags, annotations, and capture digest
-          TAGS=$(echo '${{ steps.metadata.outputs.tags }}' | tr '\n' ' ' | sed 's/^/-t /' | sed 's/ / -t /g')
-          echo "Creating manifest for tags: $TAGS"
+          # Build tag arguments
+          TAG_ARGS=()
+          while IFS= read -r tag; do
+            if [ -n "$tag" ]; then
+              TAG_ARGS+=("-t" "$tag")
+            fi
+          done <<< "${{ steps.metadata.outputs.tags }}"
 
-          # Build annotations from metadata action
-          ANNOTATIONS=""
+          echo "Creating manifest for tags: ${TAG_ARGS[*]}"
+
+          # Build annotation arguments
+          ANNOTATION_ARGS=()
           if [ -n "${{ steps.metadata.outputs.annotations }}" ]; then
             while IFS= read -r annotation; do
               if [ -n "$annotation" ]; then
-                ANNOTATIONS="$ANNOTATIONS --annotation index:$annotation"
+                ANNOTATION_ARGS+=("--annotation" "$annotation")
               fi
             done <<< "${{ steps.metadata.outputs.annotations }}"
           fi
 
           # Create manifest with dry-run first to get digest
-          DIGEST=$(docker buildx imagetools create $TAGS $DIGEST_REFS $ANNOTATIONS \
-            --dry-run 2>/dev/null | grep -o 'sha256:[a-f0-9]*' | head -1)
+          DIGEST=$(docker buildx imagetools create "${TAG_ARGS[@]}" "${DIGEST_REFS[@]}" "${ANNOTATION_ARGS[@]}" \
+            --dry-run 2>&1 | grep -o 'sha256:[a-f0-9]*' | head -1)
 
           if [ -z "$DIGEST" ]; then
             echo "Error: Failed to extract digest from dry-run"
+            echo "Command output:"
+            docker buildx imagetools create "${TAG_ARGS[@]}" "${DIGEST_REFS[@]}" "${ANNOTATION_ARGS[@]}" --dry-run || true
             exit 1
           fi
 
+          echo "Extracted digest: $DIGEST"
+
           # Actually create the manifest
-          docker buildx imagetools create $TAGS $DIGEST_REFS $ANNOTATIONS
+          docker buildx imagetools create "${TAG_ARGS[@]}" "${DIGEST_REFS[@]}" "${ANNOTATION_ARGS[@]}"
 
           echo "digest=$DIGEST" >> "$GITHUB_OUTPUT"
 
