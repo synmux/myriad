@@ -184,6 +184,32 @@ jobs:
             packages-metadata-${{ matrix.arch }}-${{ needs.prefetch.outputs.packages-hash }}-
             packages-metadata-${{ matrix.arch }}-
 
+      - name: generate-labels
+        id: generate-labels
+        run: |
+          # Generate tag-safe branch name for version
+          TAG_SAFE_BRANCH="${{ github.ref_name }}"
+          TAG_SAFE_BRANCH="${TAG_SAFE_BRANCH##*/}"
+          TAG_SAFE_BRANCH="${TAG_SAFE_BRANCH//[^a-zA-Z0-9._-]/-}"
+
+          # Create timestamp for created label
+          CREATED_TIME=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
+
+          {
+            echo "labels<<EOF"
+            echo "org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}"
+            echo "org.opencontainers.image.revision=${{ github.sha }}"
+            echo "org.opencontainers.image.created=${CREATED_TIME}"
+            echo "org.opencontainers.image.title=${{ env.IMAGE_NAME }}"
+            echo "org.opencontainers.image.description=Docker ntopng traffic analysis with netflow2ng support and build-time GeoIP"
+            echo "org.opencontainers.image.vendor=${{ github.repository_owner }}"
+            echo "org.opencontainers.image.version=${TAG_SAFE_BRANCH}"
+            echo "org.opencontainers.image.url=${{ github.server_url }}/${{ github.repository }}"
+            echo "org.opencontainers.image.documentation=${{ github.server_url }}/${{ github.repository }}"
+            echo "org.opencontainers.image.licenses=MIT"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
       - name: build
         id: build
         uses: docker/build-push-action@v5
@@ -192,6 +218,7 @@ jobs:
           file: ./components/Dockerfile
           platforms: ${{ matrix.platform }}
           outputs: type=image,name=${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }},push-by-digest=true,name-canonical=true,push=true
+          labels: ${{ steps.generate-labels.outputs.labels }}
           cache-from: |
             type=gha,scope=${{ matrix.arch }}-main
             type=gha,scope=${{ matrix.arch }}-runtime-deps-${{ needs.prefetch.outputs.cache-key }}
@@ -279,9 +306,6 @@ jobs:
           TAG_SAFE_BRANCH="${TAG_SAFE_BRANCH##*/}"
           TAG_SAFE_BRANCH="${TAG_SAFE_BRANCH//[^a-zA-Z0-9._-]/-}"
 
-          # Create timestamp for created label
-          CREATED_TIME=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
-
           {
             echo "tags<<EOF"
             echo "${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ github.sha }}"
@@ -291,15 +315,6 @@ jobs:
             echo "${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${TAG_SAFE_BRANCH}"
             echo "EOF"
             echo "cache-image=${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:cache"
-            echo "labels<<EOF"
-            echo "org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}"
-            echo "org.opencontainers.image.revision=${{ github.sha }}"
-            echo "org.opencontainers.image.created=${CREATED_TIME}"
-            echo "org.opencontainers.image.title=${{ env.IMAGE_NAME }}"
-            echo "org.opencontainers.image.description=Docker ntopng traffic analysis with netflow2ng support and build-time GeoIP"
-            echo "org.opencontainers.image.vendor=${{ github.repository_owner }}"
-            echo "org.opencontainers.image.version=${TAG_SAFE_BRANCH}"
-            echo "EOF"
           } >> "$GITHUB_OUTPUT"
 
       - name: merge
