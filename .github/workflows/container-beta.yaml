@@ -1,0 +1,266 @@
+name: container-beta
+on:
+  push: null
+  pull_request: null
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: netflow
+  GO_VERSION: 1.24.3
+  NDPI_VERSION: 4.14
+  NTOP_VERSION: 6.4
+  NETFLOW2NG_VERSION: 0.0.5
+jobs:
+  prefetch:
+    runs-on: ubuntu-latest
+    outputs:
+      cache-key: ${{ steps.cache-key.outputs.key }}
+      packages-hash: ${{ steps.cache-key.outputs.packages-hash }}
+      dockerfile-hash: ${{ steps.cache-key.outputs.dockerfile-hash }}
+    steps:
+      - name: checkout
+        uses: actions/checkout@85e6279cec87321a52edac9c87bce653a07cf6c2
+      - name: cache-key
+        id: cache-key
+        run: |
+          DOCKERFILE_HASH=$(sha256sum components/Dockerfile | cut -d' ' -f1)
+          PATCH_HASH="${{ hashFiles('components/allow-flows-from-netflow2ng.patch') }}"
+          CACHE_KEY="deps-${{ env.NDPI_VERSION }}-${{ env.NTOP_VERSION }}-${{ env.NETFLOW2NG_VERSION }}-${{ env.GO_VERSION }}-${DOCKERFILE_HASH}-${PATCH_HASH}"
+          echo "key=$CACHE_KEY" >> "$GITHUB_OUTPUT"
+          echo "dockerfile-hash=${DOCKERFILE_HASH}" >> "$GITHUB_OUTPUT"
+          echo "packages-hash=$(echo '${{ env.GO_VERSION }}' | sha256sum | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
+      - name: dependency-cache
+        id: dependency-cache
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684
+        with:
+          path: |
+            /tmp/prefetch-cache
+            /tmp/package-metadata-cache
+          key: ${{ steps.cache-key.outputs.key }}
+      - name: package-metadata-cache
+        id: package-metadata-cache
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684
+        with:
+          path: |
+            /tmp/apt-metadata-cache
+          key: packages-metadata-${{ steps.cache-key.outputs.packages-hash }}-${{ steps.cache-key.outputs.dockerfile-hash }}
+      - name: buildx
+        if: steps.dependency-cache.outputs.cache-hit != 'true'
+        uses: docker/setup-buildx-action@3f1544eb9eff0b4d4d279b33f704a06fcf8d0e43
+      - name: prefetch-dependencies
+        if: steps.dependency-cache.outputs.cache-hit != 'true'
+        run: |
+          docker buildx build \
+            --target dependency-prefetch \
+            --build-arg NDPI_VERSION=${{ env.NDPI_VERSION }} \
+            --build-arg NTOP_VERSION=${{ env.NTOP_VERSION }} \
+            --build-arg NETFLOW2NG_VERSION=${{ env.NETFLOW2NG_VERSION }} \
+            --output type=local,dest=/tmp/prefetch-cache \
+            ./components
+      - name: prefetch-package-metadata
+        if: steps.package-metadata-cache.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p /tmp/apt-metadata-cache
+          docker run --rm --entrypoint=/bin/bash \
+            -v /tmp/apt-metadata-cache:/cache \
+            jdxcode/mise@sha256:cff42e2bf1063ae6a8729c148a1003357d5befa2fe7656c5d0c99e62b68aab7d \
+            -c "apt-get update && cp -r /var/lib/apt/lists /cache/ && cp -r /var/cache/apt /cache/ && rm -f /cache/apt/archives/lock /cache/lists/lock && rm -rf /cache/apt/archives/partial /cache/lists/partial"
+  build:
+    runs-on: ${{ matrix.runner }}
+    needs: prefetch
+    strategy:
+      matrix:
+        include:
+          - runner: ubuntu-latest
+            platform: linux/amd64
+            arch: amd64
+          - runner: ubuntu-24.04-arm
+            platform: linux/arm64
+            arch: arm64
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+      attestations: write
+    env:
+      DOCKER_BUILDKIT: 1
+    steps:
+      - name: checkout
+        uses: actions/checkout@85e6279cec87321a52edac9c87bce653a07cf6c2
+      - name: buildx
+        uses: docker/setup-buildx-action@3f1544eb9eff0b4d4d279b33f704a06fcf8d0e43
+        with:
+          driver-opts: |
+            network=host
+            image=moby/buildkit:buildx-stable-1
+          buildkitd-config-inline: |
+            [worker.oci]
+              max-parallelism = 4
+            [worker.containerd]
+              max-parallelism = 4
+      - name: login
+        uses: docker/login-action@6d4b68b490aef8836e8fb5e50ee7b3bdfa5894f0
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: dependency-cache-restore
+        uses: actions/cache/restore@5a3ec84eff668545956fd18022155c47e93e2684
+        with:
+          path: |
+            /tmp/prefetch-cache
+            /tmp/package-metadata-cache
+          key: ${{ needs.prefetch.outputs.cache-key }}
+      - name: package-metadata-cache-restore
+        uses: actions/cache/restore@5a3ec84eff668545956fd18022155c47e93e2684
+        with:
+          path: |
+            /tmp/apt-metadata-cache
+          key: packages-metadata-${{ needs.prefetch.outputs.packages-hash }}-${{ needs.prefetch.outputs.dockerfile-hash }}
+      - name: build
+        id: build
+        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83
+        with:
+          context: ./components
+          file: ./components/Dockerfile
+          platforms: ${{ matrix.platform }}
+          outputs: type=image,name=${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }},push-by-digest=true,name-canonical=true,push=true
+          cache-from: |
+            type=gha,scope=main
+            type=gha,scope=runtime-deps-${{ needs.prefetch.outputs.cache-key }}
+            type=gha,scope=build-deps-${{ needs.prefetch.outputs.cache-key }}
+            type=gha,scope=mise-tools-${{ needs.prefetch.outputs.cache-key }}
+            type=gha,scope=shared-mise-go-${{ env.GO_VERSION }}
+            type=gha,scope=shared-deps-${{ needs.prefetch.outputs.cache-key }}
+            type=gha,scope=shared-packages-${{ needs.prefetch.outputs.cache-key }}
+            type=gha,scope=shared-geoip-buildtime-${{ needs.prefetch.outputs.cache-key }}
+          cache-to: |
+            type=gha,mode=max,scope=main
+            type=gha,mode=max,scope=runtime-deps-${{ needs.prefetch.outputs.cache-key }}
+            type=gha,mode=max,scope=build-deps-${{ needs.prefetch.outputs.cache-key }}
+            type=gha,mode=max,scope=mise-tools-${{ needs.prefetch.outputs.cache-key }}
+            type=gha,mode=max,scope=shared-mise-go-${{ env.GO_VERSION }}
+            type=gha,mode=max,scope=shared-deps-${{ needs.prefetch.outputs.cache-key }}
+            type=gha,mode=max,scope=shared-packages-${{ needs.prefetch.outputs.cache-key }}
+            type=gha,mode=max,scope=shared-geoip-buildtime-${{ needs.prefetch.outputs.cache-key }}
+          provenance: mode=max
+          sbom: true
+          build-args: |
+            GO_VERSION=${{ env.GO_VERSION }}
+            NDPI_VERSION=${{ env.NDPI_VERSION }}
+            NTOP_VERSION=${{ env.NTOP_VERSION }}
+            NETFLOW2NG_VERSION=${{ env.NETFLOW2NG_VERSION }}
+            GEOIPUPDATE_ACCOUNT_ID=${{ secrets.GEOIPUPDATE_ACCOUNT_ID || '0' }}
+            GEOIPUPDATE_LICENSE_KEY=${{ secrets.GEOIPUPDATE_LICENSE_KEY || '' }}
+          no-cache-filters: dependency-prefetch
+          secrets: |
+            APT_METADATA_CACHE=/tmp/apt-metadata-cache
+      - name: export-digest
+        run: |
+          mkdir -p /tmp/digests
+          digest="${{ steps.build.outputs.digest }}"
+          touch "/tmp/digests/${digest#sha256:}"
+      - name: upload-digest
+        uses: actions/upload-artifact@v4
+        with:
+          name: digests-${{ matrix.arch }}
+          path: /tmp/digests/*
+          if-no-files-found: error
+          retention-days: 1
+  merge:
+    runs-on: ubuntu-latest
+    needs:
+      - prefetch
+      - build
+    outputs:
+      image: ${{ steps.metadata.outputs.tags }}
+      digest: ${{ steps.merge.outputs.digest }}
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+      attestations: write
+    steps:
+      - name: checkout
+        uses: actions/checkout@85e6279cec87321a52edac9c87bce653a07cf6c2
+      - name: download-digests
+        uses: actions/download-artifact@v4
+        with:
+          path: /tmp/digests
+          pattern: digests-*
+          merge-multiple: true
+      - name: buildx
+        uses: docker/setup-buildx-action@3f1544eb9eff0b4d4d279b33f704a06fcf8d0e43
+      - name: login
+        uses: docker/login-action@6d4b68b490aef8836e8fb5e50ee7b3bdfa5894f0
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: metadata
+        id: metadata
+        run: |
+          # Extract tag-safe branch name (part after last slash)
+          TAG_SAFE_BRANCH="${{ github.ref_name }}"
+          TAG_SAFE_BRANCH="${TAG_SAFE_BRANCH##*/}"
+          {
+            echo "tags<<EOF"
+            echo "${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ github.sha }}"
+            echo "${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:latest"
+            echo "${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${TAG_SAFE_BRANCH}"
+            echo "EOF"
+            echo "cache-image=${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:cache"
+            echo "labels<<EOF"
+            echo "org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}"
+            echo "org.opencontainers.image.revision=${{ github.sha }}"
+            echo "org.opencontainers.image.created=$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+            echo "org.opencontainers.image.title=${{ env.IMAGE_NAME }}"
+            echo "org.opencontainers.image.description=Docker ntopng traffic analysis with netflow2ng support and build-time GeoIP"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+      - name: merge
+        id: merge
+        working-directory: /tmp/digests
+        run: |
+          # Create manifest list and push
+          TAGS=""
+          while IFS= read -r tag; do
+            TAGS="$TAGS -t $tag"
+          done <<< "${{ steps.metadata.outputs.tags }}"
+
+          # Add cache tag
+          TAGS="$TAGS -t ${{ steps.metadata.outputs.cache-image }}"
+
+          # Create manifest with all tags and capture digest
+          DIGEST=$(docker buildx imagetools create $TAGS \
+            $(printf '${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}@sha256:%s ' *) \
+            --dry-run | grep -o 'sha256:[a-f0-9]*')
+
+          # Actually create the manifest
+          docker buildx imagetools create $TAGS \
+            $(printf '${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}@sha256:%s ' *)
+
+          echo "digest=$DIGEST" >> "$GITHUB_OUTPUT"
+      - name: generate-artifact-attestation
+        uses: actions/attest-build-provenance@39cb715ce0ddd23df1f705e863f642bfb72dfb2b
+        with:
+          subject-name: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}
+          subject-digest: ${{ steps.merge.outputs.digest }}
+          push-to-registry: true
+      - name: summary
+        run: |
+          # Extract tag-safe branch name (part after last slash)
+          TAG_SAFE_BRANCH="${{ github.ref_name }}"
+          TAG_SAFE_BRANCH="${TAG_SAFE_BRANCH##*/}"
+          echo "Multi-arch images created:"
+          echo "  - ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ github.sha }}"
+          echo "  - ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:latest"
+          echo "  - ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${TAG_SAFE_BRANCH}"
+          echo "Platforms: linux/amd64, linux/arm64"
+          echo "Digest: ${{ steps.merge.outputs.digest }}"
+          echo "Cache key: ${{ needs.prefetch.outputs.cache-key }}"
+          echo "Component versions:"
+          echo "  - Go: ${{ env.GO_VERSION }}"
+          echo "  - nDPI: ${{ env.NDPI_VERSION }}"
+          echo "  - ntopng: ${{ env.NTOP_VERSION }}"
+          echo "  - netflow2ng: ${{ env.NETFLOW2NG_VERSION }}"
+          echo "GeoIP databases downloaded at build time"
