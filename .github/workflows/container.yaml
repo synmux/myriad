@@ -20,8 +20,8 @@ jobs:
       - name: cache-key
         id: cache-key
         run: |
-          DOCKERFILE_HASH=$(sha256sum projects/netflow/components/Dockerfile | cut -d' ' -f1)
-          PATCH_HASH="${{ hashFiles('projects/netflow/components/allow-flows-from-netflow2ng.patch') }}"
+          DOCKERFILE_HASH=$(sha256sum components/Dockerfile | cut -d' ' -f1)
+          PATCH_HASH="${{ hashFiles('components/allow-flows-from-netflow2ng.patch') }}"
           CACHE_KEY="deps-${{ env.NDPI_VERSION }}-${{ env.NTOP_VERSION }}-${{ env.NETFLOW2NG_VERSION }}-${{ env.GO_VERSION }}-${DOCKERFILE_HASH}-${PATCH_HASH}"
           echo "key=$CACHE_KEY" >> "$GITHUB_OUTPUT"
           echo "dockerfile-hash=${DOCKERFILE_HASH}" >> "$GITHUB_OUTPUT"
@@ -53,7 +53,7 @@ jobs:
             --build-arg NTOP_VERSION=${{ env.NTOP_VERSION }} \
             --build-arg NETFLOW2NG_VERSION=${{ env.NETFLOW2NG_VERSION }} \
             --output type=local,dest=/tmp/prefetch-cache \
-            ./code/docker/netflow/components
+            ./components
       - name: prefetch-package-metadata
         if: steps.package-metadata-cache.outputs.cache-hit != 'true'
         run: |
