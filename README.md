@@ -4,8 +4,6 @@
 
 A fun and colorful CLI tool built with Python that demonstrates animated output, rainbow colors, progress bars, and multiple output formats. Features a modular command architecture with auto-loading for easy extensibility.
 
-Testing Claude on another branch.
-
 ## ✨ Features
 
 ### 🎨 Visual Excellence
