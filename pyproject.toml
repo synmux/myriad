@@ -28,3 +28,9 @@ sandbox = "sandbox:main"
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [
+    "mypy>=1.16.1",
+    "types-pyyaml>=6.0.12.20250516",
+]
