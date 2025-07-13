@@ -11,19 +11,20 @@ from enum import Enum
 from typing import Any
 
 import yaml
+from rich import box
 from rich.align import Align
 from rich.console import Console
 from rich.panel import Panel
 from rich.progress import Progress, SpinnerColumn, TextColumn
 from rich.table import Table
 from rich.text import Text
-from rich import box
 
 from .command_interface import GlobalConfig
 
 
 class OutputFormat(str, Enum):
     """Output format options"""
+
     NORMAL = "normal"
     JSON = "json"
     YAML = "yaml"
@@ -126,7 +127,9 @@ def output_data(data: dict[str, Any], config: GlobalConfig) -> None:
         console.print(table)
 
 
-def create_data_table(title: str, columns: dict[str, str], rows: list[list[str]], max_rows: int = 10) -> Table:
+def create_data_table(
+    title: str, columns: dict[str, str], rows: list[list[str]], max_rows: int = 10
+) -> Table:
     """
     Create a Rich table with the given data
 
@@ -143,7 +146,7 @@ def create_data_table(title: str, columns: dict[str, str], rows: list[list[str]]
         title=create_rainbow_text(title),
         box=box.ROUNDED,
         show_header=True,
-        header_style="bold cyan"
+        header_style="bold cyan",
     )
 
     # Add columns
@@ -192,7 +195,9 @@ def show_completion_animation(message: str, config: GlobalConfig) -> None:
     animate_spinner_with_text(f"Wrapping up {message}...", 1.0)
 
 
-def print_debug_info(config: GlobalConfig, extra_info: dict[str, Any] | None = None) -> None:
+def print_debug_info(
+    config: GlobalConfig, extra_info: dict[str, Any] | None = None
+) -> None:
     """
     Print debug information if debug mode is enabled
 

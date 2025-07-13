@@ -6,20 +6,21 @@ with the auto-loading system and follow the established patterns.
 """
 
 import time
-from typing import Any, override
+from typing import Any
 
 import click
+from typing_extensions import override
 
 from ..command_interface import BaseCommand, GlobalConfig
 from ..utils import (
+    animate_spinner_with_text,
     console,
     create_fancy_panel,
-    output_data,
-    show_welcome_animation,
-    show_completion_animation,
-    print_debug_info,
     create_rainbow_text,
-    animate_spinner_with_text,
+    output_data,
+    print_debug_info,
+    show_completion_animation,
+    show_welcome_animation,
 )
 
 
@@ -32,12 +33,17 @@ class ExampleCommand(BaseCommand):
         """Register the example command with the CLI group"""
 
         @cli_group.command()
-        @click.option('--name', '-n', default='World', help='Name to greet')
-        @click.option('--repeat', '-r', default=1, help='Number of times to repeat the greeting')
-        @click.option('--style', '-st',
-                      type=click.Choice(['simple', 'fancy', 'animated']),
-                      default='simple',
-                      help='Style of greeting to use')
+        @click.option("--name", "-n", default="World", help="Name to greet")
+        @click.option(
+            "--repeat", "-r", default=1, help="Number of times to repeat the greeting"
+        )
+        @click.option(
+            "--style",
+            "-st",
+            type=click.Choice(["simple", "fancy", "animated"]),
+            default="simple",
+            help="Style of greeting to use",
+        )
         @click.pass_context
         def example(ctx: click.Context, name: str, repeat: int, style: str) -> None:
             """
@@ -68,10 +74,13 @@ class ExampleCommand(BaseCommand):
             return
 
         # Print debug info if enabled
-        print_debug_info(config, {
-            "command": "example",
-            "options": {"name": name, "repeat": repeat, "style": style}
-        })
+        print_debug_info(
+            config,
+            {
+                "command": "example",
+                "options": {"name": name, "repeat": repeat, "style": style},
+            },
+        )
 
         # Welcome animation
         show_welcome_animation("example command", config)
@@ -103,7 +112,7 @@ class ExampleCommand(BaseCommand):
             f"Greetings, {name}!",
             f"Welcome, {name}!",
             f"Hi there, {name}!",
-            f"Hey, {name}!"
+            f"Hey, {name}!",
         ]
 
         for i in range(repeat):
@@ -116,14 +125,16 @@ class ExampleCommand(BaseCommand):
                 "iteration": i + 1,
                 "message": message,
                 "style": style,
-                "timestamp": time.time()
+                "timestamp": time.time(),
             }
             greetings.append(greeting)
 
         return greetings
 
     @staticmethod
-    def _display_greetings(greetings: list[dict[str, Any]], style: str, config: GlobalConfig) -> None:
+    def _display_greetings(
+        greetings: list[dict[str, Any]], style: str, config: GlobalConfig
+    ) -> None:
         """Display greetings according to the specified style"""
         if config.quiet or config.silent:
             return
@@ -136,8 +147,8 @@ class ExampleCommand(BaseCommand):
             for i, greeting in enumerate(greetings):
                 panel = create_fancy_panel(
                     f"✨ Greeting #{greeting['iteration']} ✨",
-                    str(greeting['message']),
-                    config
+                    str(greeting["message"]),
+                    config,
                 )
                 console.print(panel)
                 if i < len(greetings) - 1:  # Don't sleep after the last one
@@ -145,8 +156,10 @@ class ExampleCommand(BaseCommand):
 
         elif style == "animated":
             for greeting in greetings:
-                animate_spinner_with_text(f"Preparing greeting #{greeting['iteration']}...", 0.8)
-                rainbow_message = create_rainbow_text(str(greeting['message']))
+                animate_spinner_with_text(
+                    f"Preparing greeting #{greeting['iteration']}...", 0.8
+                )
+                rainbow_message = create_rainbow_text(str(greeting["message"]))
                 console.print(f"[bold]🎉 {rainbow_message} 🎉[/bold]")
                 console.print()
 
@@ -156,7 +169,7 @@ class ExampleCommand(BaseCommand):
         repeat: int,
         style: str,
         greetings: list[dict[str, Any]],
-        config: GlobalConfig
+        config: GlobalConfig,
     ) -> dict[str, Any]:
         """Create the output data structure"""
         output_data_structure: dict[str, Any] = {
@@ -166,24 +179,21 @@ class ExampleCommand(BaseCommand):
                 "repetitions": repeat,
                 "style": style,
                 "total_greetings": len(greetings),
-                "execution_time": time.time()
+                "execution_time": time.time(),
             },
             "greetings": greetings,
             "statistics": {
-                "unique_messages": len(set(str(g['message']) for g in greetings)),
-                "avg_message_length": sum(len(str(g['message'])) for g in greetings) / len(greetings),
-                "styles_available": ["simple", "fancy", "animated"]
-            }
+                "unique_messages": len(set(str(g["message"]) for g in greetings)),
+                "avg_message_length": sum(len(str(g["message"])) for g in greetings)
+                / len(greetings),
+                "styles_available": ["simple", "fancy", "animated"],
+            },
         }
 
         if config.verbose:
             verbose_details: dict[str, Any] = {
                 "config": config.model_dump(),
-                "command_options": {
-                    "name": name,
-                    "repeat": repeat,
-                    "style": style
-                },
+                "command_options": {"name": name, "repeat": repeat, "style": style},
                 "command_info": {
                     "description": "Example command for demonstration purposes",
                     "features_demonstrated": [
@@ -191,15 +201,15 @@ class ExampleCommand(BaseCommand):
                         "Multiple output styles",
                         "Conditional animations",
                         "Data structure generation",
-                        "Error handling patterns"
+                        "Error handling patterns",
                     ],
                     "patterns_used": [
                         "BaseCommand inheritance",
                         "Static method organization",
                         "Global config integration",
-                        "Utility function usage"
-                    ]
-                }
+                        "Utility function usage",
+                    ],
+                },
             }
             output_data_structure["verbose_details"] = verbose_details
 

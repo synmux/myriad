@@ -17,15 +17,22 @@ console = Console()
 
 
 @click.group()
-@click.option('--verbose', '-v', is_flag=True, help='Enable verbose output')
-@click.option('--json', '-j', 'output_json', is_flag=True, help='Output in JSON format')
-@click.option('--yaml', '-y', 'output_yaml', is_flag=True, help='Output in YAML format')
-@click.option('--debug', '-d', is_flag=True, help='Enable debug mode')
-@click.option('--quiet', '-q', is_flag=True, help='Suppress normal output')
-@click.option('--silent', '-s', is_flag=True, help='Suppress all output')
+@click.option("--verbose", "-v", is_flag=True, help="Enable verbose output")
+@click.option("--json", "-j", "output_json", is_flag=True, help="Output in JSON format")
+@click.option("--yaml", "-y", "output_yaml", is_flag=True, help="Output in YAML format")
+@click.option("--debug", "-d", is_flag=True, help="Enable debug mode")
+@click.option("--quiet", "-q", is_flag=True, help="Suppress normal output")
+@click.option("--silent", "-s", is_flag=True, help="Suppress all output")
 @click.pass_context
-def cli(ctx: click.Context, verbose: bool, output_json: bool, output_yaml: bool,
-        debug: bool, quiet: bool, silent: bool) -> None:
+def cli(
+    ctx: click.Context,
+    verbose: bool,
+    output_json: bool,
+    output_yaml: bool,
+    debug: bool,
+    quiet: bool,
+    silent: bool,
+) -> None:
     """
     🌈 Sandbox CLI - A delightfully animated command-line tool
 
@@ -45,15 +52,15 @@ def cli(ctx: click.Context, verbose: bool, output_json: bool, output_yaml: bool,
         debug=debug,
         quiet=quiet,
         silent=silent,
-        output_format=output_format
+        output_format=output_format,
     )
 
     # Store config in context
     _ = ctx.ensure_object(dict)
-    ctx.obj['config'] = config
+    ctx.obj["config"] = config
 
     if debug and not silent:
-        console.print(f"[dim]Debug mode enabled[/dim]")
+        console.print("[dim]Debug mode enabled[/dim]")
         console.print(f"[dim]Config: {config.model_dump()}[/dim]")
 
 

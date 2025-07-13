@@ -6,25 +6,26 @@ and complex data structures with animations.
 """
 
 import time
-from typing import Any, override
+from typing import Any
 
 import click
-from rich.progress import Progress
 from rich.align import Align
+from rich.progress import Progress
 from rich.table import Table
+from typing_extensions import override
 
 from ..command_interface import BaseCommand, GlobalConfig
 from ..utils import (
-    console,
-    create_fancy_panel,
-    create_rainbow_text,
-    output_data,
-    show_welcome_animation,
-    print_debug_info,
-    create_data_table,
-    get_output_format_from_config,
     OutputFormat,
     animate_spinner_with_text,
+    console,
+    create_data_table,
+    create_fancy_panel,
+    create_rainbow_text,
+    get_output_format_from_config,
+    output_data,
+    print_debug_info,
+    show_welcome_animation,
 )
 
 
@@ -37,8 +38,12 @@ class DemoCommand(BaseCommand):
         """Register the demo command with the CLI group"""
 
         @cli_group.command()
-        @click.option('--count', '-c', default=5, help='Number of demo items to process')
-        @click.option('--speed', '-s', default=0.1, help='Animation speed (seconds per step)')
+        @click.option(
+            "--count", "-c", default=5, help="Number of demo items to process"
+        )
+        @click.option(
+            "--speed", "-s", default=0.1, help="Animation speed (seconds per step)"
+        )
         @click.pass_context
         def demo(ctx: click.Context, count: int, speed: float) -> None:
             """
@@ -67,10 +72,9 @@ class DemoCommand(BaseCommand):
             return
 
         # Print debug info if enabled
-        print_debug_info(config, {
-            "command": "demo",
-            "options": {"count": count, "speed": speed}
-        })
+        print_debug_info(
+            config, {"command": "demo", "options": {"count": count, "speed": speed}}
+        )
 
         # Animated ASCII art banner
         if not config.quiet:
@@ -91,7 +95,10 @@ class DemoCommand(BaseCommand):
         output_data(output_data_structure, config)
 
         # Show a fancy table if in normal mode
-        if get_output_format_from_config(config) == OutputFormat.NORMAL and not config.quiet:
+        if (
+            get_output_format_from_config(config) == OutputFormat.NORMAL
+            and not config.quiet
+        ):
             console.print()
             items_table = DemoCommand._create_items_table(demo_data)
             console.print(items_table)
@@ -104,7 +111,7 @@ class DemoCommand(BaseCommand):
             completion_panel = create_fancy_panel(
                 "🎉 DEMO COMPLETE 🎉",
                 f"Successfully processed {count} items with {len(set(item['category'] for item in demo_data))} categories!",
-                config
+                config,
             )
             console.print(completion_panel)
 
@@ -132,7 +139,9 @@ class DemoCommand(BaseCommand):
         demo_data: list[dict[str, Any]] = []
 
         with Progress(console=console) as progress:
-            main_task = progress.add_task("[green]Processing demo items...", total=count)
+            main_task = progress.add_task(
+                "[green]Processing demo items...", total=count
+            )
             data_task = progress.add_task("[blue]Generating data...", total=count)
 
             for i in range(count):
@@ -145,7 +154,7 @@ class DemoCommand(BaseCommand):
                     "name": f"Demo Item {i+1}",
                     "status": "✅ Complete" if i % 2 == 0 else "🔄 Processing",
                     "score": round((i + 1) * 20.5, 2),
-                    "category": ["Alpha", "Beta", "Gamma", "Delta"][i % 4]
+                    "category": ["Alpha", "Beta", "Gamma", "Delta"][i % 4],
                 }
                 demo_data.append(item_data)
 
@@ -156,10 +165,7 @@ class DemoCommand(BaseCommand):
 
     @staticmethod
     def _create_output_structure(
-        count: int,
-        speed: float,
-        demo_data: list[dict[str, Any]],
-        config: GlobalConfig
+        count: int, speed: float, demo_data: list[dict[str, Any]], config: GlobalConfig
     ) -> dict[str, Any]:
         """Create the output data structure"""
         output_data_structure: dict[str, Any] = {
@@ -171,15 +177,17 @@ class DemoCommand(BaseCommand):
                     "ASCII art animation",
                     "Multi-task progress bars",
                     "Dynamic data generation",
-                    "Rich table formatting"
-                ]
+                    "Rich table formatting",
+                ],
             },
             "items": demo_data,
             "statistics": {
                 "avg_score": sum(item["score"] for item in demo_data) / len(demo_data),
-                "completed_items": len([item for item in demo_data if "Complete" in item["status"]]),
-                "categories": list(set(item["category"] for item in demo_data))
-            }
+                "completed_items": len(
+                    [item for item in demo_data if "Complete" in item["status"]]
+                ),
+                "categories": list(set(item["category"] for item in demo_data)),
+            },
         }
 
         if config.verbose:
@@ -196,9 +204,9 @@ class DemoCommand(BaseCommand):
                         "Dynamic data generation",
                         "Statistical calculations",
                         "Rich table formatting",
-                        "Complex data structures"
-                    ]
-                }
+                        "Complex data structures",
+                    ],
+                },
             }
             output_data_structure["verbose_details"] = verbose_details
 
@@ -212,17 +220,19 @@ class DemoCommand(BaseCommand):
             "Name": "bold",
             "Status": "",
             "Score": "yellow",
-            "Category": "green"
+            "Category": "green",
         }
 
         rows: list[list[str]] = []
         for item in demo_data:
-            rows.append([
-                str(item["id"]),
-                str(item["name"]),
-                str(item["status"]),
-                str(item["score"]),
-                str(item["category"])
-            ])
+            rows.append(
+                [
+                    str(item["id"]),
+                    str(item["name"]),
+                    str(item["status"]),
+                    str(item["score"]),
+                    str(item["category"]),
+                ]
+            )
 
         return create_data_table("🎯 Demo Items Summary", columns, rows, max_rows=10)

@@ -8,10 +8,10 @@ along with utilities for auto-loading commands from the commands/ directory.
 import importlib
 import inspect
 import pkgutil
+import types
 from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Protocol
-import types
 
 import click
 from pydantic import BaseModel
@@ -19,6 +19,7 @@ from pydantic import BaseModel
 
 class GlobalConfig(BaseModel):
     """Global configuration for the CLI"""
+
     verbose: bool = False
     debug: bool = False
     quiet: bool = False
@@ -68,7 +69,7 @@ class BaseCommand(ABC):
         Returns:
             GlobalConfig: The global configuration object
         """
-        config: GlobalConfig = ctx.obj['config']
+        config: GlobalConfig = ctx.obj["config"]
         return config
 
     @staticmethod
@@ -126,25 +127,33 @@ class CommandRegistry:
 
             # Iterate through all modules in the package
             for _, module_name, ispkg in pkgutil.iter_modules(package_path):
-                if not ispkg and not module_name.startswith('_'):
+                if not ispkg and not module_name.startswith("_"):
                     full_module_name = f"{self.commands_package}.{module_name}"
 
                     try:
-                        module: types.ModuleType = importlib.import_module(full_module_name)
+                        module: types.ModuleType = importlib.import_module(
+                            full_module_name
+                        )
 
                         # Find all classes that implement CommandProtocol
                         for name, obj in inspect.getmembers(module, inspect.isclass):
-                            if (hasattr(obj, 'register_command') and
-                                callable(getattr(obj, 'register_command')) and
-                                obj != BaseCommand and
-                                not name.startswith('_')):
+                            if (
+                                hasattr(obj, "register_command")
+                                and callable(obj.register_command)
+                                and obj != BaseCommand
+                                and not name.startswith("_")
+                            ):
                                 commands.append(obj)
 
                     except ImportError as e:
-                        print(f"Warning: Could not import command module {full_module_name}: {e}")
+                        print(
+                            f"Warning: Could not import command module {full_module_name}: {e}"
+                        )
 
         except ImportError as e:
-            print(f"Warning: Could not import commands package {self.commands_package}: {e}")
+            print(
+                f"Warning: Could not import commands package {self.commands_package}: {e}"
+            )
 
         self.registered_commands = commands
         return commands
@@ -162,7 +171,9 @@ class CommandRegistry:
             try:
                 command_class.register_command(cli_group)
             except Exception as e:
-                print(f"Warning: Could not register command {command_class.__name__}: {e}")
+                print(
+                    f"Warning: Could not register command {command_class.__name__}: {e}"
+                )
 
     def get_registered_commands(self) -> list[type[CommandProtocol]]:
         """
@@ -174,7 +185,9 @@ class CommandRegistry:
         return self.registered_commands.copy()
 
 
-def create_command_registry(commands_package: str = "sandbox.commands") -> CommandRegistry:
+def create_command_registry(
+    commands_package: str = "sandbox.commands",
+) -> CommandRegistry:
     """
     Factory function to create a command registry
 

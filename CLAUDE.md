@@ -6,7 +6,7 @@ This is a Python-based CLI tool called "Sandbox" that demonstrates advanced term
 
 ## Project Structure
 
-```
+```plaintext
 myriad/
 ├── src/sandbox/
 │   ├── __init__.py              # Main CLI entry point with auto-loading
@@ -36,30 +36,35 @@ myriad/
 ## Architecture Patterns
 
 ### Modular Command System
+
 - Commands auto-discovered from `commands/` directory
 - Each command is a separate module with a class implementing `CommandProtocol`
 - `CommandRegistry` handles discovery and registration
 - No need to manually register commands in main CLI file
 
 ### Command Interface
+
 - `BaseCommand` abstract class provides common functionality
 - `CommandProtocol` defines the interface all commands must implement
 - Static `register_command()` method for Click integration
 - Consistent access to global configuration via context
 
 ### Global Configuration
+
 - Uses `GlobalConfig` Pydantic model for consistent settings across all commands
 - Configuration passed through Click context object
 - Supports: verbose, debug, quiet, silent modes + output formats
 - Type-safe configuration access with helper methods
 
 ### Shared Utilities
+
 - `utils.py` contains common functions used across commands
 - Output formatting, animations, Rich components
 - Consistent styling and behavior patterns
 - Respects global flags (quiet/silent) automatically
 
 ### Auto-Loading System
+
 - `CommandRegistry` class discovers commands at runtime
 - Uses `importlib` and `pkgutil` for dynamic module loading
 - Supports Python packages and namespace packages
@@ -68,18 +73,21 @@ myriad/
 ## Current Commands
 
 ### `hello` (`commands/hello.py`)
+
 - Basic "hello world" with rainbow animations
 - Demonstrates: panels, spinners, data output, all flags
 - Shows sample data structure with timestamps and metadata
 - Template for simple commands with rich output
 
 ### `demo` (`commands/demo.py`)
+
 - Advanced demo with progress bars and ASCII art
-- Options: `--count` (items to process), `--speed` (animation speed)  
+- Options: `--count` (items to process), `--speed` (animation speed)
 - Demonstrates: multi-task progress, tables, complex data structures
 - Shows statistical calculations and summaries
 
 ### `example` (`commands/example.py`)
+
 - Template command showing how to create new commands
 - Options: `--name`, `--repeat`, `--style` (simple/fancy/animated)
 - Demonstrates: command-specific options, multiple styles, patterns
@@ -103,6 +111,7 @@ myriad/
 7. **Command automatically loads** on next CLI run
 
 ### Command Class Template
+
 ```python
 class MyCommand(BaseCommand):
     """Command description"""
@@ -125,6 +134,7 @@ class MyCommand(BaseCommand):
 ```
 
 ### Type Safety
+
 - All functions have type hints
 - Pydantic models for configuration and data structures
 - Protocol classes define interfaces
@@ -132,6 +142,7 @@ class MyCommand(BaseCommand):
 - Static analysis friendly with mypy
 
 ### Error Handling
+
 - Commands should handle errors gracefully
 - Use Rich console for error messages when not silent
 - Preserve exit codes for scripting
@@ -140,6 +151,7 @@ class MyCommand(BaseCommand):
 ## Code Style Conventions
 
 ### Imports Organization
+
 ```python
 # Standard library
 import json
@@ -157,6 +169,7 @@ from ..utils import console, output_data, create_fancy_panel
 ```
 
 ### Function Signatures
+
 ```python
 @staticmethod
 def execute(config: GlobalConfig, option: str) -> None:
@@ -170,6 +183,7 @@ def _helper_method(data: List[Dict[str, Any]]) -> Dict[str, Any]:
 ```
 
 ### Data Structures
+
 ```python
 # Use clear, descriptive data structures
 output_data_structure = {
@@ -189,11 +203,13 @@ if config.verbose:
 ## Utility Functions Reference
 
 ### Output Functions
+
 - `output_data(data, config)`: Format data in JSON/YAML/Rich tables
 - `create_data_table(title, columns, rows)`: Create styled Rich tables
 - `console`: Global Rich console instance
 
 ### Animation Functions
+
 - `create_rainbow_text(text)`: Generate rainbow-colored text
 - `animate_spinner_with_text(text, duration)`: Animated spinners
 - `create_fancy_panel(title, content, config)`: Bordered panels
@@ -201,6 +217,7 @@ if config.verbose:
 - `show_completion_animation(message, config)`: Standard completion
 
 ### Helper Functions
+
 - `print_debug_info(config, extra_info)`: Debug information display
 - `get_output_format_from_config(config)`: Convert to OutputFormat enum
 - `BaseCommand.get_config_from_context(ctx)`: Extract config from Click context
@@ -209,6 +226,7 @@ if config.verbose:
 ## Rich Library Usage
 
 ### Console Output
+
 ```python
 # Import global console
 from ..utils import console
@@ -227,6 +245,7 @@ console.print(panel)
 ```
 
 ### Progress Bars
+
 ```python
 from rich.progress import Progress
 
@@ -240,11 +259,12 @@ with Progress(console=console) as progress:
 ## Package Management Commands
 
 ### Using uv
+
 ```bash
 # Install dependencies
 uv sync
 
-# Add new dependencies  
+# Add new dependencies
 uv add package-name
 
 # Run the CLI
@@ -255,6 +275,7 @@ uv run sandbox example --name "Claude" --style fancy
 ```
 
 ### Development Commands
+
 ```bash
 # Run with different options
 uv run sandbox --json hello
@@ -268,6 +289,7 @@ uv run sandbox --debug hello
 ## Command Auto-Loading Details
 
 ### How It Works
+
 1. `CommandRegistry` scans `sandbox.commands` package
 2. Imports all `.py` files (except `__init__.py` and `_*` files)
 3. Finds classes with `register_command` method
@@ -275,17 +297,19 @@ uv run sandbox --debug hello
 5. Commands become available in CLI automatically
 
 ### Registry Implementation
+
 ```python
 # In command_interface.py
 class CommandRegistry:
     def discover_commands(self) -> List[Type[CommandProtocol]]:
         # Uses importlib and pkgutil for discovery
-        
+
     def register_all_commands(self, cli_group: click.Group) -> None:
         # Registers all discovered commands
 ```
 
 ### Main CLI Integration
+
 ```python
 # In __init__.py main()
 def main() -> None:
@@ -297,6 +321,7 @@ def main() -> None:
 ## Extension Guidelines
 
 ### New Commands
+
 - Follow existing patterns for consistency
 - Use `BaseCommand` inheritance
 - Implement proper error handling
@@ -305,12 +330,14 @@ def main() -> None:
 - Use utility functions for common operations
 
 ### New Utilities
+
 - Add to `utils.py` for shared functionality
 - Respect global configuration flags
 - Use Rich library components
 - Include proper type hints and documentation
 
 ### Performance Considerations
+
 - Early return for `config.silent` to skip processing
 - Lazy loading of heavy operations
 - Efficient Rich component usage
@@ -319,6 +346,7 @@ def main() -> None:
 ## Testing Approach
 
 When working on this project:
+
 1. Test each command with all global flags (`--verbose`, `--json`, `--yaml`, `--debug`, `--quiet`, `--silent`)
 2. Verify JSON/YAML output is valid and complete
 3. Check animations work properly and respect quiet/silent
@@ -337,12 +365,14 @@ When working on this project:
 ## Future Extension Ideas
 
 ### Command System Enhancements
+
 - Plugin system with external command loading
 - Command aliases and shortcuts
 - Command categories and grouping
 - Interactive command selection
 
 ### Feature Additions
+
 - Configuration file support (YAML/TOML)
 - Custom themes and color schemes
 - Logging integration with Rich
@@ -350,6 +380,7 @@ When working on this project:
 - Template generation for new commands
 
 ### Advanced CLI Features
+
 - Interactive mode with prompts
 - Command pipelines and chaining
 - Batch processing capabilities

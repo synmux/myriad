@@ -6,17 +6,18 @@ fancy panels, and all the visual capabilities of the CLI tool.
 """
 
 import time
-from typing import Any, override
+from typing import Any
 
 import click
+from typing_extensions import override
 
 from ..command_interface import BaseCommand, GlobalConfig
 from ..utils import (
     console,
     create_fancy_panel,
     output_data,
-    show_welcome_animation,
     print_debug_info,
+    show_welcome_animation,
 )
 
 
@@ -61,13 +62,14 @@ class HelloCommand(BaseCommand):
         greeting_panel = create_fancy_panel(
             "🌈 HELLO WORLD 🌈",
             "Welcome to the most spectacular CLI tool ever created!",
-            config
+            config,
         )
         console.print(greeting_panel)
 
         if not config.quiet:
             console.print()
             from ..utils import animate_spinner_with_text
+
             animate_spinner_with_text("Generating awesome data...", 1.0)
 
         # Sample data output
@@ -78,12 +80,11 @@ class HelloCommand(BaseCommand):
         if not config.quiet:
             console.print()
             from ..utils import animate_spinner_with_text
+
             animate_spinner_with_text("Wrapping up the magic...", 1.0)
 
             farewell_panel = create_fancy_panel(
-                "✨ GOODBYE ✨",
-                "Thanks for trying our rainbow CLI tool!",
-                config
+                "✨ GOODBYE ✨", "Thanks for trying our rainbow CLI tool!", config
             )
             console.print(farewell_panel)
 
@@ -103,7 +104,7 @@ class HelloCommand(BaseCommand):
             "timestamp": time.time(),
             "version": "0.1.0",
             "features": ["rainbow colors", "animations", "multiple formats"],
-            "mood": "absolutely fantastic! 🎉"
+            "mood": "absolutely fantastic! 🎉",
         }
 
         if config.verbose:
@@ -118,9 +119,9 @@ class HelloCommand(BaseCommand):
                         "Fancy panels with borders",
                         "Spinner animations",
                         "Multiple output formats",
-                        "Global flag integration"
-                    ]
-                }
+                        "Global flag integration",
+                    ],
+                },
             }
             sample_data["verbose_info"] = verbose_info
 

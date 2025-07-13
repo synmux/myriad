@@ -7,12 +7,14 @@ A fun and colorful CLI tool built with Python that demonstrates animated output,
 ## ✨ Features
 
 ### 🎨 Visual Excellence
+
 - **Rainbow-colored output** with animated text
 - **Animated ASCII art** and fancy bordered panels
 - **Progress bars and spinners** for visual feedback
 - **Rich table formatting** with customizable styling
 
 ### 🔧 Technical Architecture
+
 - **Modular command system** with auto-loading from `commands/` directory
 - **Typed Python** with full type hints and Pydantic models
 - **Multiple output formats**: Rich tables, JSON, YAML
@@ -20,6 +22,7 @@ A fun and colorful CLI tool built with Python that demonstrates animated output,
 - **Extensible design** for easy addition of new commands
 
 ### 🎛️ Configuration Options
+
 - **Verbosity levels**: verbose, quiet, silent, debug modes
 - **Output format control**: normal, JSON, YAML
 - **Animation control**: respectful of quiet/silent flags
@@ -42,6 +45,7 @@ uv run sandbox --help
 ```
 
 ### Requirements
+
 - Python 3.13+
 - `uv` package manager
 - Terminal with color support (most modern terminals)
@@ -52,14 +56,14 @@ uv run sandbox --help
 
 All subcommands support these global flags:
 
-| Flag | Short | Description |
-|------|-------|-------------|
-| `--verbose` | `-v` | Enable verbose output with additional details |
-| `--json` | `-j` | Output data in JSON format |
-| `--yaml` | `-y` | Output data in YAML format |
-| `--debug` | `-d` | Enable debug mode with diagnostic info |
-| `--quiet` | `-q` | Suppress animations and progress indicators |
-| `--silent` | `-s` | Suppress all output completely |
+| Flag        | Short | Description                                   |
+| ----------- | ----- | --------------------------------------------- |
+| `--verbose` | `-v`  | Enable verbose output with additional details |
+| `--json`    | `-j`  | Output data in JSON format                    |
+| `--yaml`    | `-y`  | Output data in YAML format                    |
+| `--debug`   | `-d`  | Enable debug mode with diagnostic info        |
+| `--quiet`   | `-q`  | Suppress animations and progress indicators   |
+| `--silent`  | `-s`  | Suppress all output completely                |
 
 ### Basic Commands
 
@@ -77,6 +81,7 @@ uv run sandbox hello --help
 ## 🎯 Available Commands
 
 ### `hello` - Spectacular Hello World
+
 A delightful hello world command demonstrating all visual capabilities.
 
 ```bash
@@ -95,6 +100,7 @@ uv run sandbox --quiet hello
 ```
 
 **Features demonstrated:**
+
 - Rainbow text rendering
 - Fancy panels with borders
 - Spinner animations
@@ -102,6 +108,7 @@ uv run sandbox --quiet hello
 - Global flag integration
 
 ### `demo` - Advanced Feature Showcase
+
 An advanced demonstration with progress bars, ASCII art, and complex data structures.
 
 ```bash
@@ -117,10 +124,12 @@ uv run sandbox --yaml demo --count 5
 ```
 
 **Options:**
+
 - `--count`, `-c`: Number of demo items to process (default: 5)
 - `--speed`, `-s`: Animation speed in seconds per step (default: 0.1)
 
 **Features demonstrated:**
+
 - ASCII art banner animation
 - Multi-task progress tracking
 - Dynamic data generation
@@ -128,6 +137,7 @@ uv run sandbox --yaml demo --count 5
 - Statistical calculations
 
 ### `example` - Command Creation Pattern
+
 A template command showing how to create new commands that integrate with the system.
 
 ```bash
@@ -144,11 +154,13 @@ uv run sandbox example --style animated
 ```
 
 **Options:**
+
 - `--name`, `-n`: Name to greet (default: "World")
 - `--repeat`, `-r`: Number of times to repeat the greeting (default: 1)
 - `--style`, `-st`: Style of greeting (`simple`, `fancy`, `animated`)
 
 **Features demonstrated:**
+
 - Command-specific options
 - Multiple output styles
 - Conditional animations
@@ -158,7 +170,7 @@ uv run sandbox example --style animated
 
 ### Project Structure
 
-```
+```plaintext
 src/sandbox/
 ├── __init__.py              # Main CLI entry point with auto-loading
 ├── command_interface.py     # Base command interface and registry
@@ -207,7 +219,7 @@ The CLI uses an innovative **auto-loading system** that automatically discovers 
 ```python
 # ✅ These files will be auto-loaded:
 commands/hello.py       # Contains HelloCommand class
-commands/demo.py        # Contains DemoCommand class  
+commands/demo.py        # Contains DemoCommand class
 commands/mycommand.py   # Contains MyCommand class
 
 # ❌ These files will be ignored:
@@ -294,7 +306,7 @@ class GreetCommand(BaseCommand):
 
         @cli_group.command()
         @click.option('--name', '-n', default='Friend', help='Name of person to greet')
-        @click.option('--style', '-s', 
+        @click.option('--style', '-s',
                       type=click.Choice(['casual', 'formal', 'enthusiastic']),
                       default='casual', help='Greeting style to use')
         @click.option('--language', '-l',
@@ -310,7 +322,7 @@ class GreetCommand(BaseCommand):
             - Multiple choice parameters
             - Animated output and panels
             - Proper global flag integration
-            
+
             Examples:
               sandbox greet --name Alice --style enthusiastic
               sandbox greet -n Bob -s formal -l es
@@ -394,8 +406,8 @@ class GreetCommand(BaseCommand):
 
     @staticmethod
     def _create_output_data(
-        name: str, 
-        style: str, 
+        name: str,
+        style: str,
         language: str,
         greeting_data: dict[str, Any],
         config: GlobalConfig
@@ -476,6 +488,7 @@ uv run sandbox greet --help
 #### Common Patterns
 
 **Simple Command Structure**:
+
 ```python
 @staticmethod
 @override
@@ -487,7 +500,7 @@ def register_command(cli_group: click.Group) -> None:
         config = MyCommand.get_config_from_context(ctx)
         MyCommand.execute(config, option)
 
-@staticmethod  
+@staticmethod
 def execute(config: GlobalConfig, option: str) -> None:
     if MyCommand.should_skip_output(config):
         return
@@ -495,6 +508,7 @@ def execute(config: GlobalConfig, option: str) -> None:
 ```
 
 **Data Output Pattern**:
+
 ```python
 # Create structured data
 data = {
@@ -514,12 +528,14 @@ output_data(data, config)
 #### Troubleshooting
 
 **Command not appearing?**
+
 - Check file is in `src/sandbox/commands/`
 - Ensure class inherits from `BaseCommand`
 - Verify `register_command` method exists
 - Check for Python syntax errors
 
 **Type checking issues?**
+
 ```bash
 # Run type checkers
 uv run mypy src/sandbox/ --strict
@@ -527,9 +543,10 @@ uv run basedpyright src/sandbox/
 ```
 
 **Testing checklist:**
+
 - [ ] `uv run sandbox mycommand` (basic)
 - [ ] `uv run sandbox --json mycommand` (JSON output)
-- [ ] `uv run sandbox --yaml mycommand` (YAML output)  
+- [ ] `uv run sandbox --yaml mycommand` (YAML output)
 - [ ] `uv run sandbox --verbose mycommand` (verbose)
 - [ ] `uv run sandbox --quiet mycommand` (quiet)
 - [ ] `uv run sandbox --silent mycommand` (silent)
@@ -568,6 +585,7 @@ class MyCommand(BaseCommand):
 ```
 
 **Essential Commands:**
+
 ```bash
 # Test your command
 uv run sandbox mycommand --option value
@@ -602,11 +620,13 @@ uv run sandbox --debug hello
 The `utils.py` module provides common functionality:
 
 #### Output Functions
+
 - `output_data()`: Format data in JSON, YAML, or Rich tables
 - `create_data_table()`: Create styled Rich tables
 - `console`: Global Rich console instance
 
 #### Animation Functions
+
 - `create_rainbow_text()`: Generate rainbow-colored text
 - `animate_spinner_with_text()`: Animated spinners
 - `create_fancy_panel()`: Bordered panels with styling
@@ -614,6 +634,7 @@ The `utils.py` module provides common functionality:
 - `show_completion_animation()`: Standard completion animation
 
 #### Helper Functions
+
 - `print_debug_info()`: Debug information display
 - `get_output_format_from_config()`: Convert config to OutputFormat enum
 
@@ -630,6 +651,7 @@ The `utils.py` module provides common functionality:
 ### Type Safety
 
 The project uses comprehensive type hints:
+
 - Pydantic models for configuration
 - Protocol classes for interfaces
 - Type hints on all functions and methods
@@ -652,6 +674,7 @@ The project uses comprehensive type hints:
 ## 🎯 Usage Examples
 
 ### Basic Usage
+
 ```bash
 # Normal colorful output
 uv run sandbox hello
@@ -664,6 +687,7 @@ uv run sandbox --yaml hello > output.yaml
 ```
 
 ### Development and Debugging
+
 ```bash
 # Verbose mode for detailed information
 uv run sandbox --verbose demo --count 3
@@ -676,6 +700,7 @@ uv run sandbox --quiet demo --count 100
 ```
 
 ### Integration Examples
+
 ```bash
 # Silent mode for scripts (exit code only)
 if uv run sandbox --silent hello; then
@@ -709,7 +734,3 @@ uv run sandbox --yaml demo | yq '.statistics.avg_score'
 ## 📄 License
 
 See LICENSE file for details.
-
----
-
-**Built with ❤️ using Python, Click, Rich, and lots of rainbow colors! 🌈**
