@@ -45,7 +45,7 @@ class DemoCommand(BaseCommand):
             "--speed", "-s", default=0.1, help="Animation speed (seconds per step)"
         )
         @click.pass_context
-        def demo(ctx: click.Context, count: int, speed: float) -> None:
+        def demo(ctx: click.Context, count: int, speed: float) -> None:  # type: ignore
             """
             🚀 Advanced demo showcasing progress bars, tables, and more animations!
 
@@ -110,7 +110,7 @@ class DemoCommand(BaseCommand):
 
             completion_panel = create_fancy_panel(
                 "🎉 DEMO COMPLETE 🎉",
-                f"Successfully processed {count} items with {len(set(item['category'] for item in demo_data))} categories!",
+                f"Successfully processed {count} items with {len({item['category'] for item in demo_data})} categories!",
                 config,
             )
             console.print(completion_panel)
@@ -186,7 +186,10 @@ class DemoCommand(BaseCommand):
                 "completed_items": len(
                     [item for item in demo_data if "Complete" in item["status"]]
                 ),
-                "categories": list(set(item["category"] for item in demo_data)),
+                "categories": [
+                    item["category"]
+                    for item in {item["category"] for item in demo_data}
+                ],
             },
         }
 
@@ -223,16 +226,15 @@ class DemoCommand(BaseCommand):
             "Category": "green",
         }
 
-        rows: list[list[str]] = []
-        for item in demo_data:
-            rows.append(
-                [
-                    str(item["id"]),
-                    str(item["name"]),
-                    str(item["status"]),
-                    str(item["score"]),
-                    str(item["category"]),
-                ]
-            )
+        rows: list[list[str]] = [
+            [
+                str(item["id"]),
+                str(item["name"]),
+                str(item["status"]),
+                str(item["score"]),
+                str(item["category"]),
+            ]
+            for item in demo_data
+        ]
 
         return create_data_table("🎯 Demo Items Summary", columns, rows, max_rows=10)
