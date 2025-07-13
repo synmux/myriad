@@ -1,0 +1,16 @@
+[env]
+MYRIAD_AI_SANDBOX_MISE_ACTIVE = 'true'
+
+[settings]
+env_file = '.env'
+idiomatic_version_file = false
+idiomatic_version_file_enable_tools = []
+
+
+[tools]
+python = { version = '3.13.5' }
+'aqua:astral-sh/uv' = { version = '0.7.20' }
+
+[tasks]
+'hello' = { run = "echo 'Hello, world!'" }
+'claude' = { run = "bun x @anthropic-ai/claude-code", description = "Invoke Claude Code", alias = "cc" }

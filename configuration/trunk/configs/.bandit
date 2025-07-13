@@ -1,3 +1,0 @@
-[bandit]
-# Skip B101 (assert) in test files
-skips: B101
