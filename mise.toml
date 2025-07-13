@@ -12,5 +12,5 @@ python = { version = '3.13.5' }
 'aqua:astral-sh/uv' = { version = '0.7.20' }
 
 [tasks]
-'hello' = { run = "echo 'Hello, world!'" }
 'claude' = { run = "bun x @anthropic-ai/claude-code", description = "Invoke Claude Code", alias = "cc" }
+'sandbox' = { run = "uv run sandbox", description = "Run the sandbox command", alias = "sb" }
