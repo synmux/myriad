@@ -10,7 +10,7 @@ import inspect
 import pkgutil
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Any, Dict, List, Protocol, Type
+from typing import Protocol
 import types
 
 import click
@@ -95,24 +95,24 @@ class CommandRegistry:
         Args:
             commands_package: Package name where commands are located
         """
-        self.commands_package = commands_package
-        self.registered_commands: List[Type[CommandProtocol]] = []
+        self.commands_package: str = commands_package
+        self.registered_commands: list[type[CommandProtocol]] = []
 
-    def discover_commands(self) -> List[Type[CommandProtocol]]:
+    def discover_commands(self) -> list[type[CommandProtocol]]:
         """
         Discover all command classes in the commands package
 
         Returns:
-            List[Type[CommandProtocol]]: List of discovered command classes
+            list[type[CommandProtocol]]: List of discovered command classes
         """
-        commands: List[Type[CommandProtocol]] = []
+        commands: list[type[CommandProtocol]] = []
 
         try:
             # Import the commands package
             commands_module = importlib.import_module(self.commands_package)
 
             # Get the package path
-            package_path: List[str]
+            package_path: list[str]
             if hasattr(commands_module, "__path__"):
                 package_path = list(commands_module.__path__)
             else:
@@ -125,7 +125,7 @@ class CommandRegistry:
                     return commands
 
             # Iterate through all modules in the package
-            for finder, module_name, ispkg in pkgutil.iter_modules(package_path):
+            for _, module_name, ispkg in pkgutil.iter_modules(package_path):
                 if not ispkg and not module_name.startswith('_'):
                     full_module_name = f"{self.commands_package}.{module_name}"
 
@@ -164,12 +164,12 @@ class CommandRegistry:
             except Exception as e:
                 print(f"Warning: Could not register command {command_class.__name__}: {e}")
 
-    def get_registered_commands(self) -> List[Type[CommandProtocol]]:
+    def get_registered_commands(self) -> list[type[CommandProtocol]]:
         """
         Get list of registered command classes
 
         Returns:
-            List[Type[CommandProtocol]]: List of registered commands
+            list[type[CommandProtocol]]: List of registered commands
         """
         return self.registered_commands.copy()
 

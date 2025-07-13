@@ -8,7 +8,7 @@ including output formatting, animations, and Rich UI components.
 import json
 import time
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import yaml
 from rich.align import Align
@@ -48,7 +48,7 @@ def create_rainbow_text(text: str) -> Text:
 
     for i, char in enumerate(text):
         color = colors[i % len(colors)]
-        rainbow_text.append(char, style=color)
+        _ = rainbow_text.append(char, style=color)
 
     return rainbow_text
 
@@ -99,7 +99,7 @@ def create_fancy_panel(title: str, content: str, config: GlobalConfig) -> Panel:
     )
 
 
-def output_data(data: Dict[str, Any], config: GlobalConfig) -> None:
+def output_data(data: dict[str, Any], config: GlobalConfig) -> None:
     """
     Output data in the specified format
 
@@ -126,7 +126,7 @@ def output_data(data: Dict[str, Any], config: GlobalConfig) -> None:
         console.print(table)
 
 
-def create_data_table(title: str, columns: Dict[str, str], rows: List[List[str]], max_rows: int = 10) -> Table:
+def create_data_table(title: str, columns: dict[str, str], rows: list[list[str]], max_rows: int = 10) -> Table:
     """
     Create a Rich table with the given data
 
@@ -151,7 +151,7 @@ def create_data_table(title: str, columns: Dict[str, str], rows: List[List[str]]
         table.add_column(column_name, style=style)
 
     # Add rows (limited to max_rows)
-    for i, row in enumerate(rows[:max_rows]):
+    for row in rows[:max_rows]:
         table.add_row(*[str(cell) for cell in row])
 
     # Add ellipsis if there are more rows
@@ -192,7 +192,7 @@ def show_completion_animation(message: str, config: GlobalConfig) -> None:
     animate_spinner_with_text(f"Wrapping up {message}...", 1.0)
 
 
-def print_debug_info(config: GlobalConfig, extra_info: Optional[Dict[str, Any]] = None) -> None:
+def print_debug_info(config: GlobalConfig, extra_info: dict[str, Any] | None = None) -> None:
     """
     Print debug information if debug mode is enabled
 
@@ -203,7 +203,7 @@ def print_debug_info(config: GlobalConfig, extra_info: Optional[Dict[str, Any]] 
     if not config.debug or config.silent:
         return
 
-    debug_data = {"config": config.model_dump()}
+    debug_data: dict[str, Any] = {"config": config.model_dump()}
     if extra_info:
         debug_data.update(extra_info)
 

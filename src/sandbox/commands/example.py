@@ -6,7 +6,7 @@ with the auto-loading system and follow the established patterns.
 """
 
 import time
-from typing import Any, Dict, List
+from typing import Any, override
 
 import click
 
@@ -27,6 +27,7 @@ class ExampleCommand(BaseCommand):
     """Example command demonstrating the command interface"""
 
     @staticmethod
+    @override
     def register_command(cli_group: click.Group) -> None:
         """Register the example command with the CLI group"""
 
@@ -76,7 +77,7 @@ class ExampleCommand(BaseCommand):
         show_welcome_animation("example command", config)
 
         # Generate greetings based on style
-        greetings = ExampleCommand._generate_greetings(name, repeat, style, config)
+        greetings = ExampleCommand._generate_greetings(name, repeat, style)
 
         # Display greetings
         ExampleCommand._display_greetings(greetings, style, config)
@@ -93,9 +94,9 @@ class ExampleCommand(BaseCommand):
         show_completion_animation("example command", config)
 
     @staticmethod
-    def _generate_greetings(name: str, repeat: int, style: str, config: GlobalConfig) -> List[Dict[str, Any]]:
+    def _generate_greetings(name: str, repeat: int, style: str) -> list[dict[str, Any]]:
         """Generate greetings based on parameters"""
-        greetings = []
+        greetings: list[dict[str, Any]] = []
 
         base_messages = [
             f"Hello, {name}!",
@@ -111,7 +112,7 @@ class ExampleCommand(BaseCommand):
             else:
                 message = base_messages[i % len(base_messages)]
 
-            greeting = {
+            greeting: dict[str, Any] = {
                 "iteration": i + 1,
                 "message": message,
                 "style": style,
@@ -122,20 +123,20 @@ class ExampleCommand(BaseCommand):
         return greetings
 
     @staticmethod
-    def _display_greetings(greetings: List[Dict[str, Any]], style: str, config: GlobalConfig) -> None:
+    def _display_greetings(greetings: list[dict[str, Any]], style: str, config: GlobalConfig) -> None:
         """Display greetings according to the specified style"""
         if config.quiet or config.silent:
             return
 
         if style == "simple":
             for greeting in greetings:
-                console.print(f"[bold green]{greeting['message']}[/bold green]")
+                console.print(f"[bold green]{str(greeting['message'])}[/bold green]")
 
         elif style == "fancy":
             for i, greeting in enumerate(greetings):
                 panel = create_fancy_panel(
                     f"✨ Greeting #{greeting['iteration']} ✨",
-                    greeting['message'],
+                    str(greeting['message']),
                     config
                 )
                 console.print(panel)
@@ -145,7 +146,7 @@ class ExampleCommand(BaseCommand):
         elif style == "animated":
             for greeting in greetings:
                 animate_spinner_with_text(f"Preparing greeting #{greeting['iteration']}...", 0.8)
-                rainbow_message = create_rainbow_text(greeting['message'])
+                rainbow_message = create_rainbow_text(str(greeting['message']))
                 console.print(f"[bold]🎉 {rainbow_message} 🎉[/bold]")
                 console.print()
 
@@ -154,11 +155,11 @@ class ExampleCommand(BaseCommand):
         name: str,
         repeat: int,
         style: str,
-        greetings: List[Dict[str, Any]],
+        greetings: list[dict[str, Any]],
         config: GlobalConfig
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Create the output data structure"""
-        output_data_structure = {
+        output_data_structure: dict[str, Any] = {
             "command_summary": {
                 "name": "example",
                 "target_name": name,
@@ -169,14 +170,14 @@ class ExampleCommand(BaseCommand):
             },
             "greetings": greetings,
             "statistics": {
-                "unique_messages": len(set(g['message'] for g in greetings)),
-                "avg_message_length": sum(len(g['message']) for g in greetings) / len(greetings),
+                "unique_messages": len(set(str(g['message']) for g in greetings)),
+                "avg_message_length": sum(len(str(g['message'])) for g in greetings) / len(greetings),
                 "styles_available": ["simple", "fancy", "animated"]
             }
         }
 
         if config.verbose:
-            output_data_structure["verbose_details"] = {
+            verbose_details: dict[str, Any] = {
                 "config": config.model_dump(),
                 "command_options": {
                     "name": name,
@@ -200,5 +201,6 @@ class ExampleCommand(BaseCommand):
                     ]
                 }
             }
+            output_data_structure["verbose_details"] = verbose_details
 
         return output_data_structure

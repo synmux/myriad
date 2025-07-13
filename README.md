@@ -182,67 +182,402 @@ The CLI uses a modular architecture where commands are automatically discovered 
 4. **GlobalConfig**: Pydantic model for global configuration
 5. **Shared Utilities**: Common functions for output, animations, etc.
 
+### Auto-Loading Feature
+
+The CLI uses an innovative **auto-loading system** that automatically discovers and registers commands without manual configuration:
+
+#### How Auto-Loading Works
+
+1. **Automatic Discovery**: When the CLI starts, it scans the `src/sandbox/commands/` directory
+2. **Module Loading**: All `.py` files (except `__init__.py` and files starting with `_`) are imported
+3. **Class Detection**: The system finds classes that implement the `CommandProtocol` interface
+4. **Registration**: Each command's `register_command()` method is called automatically
+5. **Availability**: Commands become immediately available in the CLI
+
+#### Benefits
+
+- ✅ **Zero Configuration**: No manual registration required
+- ✅ **Instant Integration**: Drop a file in `commands/` and it works
+- ✅ **Type Safety**: Protocol ensures all commands follow the same interface
+- ✅ **Error Isolation**: Failed command loading doesn't break other commands
+- ✅ **Development Speed**: Focus on command logic, not infrastructure
+
+#### What Gets Auto-Loaded
+
+```python
+# ✅ These files will be auto-loaded:
+commands/hello.py       # Contains HelloCommand class
+commands/demo.py        # Contains DemoCommand class  
+commands/mycommand.py   # Contains MyCommand class
+
+# ❌ These files will be ignored:
+commands/__init__.py    # Package initialization file
+commands/_private.py    # Files starting with underscore
+commands/utils.py       # Files without CommandProtocol classes
+```
+
+#### Auto-Loading Requirements
+
+For a command to be auto-loaded, it must:
+
+1. **Be in the right location**: `src/sandbox/commands/filename.py`
+2. **Implement the interface**: Have a class that implements `CommandProtocol`
+3. **Have the method**: Include a static `register_command()` method
+4. **Be valid Python**: No syntax errors that prevent import
+
+#### Troubleshooting Auto-Loading
+
+If your command isn't appearing:
+
+```bash
+# Check for import errors
+uv run python -c "from sandbox.commands import mycommand"
+
+# Enable debug mode to see loading issues
+uv run sandbox --debug --help
+
+# Verify file structure
+ls -la src/sandbox/commands/
+```
+
+The auto-loading system will show warnings for any commands that fail to load, helping you diagnose issues quickly.
+
 ### Adding New Commands
 
-Creating a new command is straightforward:
+Creating a new command is straightforward thanks to the auto-loading architecture. Here's a complete step-by-step guide:
 
-1. **Create a new file** in `src/sandbox/commands/`
-2. **Implement the command class** inheriting from `BaseCommand`
-3. **Define the `register_command` static method**
-4. **The command will be auto-loaded** on the next run
+#### Step-by-Step Instructions
 
-#### Command Template
+1. **Create a new file** in `src/sandbox/commands/` (e.g., `mycommand.py`)
+2. **Import required modules** and inherit from `BaseCommand`
+3. **Implement the command class** with required methods
+4. **Test your command** with all global flags
+5. **The command will be auto-loaded** on the next run - no manual registration needed!
+
+#### Complete Working Example
+
+Let's create a new command called `greet` that demonstrates all the patterns:
+
+**Step 1**: Create `src/sandbox/commands/greet.py`:
 
 ```python
 """
-My new command for Sandbox CLI
+Greet command for Sandbox CLI
+
+A friendly greeting command that demonstrates command creation patterns.
 """
 
-import click
-from ..command_interface import BaseCommand, GlobalConfig
-from ..utils import console, output_data, print_debug_info
+import time
+from typing import Any, override
 
-class MyCommand(BaseCommand):
-    """My new command description"""
+import click
+
+from ..command_interface import BaseCommand, GlobalConfig
+from ..utils import (
+    console,
+    create_fancy_panel,
+    output_data,
+    show_welcome_animation,
+    show_completion_animation,
+    print_debug_info,
+    create_rainbow_text,
+)
+
+
+class GreetCommand(BaseCommand):
+    """A friendly greeting command with customizable options"""
 
     @staticmethod
+    @override
     def register_command(cli_group: click.Group) -> None:
-        """Register the command with the CLI group"""
+        """Register the greet command with the CLI group"""
 
         @cli_group.command()
-        @click.option('--my-option', help='My custom option')
+        @click.option('--name', '-n', default='Friend', help='Name of person to greet')
+        @click.option('--style', '-s', 
+                      type=click.Choice(['casual', 'formal', 'enthusiastic']),
+                      default='casual', help='Greeting style to use')
+        @click.option('--language', '-l',
+                      type=click.Choice(['en', 'es', 'fr']),
+                      default='en', help='Language for greeting')
         @click.pass_context
-        def mycommand(ctx: click.Context, my_option: str) -> None:
+        def greet(ctx: click.Context, name: str, style: str, language: str) -> None:
             """
-            🎯 My new command description!
+            👋 Greet someone with style and flair!
+
+            This command demonstrates how to create new commands with:
+            - Custom command-line options
+            - Multiple choice parameters
+            - Animated output and panels
+            - Proper global flag integration
             
-            Detailed description of what this command does.
+            Examples:
+              sandbox greet --name Alice --style enthusiastic
+              sandbox greet -n Bob -s formal -l es
             """
-            config = MyCommand.get_config_from_context(ctx)
-            MyCommand.execute(config, my_option)
+            config = GreetCommand.get_config_from_context(ctx)
+            GreetCommand.execute(config, name, style, language)
 
     @staticmethod
-    def execute(config: GlobalConfig, my_option: str) -> None:
-        """Execute the command"""
-        if MyCommand.should_skip_output(config):
+    def execute(config: GlobalConfig, name: str, style: str, language: str) -> None:
+        """Execute the greet command with the given parameters"""
+        if GreetCommand.should_skip_output(config):
             return
 
+        # Debug info if enabled
+        print_debug_info(config, {
+            "command": "greet",
+            "parameters": {"name": name, "style": style, "language": language}
+        })
+
+        # Welcome animation
+        show_welcome_animation("greeting generator", config)
+
+        # Generate greeting based on parameters
+        greeting_data = GreetCommand._generate_greeting(name, style, language)
+
+        # Show fancy greeting panel
+        if not config.quiet:
+            greeting_panel = create_fancy_panel(
+                f"🎉 {greeting_data['greeting_type']} 🎉",
+                greeting_data['message'],
+                config
+            )
+            console.print(greeting_panel)
+
+        # Create comprehensive output data
+        output_structure = GreetCommand._create_output_data(
+            name, style, language, greeting_data, config
+        )
+
+        # Output data in requested format
+        output_data(output_structure, config)
+
+        # Completion animation
+        show_completion_animation("greeting", config)
+
+    @staticmethod
+    def _generate_greeting(name: str, style: str, language: str) -> dict[str, Any]:
+        """Generate greeting message based on parameters"""
+        greetings = {
+            'en': {
+                'casual': f"Hey there, {name}! How's it going?",
+                'formal': f"Good day, {name}. I hope you are well.",
+                'enthusiastic': f"WOW! Hello {name}! Amazing to see you! 🎉"
+            },
+            'es': {
+                'casual': f"¡Hola {name}! ¿Qué tal?",
+                'formal': f"Buenos días, {name}. Espero que esté bien.",
+                'enthusiastic': f"¡¡¡HOLA {name}!!! ¡Qué emocionante verte! 🎉"
+            },
+            'fr': {
+                'casual': f"Salut {name}! Comment ça va?",
+                'formal': f"Bonjour {name}. J'espère que vous allez bien.",
+                'enthusiastic': f"BONJOUR {name}! Fantastique de vous voir! 🎉"
+            }
+        }
+
+        greeting_types = {
+            'casual': 'Casual Greeting',
+            'formal': 'Formal Greeting',
+            'enthusiastic': 'Enthusiastic Greeting'
+        }
+
+        return {
+            'message': greetings[language][style],
+            'greeting_type': greeting_types[style],
+            'language': language,
+            'style': style,
+            'target_name': name,
+            'timestamp': time.time()
+        }
+
+    @staticmethod
+    def _create_output_data(
+        name: str, 
+        style: str, 
+        language: str,
+        greeting_data: dict[str, Any],
+        config: GlobalConfig
+    ) -> dict[str, Any]:
+        """Create comprehensive output data structure"""
+        output_data_structure: dict[str, Any] = {
+            "command_info": {
+                "name": "greet",
+                "parameters": {
+                    "name": name,
+                    "style": style,
+                    "language": language
+                },
+                "execution_time": time.time()
+            },
+            "greeting": greeting_data,
+            "metadata": {
+                "available_styles": ["casual", "formal", "enthusiastic"],
+                "available_languages": ["en", "es", "fr"],
+                "message_length": len(greeting_data['message'])
+            }
+        }
+
+        if config.verbose:
+            verbose_info: dict[str, Any] = {
+                "config": config.model_dump(),
+                "command_features": [
+                    "Multi-language support",
+                    "Multiple greeting styles",
+                    "Animated output",
+                    "Global flag integration"
+                ],
+                "development_notes": {
+                    "architecture": "Modular command with auto-loading",
+                    "patterns_used": ["BaseCommand inheritance", "Type hints", "Rich UI"]
+                }
+            }
+            output_data_structure["verbose_details"] = verbose_info
+
+        return output_data_structure
+```
+
+**Step 2**: Test your new command:
+
+```bash
+# Test basic functionality
+uv run sandbox greet --name Alice
+
+# Test with options
+uv run sandbox greet --name Bob --style formal --language es
+
+# Test with global flags
+uv run sandbox --json greet --name Charlie --style enthusiastic
+uv run sandbox --verbose greet --name Diana --language fr
+uv run sandbox --quiet greet --name Eve
+```
+
+**Step 3**: Verify auto-loading worked:
+
+```bash
+# Check that your command appears in help
+uv run sandbox --help
+
+# Get help for your specific command
+uv run sandbox greet --help
+```
+
+#### Command Development Best Practices
+
+1. **Follow the Pattern**: Always inherit from `BaseCommand` and use `@override`
+2. **Type Everything**: Use proper type hints for all parameters and return values
+3. **Respect Global Flags**: Check `config.silent`, `config.quiet`, etc.
+4. **Use Utility Functions**: Leverage shared utilities for consistency
+5. **Rich Help Text**: Include emojis and examples in docstrings
+6. **Error Handling**: Use try/catch and preserve exit codes
+7. **Test Thoroughly**: Test with all global flag combinations
+
+#### Common Patterns
+
+**Simple Command Structure**:
+```python
+@staticmethod
+@override
+def register_command(cli_group: click.Group) -> None:
+    @cli_group.command()
+    @click.option('--option', help='Description')
+    @click.pass_context
+    def mycommand(ctx: click.Context, option: str) -> None:
+        config = MyCommand.get_config_from_context(ctx)
+        MyCommand.execute(config, option)
+
+@staticmethod  
+def execute(config: GlobalConfig, option: str) -> None:
+    if MyCommand.should_skip_output(config):
+        return
+    # Command logic here
+```
+
+**Data Output Pattern**:
+```python
+# Create structured data
+data = {
+    "command_info": {...},
+    "results": [...],
+    "metadata": {...}
+}
+
+# Add verbose details if requested
+if config.verbose:
+    data["verbose_details"] = {...}
+
+# Output in requested format (JSON/YAML/Rich)
+output_data(data, config)
+```
+
+#### Troubleshooting
+
+**Command not appearing?**
+- Check file is in `src/sandbox/commands/`
+- Ensure class inherits from `BaseCommand`
+- Verify `register_command` method exists
+- Check for Python syntax errors
+
+**Type checking issues?**
+```bash
+# Run type checkers
+uv run mypy src/sandbox/ --strict
+uv run basedpyright src/sandbox/
+```
+
+**Testing checklist:**
+- [ ] `uv run sandbox mycommand` (basic)
+- [ ] `uv run sandbox --json mycommand` (JSON output)
+- [ ] `uv run sandbox --yaml mycommand` (YAML output)  
+- [ ] `uv run sandbox --verbose mycommand` (verbose)
+- [ ] `uv run sandbox --quiet mycommand` (quiet)
+- [ ] `uv run sandbox --silent mycommand` (silent)
+- [ ] `uv run sandbox --debug mycommand` (debug)
+- [ ] `uv run sandbox mycommand --help` (help)
+
+#### Quick Reference
+
+For experienced developers, here's the essential template:
+
+```python
+from typing import Any, override
+import click
+from ..command_interface import BaseCommand, GlobalConfig
+from ..utils import output_data, print_debug_info
+
+class MyCommand(BaseCommand):
+    @staticmethod
+    @override
+    def register_command(cli_group: click.Group) -> None:
+        @cli_group.command()
+        @click.option('--option', help='Description')
+        @click.pass_context
+        def mycommand(ctx: click.Context, option: str) -> None:
+            """🎯 Command description!"""
+            config = MyCommand.get_config_from_context(ctx)
+            MyCommand.execute(config, option)
+
+    @staticmethod
+    def execute(config: GlobalConfig, option: str) -> None:
+        if MyCommand.should_skip_output(config):
+            return
         print_debug_info(config, {"command": "mycommand"})
-        
-        # Your command logic here
-        data = {"message": f"Hello from my command! Option: {my_option}"}
+        data = {"result": f"Processed {option}"}
         output_data(data, config)
 ```
 
-#### Best Practices
+**Essential Commands:**
+```bash
+# Test your command
+uv run sandbox mycommand --option value
 
-1. **Inherit from BaseCommand** for consistent interface
-2. **Use the utility functions** for output, animations, and formatting
-3. **Respect global flags** (quiet, silent, verbose, debug)
-4. **Include comprehensive help text** with emojis for visual appeal
-5. **Add proper type hints** throughout your code
-6. **Handle errors gracefully** and preserve exit codes
-7. **Test with all global flag combinations**
+# Test with all flags
+uv run sandbox --json --verbose mycommand
+
+# Check types
+uv run mypy src/sandbox/ --strict
+```
 
 ### Development Commands
 

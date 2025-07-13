@@ -6,7 +6,7 @@ and complex data structures with animations.
 """
 
 import time
-from typing import Any, Dict, List
+from typing import Any, override
 
 import click
 from rich.progress import Progress
@@ -32,6 +32,7 @@ class DemoCommand(BaseCommand):
     """Advanced demo command with progress bars and animations"""
 
     @staticmethod
+    @override
     def register_command(cli_group: click.Group) -> None:
         """Register the demo command with the CLI group"""
 
@@ -79,7 +80,7 @@ class DemoCommand(BaseCommand):
         # Progress bar demo
         show_welcome_animation("advanced demo", config)
 
-        demo_data = DemoCommand._process_demo_items(count, speed, config)
+        demo_data = DemoCommand._process_demo_items(count, speed)
 
         # Create output data structure
         output_data_structure = DemoCommand._create_output_structure(
@@ -126,9 +127,9 @@ class DemoCommand(BaseCommand):
             time.sleep(speed)
 
     @staticmethod
-    def _process_demo_items(count: int, speed: float, config: GlobalConfig) -> List[Dict[str, Any]]:
+    def _process_demo_items(count: int, speed: float) -> list[dict[str, Any]]:
         """Process demo items with progress bars"""
-        demo_data = []
+        demo_data: list[dict[str, Any]] = []
 
         with Progress(console=console) as progress:
             main_task = progress.add_task("[green]Processing demo items...", total=count)
@@ -139,7 +140,7 @@ class DemoCommand(BaseCommand):
                 time.sleep(speed)
 
                 # Generate demo data
-                item_data = {
+                item_data: dict[str, Any] = {
                     "id": f"item_{i+1:03d}",
                     "name": f"Demo Item {i+1}",
                     "status": "✅ Complete" if i % 2 == 0 else "🔄 Processing",
@@ -157,11 +158,11 @@ class DemoCommand(BaseCommand):
     def _create_output_structure(
         count: int,
         speed: float,
-        demo_data: List[Dict[str, Any]],
+        demo_data: list[dict[str, Any]],
         config: GlobalConfig
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Create the output data structure"""
-        output_data_structure = {
+        output_data_structure: dict[str, Any] = {
             "demo_summary": {
                 "total_items": count,
                 "processing_speed": speed,
@@ -182,7 +183,7 @@ class DemoCommand(BaseCommand):
         }
 
         if config.verbose:
-            output_data_structure["verbose_details"] = {
+            verbose_details: dict[str, Any] = {
                 "config": config.model_dump(),
                 "command_options": {"count": count, "speed": speed},
                 "rich_features_used": ["Progress", "Table", "Panel", "Text", "Align"],
@@ -199,11 +200,12 @@ class DemoCommand(BaseCommand):
                     ]
                 }
             }
+            output_data_structure["verbose_details"] = verbose_details
 
         return output_data_structure
 
     @staticmethod
-    def _create_items_table(demo_data: List[Dict[str, Any]]) -> Table:
+    def _create_items_table(demo_data: list[dict[str, Any]]) -> Table:
         """Create a Rich table showing demo items"""
         columns = {
             "ID": "dim",
@@ -213,14 +215,14 @@ class DemoCommand(BaseCommand):
             "Category": "green"
         }
 
-        rows = []
+        rows: list[list[str]] = []
         for item in demo_data:
             rows.append([
-                item["id"],
-                item["name"],
-                item["status"],
+                str(item["id"]),
+                str(item["name"]),
+                str(item["status"]),
                 str(item["score"]),
-                item["category"]
+                str(item["category"])
             ])
 
         return create_data_table("🎯 Demo Items Summary", columns, rows, max_rows=10)

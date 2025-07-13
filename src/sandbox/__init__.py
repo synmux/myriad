@@ -49,7 +49,7 @@ def cli(ctx: click.Context, verbose: bool, output_json: bool, output_yaml: bool,
     )
 
     # Store config in context
-    ctx.ensure_object(dict)
+    _ = ctx.ensure_object(dict)
     ctx.obj['config'] = config
 
     if debug and not silent:

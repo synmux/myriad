@@ -6,7 +6,7 @@ fancy panels, and all the visual capabilities of the CLI tool.
 """
 
 import time
-from typing import Any, Dict, List
+from typing import Any, override
 
 import click
 
@@ -16,7 +16,6 @@ from ..utils import (
     create_fancy_panel,
     output_data,
     show_welcome_animation,
-    show_completion_animation,
     print_debug_info,
 )
 
@@ -25,6 +24,7 @@ class HelloCommand(BaseCommand):
     """Hello world command with spectacular animations"""
 
     @staticmethod
+    @override
     def register_command(cli_group: click.Group) -> None:
         """Register the hello command with the CLI group"""
 
@@ -88,7 +88,7 @@ class HelloCommand(BaseCommand):
             console.print(farewell_panel)
 
     @staticmethod
-    def _generate_sample_data(config: GlobalConfig) -> Dict[str, Any]:
+    def _generate_sample_data(config: GlobalConfig) -> dict[str, Any]:
         """
         Generate sample data for the hello command
 
@@ -98,7 +98,7 @@ class HelloCommand(BaseCommand):
         Returns:
             Dict[str, Any]: Sample data dictionary
         """
-        sample_data = {
+        sample_data: dict[str, Any] = {
             "message": "Hello from the sandbox!",
             "timestamp": time.time(),
             "version": "0.1.0",
@@ -107,7 +107,7 @@ class HelloCommand(BaseCommand):
         }
 
         if config.verbose:
-            sample_data["verbose_info"] = {
+            verbose_info: dict[str, Any] = {
                 "config": config.model_dump(),
                 "cli_features": "All the bells and whistles activated!",
                 "command_info": {
@@ -122,5 +122,6 @@ class HelloCommand(BaseCommand):
                     ]
                 }
             }
+            sample_data["verbose_info"] = verbose_info
 
         return sample_data
