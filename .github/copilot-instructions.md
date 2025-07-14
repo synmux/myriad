@@ -1,10 +1,37 @@
-# `.github/copilot-instructions.md` - AI Assistant Project Context
+# CLAUDE.md
 
-**Note**: This file contains comprehensive AI assistant instructions for the project. `CLAUDE.md` and `AGENTS.md` are symlinks to this file (canonically `.github/copilot-instructions.md`) - update only `.github/copilot-instructions.md` to update all AI instruction files.
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+**Note**: `CLAUDE.md` and `AGENTS.md` are symlinks to `.github/copilot-instructions.md` - update only `.github/copilot-instructions.md` to update all AI instruction files.
 
 ## Project Overview
 
-This is a Python-based CLI tool called "Sandbox" that demonstrates advanced terminal user interfaces with animations, rainbow colors, and multiple output formats. The project showcases modern Python CLI development patterns using `click`, `rich`, and `pydantic` with a **modular command architecture** that auto-loads commands from a dedicated directory structure.
+Myriad is a Python-based CLI tool called "Sandbox" that serves as a personal AI sandbox for experimenting with AI integrations (OpenAI, Anthropic) while demonstrating advanced terminal user interfaces with animations, rainbow colors, and multiple output formats. The project showcases modern Python CLI development patterns using `click`, `rich`, and `pydantic` with a **modular command architecture** that auto-loads commands from a dedicated directory structure.
+
+## Development Commands
+
+```bash
+# Install dependencies and set up environment
+uv sync
+
+# Run the CLI (using uv)
+uv run sandbox --help
+
+# Run specific commands
+uv run sandbox struct --word "amazing" --context "The view was amazing"
+uv run sandbox demo --count 10 --speed fast
+uv run sandbox example --name "Claude" --style animated
+
+# Run with different output formats
+uv run sandbox --json struct --word "test"
+uv run sandbox --yaml demo
+uv run sandbox --debug example --name "Debug Mode"
+
+# Launch Claude Code assistant
+mise run claude
+# Or use the bin script
+./bin/claude
+```
 
 ## Project Structure
 
@@ -14,12 +41,17 @@ myriad/
 │   ├── __init__.py              # Main CLI entry point with auto-loading
 │   ├── command_interface.py     # Base command interface and registry system
 │   ├── util/                    # Shared utilities package
-│   │   └── __init__.py         # Utilities for all commands
+│   │   ├── __init__.py         # Core utilities for all commands
+│   │   └── ai.py               # AI integration (OpenAI/OpenRouter via Cloudflare AI Gateway)
 │   └── commands/                # Auto-loaded command modules
 │       ├── __init__.py         # Commands package
-│       ├── hello.py           # Hello world command
-│       ├── demo.py            # Advanced demo command
-│       └── example.py         # Example command template
+│       ├── struct.py           # AI-powered word suggestion command
+│       ├── demo.py             # Advanced demo command
+│       └── example.py          # Example command template
+├── bin/                         # Convenience scripts
+│   ├── claude                  # Launch Claude Code
+│   └── sandbox                 # Run sandbox CLI
+├── mise.toml                   # Development environment configuration
 ├── pyproject.toml              # Python project configuration
 ├── uv.lock                     # Dependency lock file
 ├── README.md                   # User documentation
@@ -28,13 +60,19 @@ myriad/
 
 ## Key Technologies
 
+- **Environment Management**: `mise` (development environment and task runner)
 - **Package Management**: `uv` (fast Python package manager)
+- **Python Version**: 3.13.5
 - **CLI Framework**: `click` (command-line interface creation)
 - **Terminal UI**: `rich` (rich text and beautiful formatting)
 - **Data Validation**: `pydantic` (data validation and settings)
+- **AI Integration**:
+  - `openai` SDK for OpenRouter access
+  - `anthropic` SDK for Claude integration
+  - `instructor` for structured AI outputs
+  - Cloudflare AI Gateway for caching, rate limiting, and monitoring
 - **Type System**: Full type hints with `typing` and `typing-extensions`
 - **Output Formats**: JSON, YAML, Rich tables/panels
-- **Command Architecture**: Modular auto-loading system with protocols
 
 ## Architecture Patterns
 
@@ -59,28 +97,27 @@ myriad/
 - Supports: verbose, debug, quiet, silent modes + output formats
 - Type-safe configuration access with helper methods
 
-### Shared Utilities
+### AI Integration Architecture
 
-- `util/` package contains common functions used across commands
-- Output formatting, animations, Rich components
-- Consistent styling and behavior patterns
-- Respects global flags (quiet/silent) automatically
-
-### Auto-Loading System
-
-- `CommandRegistry` class discovers commands at runtime
-- Uses `importlib` and `pkgutil` for dynamic module loading
-- Supports Python packages and namespace packages
-- Error handling for failed imports or registration
+- Centralized AI client configuration in `util/ai.py`
+- Supports Cloudflare AI Gateway integration with:
+  - Request caching (with TTL and custom cache keys)
+  - Automatic retries with configurable backoff strategies
+  - Request timeouts and rate limiting
+  - Cost tracking and event monitoring
+- Environment variables required:
+  - `OPENROUTER_API_KEY` for OpenRouter access
+  - `CLOUDFLARE_AI_GATEWAY_TOKEN` for AI Gateway authentication
+  - Optional: `OPENAI_API_KEY`, `ANTHROPIC_API_KEY` for direct access
 
 ## Current Commands
 
-### `hello` (`commands/hello.py`)
+### `struct` (`commands/struct.py`)
 
-- Basic "hello world" with rainbow animations
-- Demonstrates: panels, spinners, data output, all flags
-- Shows sample data structure with timestamps and metadata
-- Template for simple commands with rich output
+- AI-powered word suggestion command using OpenRouter
+- Demonstrates structured JSON output from LLMs
+- Options: `--word` (required), `--context` (optional for better suggestions)
+- Uses JSON schema validation for consistent AI responses
 
 ### `demo` (`commands/demo.py`)
 
@@ -105,7 +142,7 @@ myriad/
    ```python
    import click
    from ..command_interface import BaseCommand, GlobalConfig
-   from ..utils import console, output_data, print_debug_info
+   from ..util import console, output_data, print_debug_info
    ```
 3. **Create command class** inheriting from `BaseCommand`
 4. **Implement `register_command` static method**
@@ -113,94 +150,38 @@ myriad/
 6. **Use utility functions** for consistent behavior
 7. **Command automatically loads** on next CLI run
 
-### Command Class Template
+### AI Integration Pattern
 
 ```python
-class MyCommand(BaseCommand):
-    """Command description"""
+from ..util.ai import get_openai_client, AIGatewayConfig, BackoffType
 
-    @staticmethod
-    def register_command(cli_group: click.Group) -> None:
-        @cli_group.command()
-        @click.option('--flag', help='Description')
-        @click.pass_context
-        def mycommand(ctx: click.Context, flag: str) -> None:
-            """Command help text"""
-            config = MyCommand.get_config_from_context(ctx)
-            MyCommand.execute(config, flag)
+# Simple usage with caching disabled
+client = get_openai_client(enable_caching=False)
 
-    @staticmethod
-    def execute(config: GlobalConfig, flag: str) -> None:
-        if MyCommand.should_skip_output(config):
-            return
-        # Command implementation
-```
+# Advanced usage with full gateway configuration
+gateway_config = AIGatewayConfig(
+    enable_caching=True,
+    cache_ttl=3600,  # 1 hour
+    max_attempts=3,
+    retry_delay=1000,  # 1 second
+    backoff_type=BackoffType.EXPONENTIAL,
+    metadata={"command": "struct", "version": "1.0"}
+)
+client = get_openai_client(gateway_config=gateway_config)
 
-### Type Safety
-
-- All functions have type hints
-- Pydantic models for configuration and data structures
-- Protocol classes define interfaces
-- Use `typing` and `typing-extensions` for advanced types
-- Static analysis friendly with mypy
-
-### Error Handling
-
-- Commands should handle errors gracefully
-- Use Rich console for error messages when not silent
-- Preserve exit codes for scripting
-- Debug mode provides detailed diagnostics
-
-## Code Style Conventions
-
-### Imports Organization
-
-```python
-# Standard library
-import json
-import time
-from typing import Any, Dict, List
-
-# Third-party
-import click
-from rich.console import Console
-from rich.panel import Panel
-
-# Local imports
-from ..command_interface import BaseCommand, GlobalConfig
-from ..utils import console, output_data, create_fancy_panel
-```
-
-### Function Signatures
-
-```python
-@staticmethod
-def execute(config: GlobalConfig, option: str) -> None:
-    """Execute the command with proper typing"""
-    pass
-
-@staticmethod
-def _helper_method(data: List[Dict[str, Any]]) -> Dict[str, Any]:
-    """Private helper methods with descriptive names"""
-    pass
-```
-
-### Data Structures
-
-```python
-# Use clear, descriptive data structures
-output_data_structure = {
-    "command_summary": {...},
-    "items": [...],
-    "statistics": {...}
-}
-
-# Add verbose details conditionally
-if config.verbose:
-    output_data_structure["verbose_details"] = {
-        "config": config.model_dump(),
-        "command_info": {...}
+# Make structured API calls
+response = client.chat.completions.create(
+    model="openai/gpt-4o",
+    messages=[...],
+    response_format={
+        "type": "json_schema",
+        "json_schema": {
+            "name": "response_name",
+            "strict": True,
+            "schema": {...}
+        }
     }
+)
 ```
 
 ## Utility Functions Reference
@@ -219,75 +200,45 @@ if config.verbose:
 - `show_welcome_animation(message, config)`: Standard welcome
 - `show_completion_animation(message, config)`: Standard completion
 
-### Helper Functions
+### AI Functions
 
-- `print_debug_info(config, extra_info)`: Debug information display
-- `get_output_format_from_config(config)`: Convert to OutputFormat enum
-- `BaseCommand.get_config_from_context(ctx)`: Extract config from Click context
-- `BaseCommand.should_skip_output(config)`: Check if silent mode
+- `get_openai_client(enable_caching, gateway_config)`: OpenAI client via Cloudflare Gateway
+- `get_api_key(service)`: Retrieve API keys from environment
+- `AIGatewayConfig`: Configure caching, retries, timeouts, and monitoring
+- `BackoffType`: Enum for retry strategies (CONSTANT, LINEAR, EXPONENTIAL)
 
-## Rich Library Usage
+## Environment Configuration
 
-### Console Output
-
-```python
-# Import global console
-from ..utils import console
-
-# Colored text
-rainbow_text = create_rainbow_text("My text")
-console.print(rainbow_text)
-
-# Tables
-table = create_data_table("Title", columns, rows)
-console.print(table)
-
-# Panels
-panel = create_fancy_panel("Title", "Content", config)
-console.print(panel)
-```
-
-### Progress Bars
-
-```python
-from rich.progress import Progress
-
-with Progress(console=console) as progress:
-    task = progress.add_task("[green]Description...", total=count)
-    for i in range(count):
-        # Do work
-        progress.update(task, advance=1)
-```
-
-## Package Management Commands
-
-### Using uv
+### Required Environment Variables
 
 ```bash
-# Install dependencies
-uv sync
+# For AI features
+OPENROUTER_API_KEY=your_openrouter_key
+CLOUDFLARE_AI_GATEWAY_TOKEN=your_cloudflare_token
 
-# Add new dependencies
-uv add package-name
-
-# Run the CLI
-uv run sandbox --help
-uv run sandbox hello
-uv run sandbox demo --count 5
-uv run sandbox example --name "Claude" --style fancy
+# Optional for direct access
+OPENAI_API_KEY=your_openai_key
+ANTHROPIC_API_KEY=your_anthropic_key
 ```
 
-### Development Commands
+### Cloudflare AI Gateway Settings
 
-```bash
-# Run with different options
-uv run sandbox --json hello
-uv run sandbox --verbose demo
-uv run sandbox --quiet --yaml demo --count 10
+The project is configured to use:
 
-# Debug mode
-uv run sandbox --debug hello
-```
+- Account ID: `def50674a738cee409235f71819973cf`
+- Gateway ID: `ai-dave-io`
+- Endpoint: `https://gateway.ai.cloudflare.com/v1/{account_id}/{gateway_id}/openrouter`
+
+## Testing and Quality Assurance
+
+Currently, the project doesn't have formal testing, linting, or type checking commands configured. When implementing these:
+
+1. Test each command with all global flags (`--verbose`, `--json`, `--yaml`, `--debug`, `--quiet`, `--silent`)
+2. Verify JSON/YAML output is valid and complete
+3. Check animations work properly and respect quiet/silent
+4. Ensure error cases are handled gracefully
+5. Test auto-loading by adding/removing command files
+6. Verify AI integrations handle API errors gracefully
 
 ## Command Auto-Loading Details
 
@@ -311,16 +262,6 @@ class CommandRegistry:
         # Registers all discovered commands
 ```
 
-### Main CLI Integration
-
-```python
-# In __init__.py main()
-def main() -> None:
-    registry = create_command_registry("sandbox.commands")
-    registry.register_all_commands(cli)
-    cli()
-```
-
 ## Extension Guidelines
 
 ### New Commands
@@ -332,12 +273,14 @@ def main() -> None:
 - Test with all global flag combinations
 - Use utility functions for common operations
 
-### New Utilities
+### AI-Powered Commands
 
-- Add to `util/` package for shared functionality
-- Respect global configuration flags
-- Use Rich library components
-- Include proper type hints and documentation
+- Use `get_openai_client()` for AI integration
+- Configure caching based on use case (disable for dynamic content)
+- Implement structured outputs with JSON schemas
+- Handle API errors gracefully with try/except blocks
+- Add verbose logging for debugging AI interactions
+- Consider rate limits and implement appropriate delays
 
 ### Performance Considerations
 
@@ -345,50 +288,8 @@ def main() -> None:
 - Lazy loading of heavy operations
 - Efficient Rich component usage
 - Minimal overhead for quiet mode
-
-## Testing Approach
-
-When working on this project:
-
-1. Test each command with all global flags (`--verbose`, `--json`, `--yaml`, `--debug`, `--quiet`, `--silent`)
-2. Verify JSON/YAML output is valid and complete
-3. Check animations work properly and respect quiet/silent
-4. Ensure error cases are handled gracefully
-5. Test auto-loading by adding/removing command files
-6. Verify type hints with static analysis tools
-
-## Dependencies Notes
-
-- `rich>=14.0.0`: Core terminal UI library
-- `click>=8.2.1`: CLI framework
-- `pydantic>=2.0`: Data validation and configuration
-- `pyyaml>=6.0.2`: YAML output support
-- `typing-extensions`: Enhanced type hints for older Python versions
-
-## Future Extension Ideas
-
-### Command System Enhancements
-
-- Plugin system with external command loading
-- Command aliases and shortcuts
-- Command categories and grouping
-- Interactive command selection
-
-### Feature Additions
-
-- Configuration file support (YAML/TOML)
-- Custom themes and color schemes
-- Logging integration with Rich
-- Command history and completion
-- Template generation for new commands
-
-### Advanced CLI Features
-
-- Interactive mode with prompts
-- Command pipelines and chaining
-- Batch processing capabilities
-- Real-time data monitoring commands
-- Integration with external APIs
+- Configure AI Gateway caching for repeated queries
+- Use appropriate retry strategies for AI calls
 
 ## Command Development Checklist
 
@@ -401,8 +302,9 @@ When creating a new command:
 - [ ] Added proper type hints throughout
 - [ ] Used utility functions appropriately
 - [ ] Respected global configuration flags
-- [ ] Added comprehensive help text
+- [ ] Added comprehensive help text with emoji
 - [ ] Included error handling
 - [ ] Tested with all global flags
 - [ ] Verified auto-loading works
+- [ ] For AI commands: configured gateway settings appropriately
 - [ ] Updated documentation if needed
