@@ -136,14 +136,20 @@ class CommandRegistry:
                         )
 
                         # Find all classes that implement CommandProtocol
-                        for name, obj in inspect.getmembers(module, inspect.isclass):
-                            if (
-                                hasattr(obj, "register_command")
-                                and callable(obj.register_command)
-                                and obj != BaseCommand
-                                and not name.startswith("_")
-                            ):
-                                commands.append(obj)
+                        commands.extend(
+                            [
+                                obj
+                                for name, obj in inspect.getmembers(
+                                    module, inspect.isclass
+                                )
+                                if (
+                                    hasattr(obj, "register_command")
+                                    and callable(obj.register_command)
+                                    and obj != BaseCommand
+                                    and not name.startswith("_")
+                                )
+                            ]
+                        )
 
                     except ImportError as e:
                         print(
