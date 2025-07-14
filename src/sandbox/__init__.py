@@ -10,7 +10,7 @@ import click
 from rich.console import Console
 
 from .command_interface import GlobalConfig, create_command_registry
-from .utils import OutputFormat
+from .util import OutputFormat
 
 # Global console instance
 console = Console()

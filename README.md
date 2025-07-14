@@ -174,7 +174,8 @@ uv run sandbox example --style animated
 src/sandbox/
 ├── __init__.py              # Main CLI entry point with auto-loading
 ├── command_interface.py     # Base command interface and registry
-├── utils.py                 # Shared utilities for all commands
+├── util/                    # Shared utilities package
+│   └── __init__.py         # Utilities for all commands
 └── commands/                # Auto-loaded command modules
     ├── __init__.py         # Commands package
     ├── hello.py           # Hello world command
@@ -225,7 +226,7 @@ commands/mycommand.py   # Contains MyCommand class
 # ❌ These files will be ignored:
 commands/__init__.py    # Package initialization file
 commands/_private.py    # Files starting with underscore
-commands/utils.py       # Files without CommandProtocol classes
+commands/util.py        # Files without CommandProtocol classes
 ```
 
 #### Auto-Loading Requirements
@@ -617,7 +618,7 @@ uv run sandbox --debug hello
 
 ### Utility Functions
 
-The `utils.py` module provides common functionality:
+The `util` package provides common functionality:
 
 #### Output Functions
 

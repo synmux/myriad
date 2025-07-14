@@ -19,7 +19,7 @@ from rich.progress import Progress, SpinnerColumn, TextColumn
 from rich.table import Table
 from rich.text import Text
 
-from .command_interface import GlobalConfig
+from ..command_interface import GlobalConfig
 
 
 class OutputFormat(str, Enum):

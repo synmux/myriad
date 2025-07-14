@@ -8,8 +8,8 @@ import click
 from typing_extensions import override
 
 from ..command_interface import BaseCommand, GlobalConfig
-from ..lib.ai import get_openai_client
-from ..utils import console
+from ..util import console
+from ..util.ai import get_openai_client
 
 
 class StructCommand(BaseCommand):

@@ -15,7 +15,7 @@ from rich.table import Table
 from typing_extensions import override
 
 from ..command_interface import BaseCommand, GlobalConfig
-from ..utils import (
+from ..util import (
     OutputFormat,
     animate_spinner_with_text,
     console,

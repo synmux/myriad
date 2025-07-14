@@ -11,7 +11,8 @@ myriad/
 ├── src/sandbox/
 │   ├── __init__.py              # Main CLI entry point with auto-loading
 │   ├── command_interface.py     # Base command interface and registry system
-│   ├── utils.py                 # Shared utilities for all commands
+│   ├── util/                    # Shared utilities package
+│   │   └── __init__.py         # Utilities for all commands
 │   └── commands/                # Auto-loaded command modules
 │       ├── __init__.py         # Commands package
 │       ├── hello.py           # Hello world command
@@ -58,7 +59,7 @@ myriad/
 
 ### Shared Utilities
 
-- `utils.py` contains common functions used across commands
+- `util/` package contains common functions used across commands
 - Output formatting, animations, Rich components
 - Consistent styling and behavior patterns
 - Respects global flags (quiet/silent) automatically
@@ -331,7 +332,7 @@ def main() -> None:
 
 ### New Utilities
 
-- Add to `utils.py` for shared functionality
+- Add to `util/` package for shared functionality
 - Respect global configuration flags
 - Use Rich library components
 - Include proper type hints and documentation

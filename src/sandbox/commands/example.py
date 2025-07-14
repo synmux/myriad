@@ -8,7 +8,7 @@ import click
 from typing_extensions import override
 
 from ..command_interface import BaseCommand, GlobalConfig
-from ..utils import console
+from ..util import console
 
 
 class ExampleCommand(BaseCommand):
