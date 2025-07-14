@@ -2,6 +2,8 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+It also serves as guidance for other AI agents such as GitHub Copilot.
+
 **Note**: `CLAUDE.md` and `AGENTS.md` are symlinks to `.github/copilot-instructions.md` - update only `.github/copilot-instructions.md` to update all AI instruction files.
 
 ## Project Overview
