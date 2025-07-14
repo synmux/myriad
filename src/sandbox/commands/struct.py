@@ -116,6 +116,9 @@ class StructCommand(BaseCommand):
             )  # Parse the structured response
             suggestions_data = response.choices[0].message.content
 
+            if suggestions_data is not None:
+                suggestions_data = suggestions_data.lower()
+
             # Pretty-print the JSON response
             import json
 
