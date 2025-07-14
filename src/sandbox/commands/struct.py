@@ -64,29 +64,22 @@ class StructCommand(BaseCommand):
         word_suggestions_schema: dict[str, Any] = {
             "type": "object",
             "properties": {
-                "original_word": {
+                "word": {
                     "type": "string",
                     "description": "The original word that was provided",
                 },
                 "suggestions": {
                     "type": "array",
                     "items": {
-                        "type": "object",
-                        "properties": {
-                            "word": {
-                                "type": "string",
-                                "description": "The suggested alternative word",
-                            }
-                        },
-                        "required": ["word"],
-                        "additionalProperties": False,
+                        "type": "string",
+                        "description": "A suggested alternative word",
                     },
                     "description": "5 word suggestions, ordered from best to least recommended",
                     "minItems": 5,
                     "maxItems": 5,
                 },
             },
-            "required": ["original_word", "suggestions"],
+            "required": ["word", "suggestions"],
             "additionalProperties": False,
         }
 
@@ -120,13 +113,20 @@ class StructCommand(BaseCommand):
                         "schema": word_suggestions_schema,
                     },
                 },
-            )
-
-            # Parse the structured response
+            )  # Parse the structured response
             suggestions_data = response.choices[0].message.content
 
-            console.print("✅ Structured Output Response:")
-            console.print(suggestions_data)
+            # Pretty-print the JSON response
+            import json
+
+            if suggestions_data:
+                try:
+                    parsed_json = json.loads(suggestions_data)
+                    console.print_json(data=parsed_json)
+                except json.JSONDecodeError:
+                    console.print(suggestions_data)
+            else:
+                console.print("No response data")
 
             if config.debug:
                 console.print(f"\n🔍 Raw response object: {response}")
