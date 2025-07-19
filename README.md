@@ -1,258 +1,126 @@
-# Gmail Unsubscribe Tool
+# Gmail Unsubscriber
 
-A powerful CLI tool for automating email unsubscribe processes using the Gmail API. This tool scans your Gmail for emails with `List-Unsubscribe` headers and allows you to efficiently process unsubscribe requests.
+Automate email unsubscription using Gmail API. This tool processes emails labeled with 'pending-unsubscribe' and automatically unsubscribes you using the List-Unsubscribe header.
 
 ## Features
 
-- 🔍 **Smart Scanning**: Scan specific Gmail labels for emails with unsubscribe information
-- 📊 **CSV Export**: Generate timestamped CSV files with detailed unsubscribe data
-- 🔄 **Resume Support**: Continue interrupted scans or processing sessions
-- 📧 **Email Unsubscribe**: Send automated unsubscribe emails via Gmail API
-- 🌐 **HTTP Unsubscribe**: Make HTTP requests to unsubscribe links
-- 🖱️ **Browser Mode**: Open unsubscribe links in your default browser
-- 🎨 **Rich UI**: Beautiful progress bars and colored terminal output
-- 🔐 **Secure**: Uses official Google OAuth2 authentication
+- **Gmail API Integration**: Securely access your Gmail account
+- **Multiple Unsubscribe Methods**:
+  - Email-based unsubscribe (mailto: links)
+  - HTTP-based unsubscribe (GET/POST requests)
+  - One-click unsubscribe support (RFC 8058)
+  - Browser fallback for complex unsubscribe flows
+- **Label Management**: Automatically updates email labels after processing
+- **Safety Features**:
+  - Dry-run mode to preview actions
+  - Progress tracking
+  - Detailed logging
+  - Rate limiting protection
 
 ## Installation
 
-This tool requires Python 3.8+ and uses `uv` for dependency management.
-
-```bash
-# Clone or navigate to the project directory
-cd /path/to/unsubscribe
-
-# Install dependencies with uv
-uv sync
-
-# Or install with pip
-pip install -e .
-```
+1. Clone this repository or download the files
+2. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
 
 ## Setup
 
-### 1. Google API Credentials
+### 1. Enable Gmail API
 
-1. Go to the [Google Cloud Console](https://console.cloud.google.com/)
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)
 2. Create a new project or select an existing one
-3. Enable the Gmail API
-4. Create credentials (OAuth 2.0 Client ID) for a desktop application
-5. Download the credentials JSON file
+3. Enable the Gmail API for your project
+4. Go to "APIs & Services" > "Credentials"
+5. Click "Create Credentials" > "OAuth client ID"
+6. Choose "Desktop app" as the application type
+7. Download the credentials and save as `credentials.json` in the script directory
 
-### 2. Environment Configuration
+### 2. Gmail Label Setup
 
-You can provide your API credentials in two ways:
-
-**Option A: Command line parameter**
-
-```bash
-unsubscribe --api-key /path/to/credentials.json scan
-```
-
-**Option B: Environment variable**
-
-```bash
-export GMAIL_API_KEY=/path/to/credentials.json
-unsubscribe scan
-```
+1. In Gmail, create a label called `pending-unsubscribe`
+2. Apply this label to any emails you want to unsubscribe from
+3. The script will automatically create an `unsubscribed` label for processed emails
 
 ## Usage
 
-### Scanning for Unsubscribe Information
-
-#### Basic Scan (Inbox only)
-
+### View setup instructions
 ```bash
-unsubscribe scan
+python gmail_unsubscriber.py setup
 ```
 
-#### Scan Specific Labels
-
+### List emails pending unsubscription
 ```bash
-# Single label
-unsubscribe scan --labels "Promotions"
-
-# Multiple labels
-unsubscribe scan --labels "Promotions,Updates,Marketing"
+python gmail_unsubscriber.py list
 ```
 
-#### Resume a Previous Scan
-
+### Process emails (dry run)
 ```bash
-unsubscribe scan --resume emails_2025_01_06_123456.csv
+python gmail_unsubscriber.py process --dry-run
 ```
 
-### Processing Unsubscribe Actions
-
-After scanning, you'll get a CSV file with unsubscribe information. Edit the `action` column to specify what you want to do:
-
-- `email` - Send unsubscribe email
-- `http` - Make HTTP request to unsubscribe URL
-- `both` - Try both email and HTTP methods
-- Leave blank to skip
-
-#### Process Unsubscribe Actions
-
+### Process emails (actual unsubscribe)
 ```bash
-unsubscribe run emails_2025_01_06_123456.csv
+python gmail_unsubscriber.py process
 ```
 
-#### Use Browser Mode for HTTP Links
-
+### Process with options
 ```bash
-unsubscribe run emails_2025_01_06_123456.csv --http-browser
+# Process only 5 emails
+python gmail_unsubscriber.py process --limit 5
+
+# Don't open browser for complex unsubscribes
+python gmail_unsubscriber.py process --no-browser
+
+# Custom delay between requests (in seconds)
+python gmail_unsubscriber.py process --delay 5
 ```
 
-#### Resume Processing
+## How it Works
 
-```bash
-unsubscribe run emails_2025_01_06_123456.csv --resume
-```
+1. **Label Detection**: Finds all emails with the `pending-unsubscribe` label
+2. **Header Extraction**: Extracts the `List-Unsubscribe` header from each email
+3. **Unsubscribe Methods**:
+   - Tries HTTP unsubscribe first (preferred method)
+   - Falls back to email-based unsubscribe if HTTP fails
+   - Opens browser for manual intervention when needed
+4. **Label Update**: Removes `pending-unsubscribe` and adds `unsubscribed` label
 
-## CSV File Format
+## Supported Unsubscribe Methods
 
-The generated CSV files contain the following columns:
+- **One-Click Unsubscribe**: RFC 8058 compliant POST requests
+- **HTTP GET**: Standard unsubscribe links
+- **Email**: Sends unsubscribe email to specified address
+- **Browser Fallback**: Opens complex unsubscribe pages in browser
 
-| Column              | Description                                            |
-| ------------------- | ------------------------------------------------------ |
-| `from_address`      | Email address of the sender                            |
-| `sender_name`       | Display name of the sender                             |
-| `email_id`          | Gmail message ID                                       |
-| `email_date`        | Email date in UNIX timestamp (for sorting)             |
-| `unsubscribe_link`  | HTTP unsubscribe URL (if available)                    |
-| `unsubscribe_email` | Email address for unsubscribe (if available)           |
-| `action`            | Your chosen action (`email`, `http`, `both`, or blank) |
-| `processed`         | Processing status (`True`, `Failed`, or blank)         |
+## Security Notes
 
-## Example Workflow
-
-1. **Scan your Promotions folder:**
-
-   ```bash
-   unsubscribe scan --labels "Promotions"
-   ```
-
-2. **Review the generated CSV file** (e.g., `emails_2025_01_06_123456.csv`)
-
-3. **Edit the `action` column** to specify what you want to do for each sender:
-   - Set to `email` for senders where you want to send an unsubscribe email
-   - Set to `http` for senders where you want to click the unsubscribe link
-   - Set to `both` to try both methods
-   - Leave blank to skip
-
-4. **Process the unsubscribe actions:**
-
-   ```bash
-   unsubscribe run emails_2025_01_06_123456.csv
-   ```
-
-5. **Check the results** in the updated CSV file
-
-## Advanced Features
-
-### Label Support
-
-The tool supports Gmail's label system. You can scan:
-
-- Built-in labels: `INBOX`, `SENT`, `DRAFT`, `SPAM`, `TRASH`
-- Custom labels: `"My Custom Label"`, `"Work Email"`, etc.
-- Multiple labels: `"Promotions,Updates,Social"`
-
-### Resume Functionality
-
-Both scanning and processing support resume functionality:
-
-- **Scan Resume**: Continues from where a previous scan left off, avoiding duplicate work
-- **Process Resume**: Skips entries that are already marked as processed
-
-### HTTP vs Browser Mode
-
-**HTTP Mode** (default):
-
-- Makes automated HTTP requests to unsubscribe links
-- Faster and more efficient
-- May not work with complex unsubscribe forms
-
-**Browser Mode** (`--http-browser`):
-
-- Opens links in your default browser
-- Allows manual interaction with complex forms
-- Requires manual confirmation of each unsubscribe
-
-## Safety Features
-
-- **Confirmation prompts** before processing actions
-- **Rate limiting** to avoid hitting API limits
-- **Error handling** with detailed logging
-- **Resume capability** if processing is interrupted
-- **Timestamped files** to prevent accidental overwrites
+- Credentials are stored locally in `token.pickle`
+- Only requests Gmail modify scope (not full access)
+- No data is sent to third parties
+- All unsubscribe requests go directly to the sender's systems
 
 ## Troubleshooting
 
-### Authentication Issues
+### "Credentials file not found"
+- Make sure you've downloaded `credentials.json` from Google Cloud Console
+- Place it in the same directory as the script
 
-If you encounter authentication errors:
+### "Label not found"
+- Create the `pending-unsubscribe` label in Gmail
+- Label names are case-insensitive
 
-1. Make sure the Gmail API is enabled in Google Cloud Console
-2. Verify your credentials file is valid JSON
-3. Check that your OAuth consent screen is configured
-4. Delete `token.pickle` file to force re-authentication
+### Rate limiting
+- Increase the delay between requests using `--delay`
+- Process fewer emails at once using `--limit`
 
-### Rate Limiting
+## Limitations
 
-Gmail API has rate limits. If you hit them:
-
-1. Wait a few minutes and try again
-2. Use the resume functionality to continue where you left off
-3. Consider processing smaller batches
-
-### Missing Unsubscribe Information
-
-Not all emails have `List-Unsubscribe` headers. This is normal and depends on the sender's email practices.
-
-## Privacy and Security
-
-- **Local Processing**: All data processing happens locally on your machine
-- **OAuth2 Security**: Uses Google's secure OAuth2 flow
-- **No Data Collection**: The tool doesn't send your data anywhere except to perform unsubscribe actions
-- **Token Storage**: OAuth tokens are stored locally in `token.pickle`
-
-## Development
-
-### Running Tests
-
-```bash
-# Install development dependencies
-uv sync --group dev
-
-# Run tests
-pytest tests/
-```
-
-### Code Quality
-
-```bash
-# Format code
-black src/
-
-# Sort imports
-isort src/
-
-# Type checking
-mypy src/
-```
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
+- Some emails may not have List-Unsubscribe headers
+- Complex unsubscribe flows may require manual browser interaction
+- Rate limits apply to both Gmail API and HTTP requests
 
 ## License
 
-This project is part of the Myriad monorepo and follows its licensing terms.
-
-## Support
-
-For issues, questions, or contributions, please use the GitHub issues system in the main Myriad repository.
+MIT License - feel free to modify and distribute
