@@ -26,6 +26,7 @@ class SubscriptionCSVHandler:
             "thumbnail_url",
             "video_count",
             "new_video_count",
+            "last_video_date",
             "unsubscribe",
         ]
 
@@ -103,15 +104,12 @@ class SubscriptionCSVHandler:
                                 f"Each channel marked for unsubscription must have a channel name."
                             )
 
-                        # Validate subscription ID format (YouTube subscription IDs start with UC)
-                        if (
-                            not subscription_id.startswith("UC")
-                            or len(subscription_id) != 24
-                        ):
+                        # Validate subscription ID is not empty
+                        if not subscription_id:
                             raise FileError(
-                                f"Row {row_num}: Invalid subscription_id format: '{subscription_id}'\n"
+                                f"Row {row_num}: Missing subscription_id for channel marked for unsubscription.\n"
                                 f"Channel name: '{channel_name}'\n"
-                                f"YouTube subscription IDs should start with 'UC' and be 24 characters long."
+                                f"The subscription_id is required for unsubscription."
                             )
 
                         unsubscribe_list.append(
@@ -193,6 +191,9 @@ class SubscriptionCSVHandler:
             video_count = str(content_details.get("totalItemCount", ""))
             new_video_count = str(content_details.get("newItemCount", ""))
 
+            # Last video date (added by filter process if applicable)
+            last_video_date = subscription.get("last_video_date", "")
+
             # Validate required fields
             if not channel_name:
                 raise FileError("Subscription missing channel name")
@@ -211,6 +212,7 @@ class SubscriptionCSVHandler:
                 "thumbnail_url": thumbnail_url,
                 "video_count": video_count,
                 "new_video_count": new_video_count,
+                "last_video_date": last_video_date,
                 "unsubscribe": "",  # Empty by default
             }
 

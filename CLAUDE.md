@@ -11,6 +11,7 @@ uv sync
 # Run the CLI tool
 uv run subscriptions list                    # List subscriptions to timestamped CSV
 uv run subscriptions list output.csv         # List to specific file
+uv run subscriptions list --filter-date 2024-01-01  # List channels inactive since date
 uv run subscriptions unsubscribe marked.csv  # Unsubscribe from marked channels
 
 # Install with dev dependencies
@@ -70,6 +71,7 @@ Additional columns in export:
 - `thumbnail_url`: High-res channel image
 - `video_count`: Total channel videos
 - `new_video_count`: Unwatched videos
+- `last_video_date`: Date of the channel's most recent video
 
 ### Authentication Flow
 

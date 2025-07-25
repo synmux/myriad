@@ -16,6 +16,7 @@ The tool is structured as a Python package with the following components:
 
 - Fetches all YouTube subscription data including channel IDs, thumbnails, video counts, and subscription dates
 - Exports subscriptions to CSV with comprehensive metadata
+- Filter subscriptions by last activity date to find inactive channels
 - Batch unsubscribe from channels marked in CSV
 - Robust error handling with retry logic for API rate limits
 - OAuth2 authentication flow with credential caching
@@ -29,6 +30,7 @@ uv sync
 # Run the CLI tool
 uv run subscriptions list                    # List all subscriptions to timestamped CSV
 uv run subscriptions list output.csv         # List to specific file
+uv run subscriptions list --filter-date 2024-01-01  # List channels inactive since date
 uv run subscriptions unsubscribe marked.csv  # Unsubscribe from marked channels
 
 # Development setup
@@ -55,6 +57,7 @@ The tool exports/imports CSV files with these columns:
 - `thumbnail_url`: High-quality channel thumbnail URL
 - `video_count`: Total videos in channel
 - `new_video_count`: Number of unwatched videos
+- `last_video_date`: Date of the channel's most recent video
 - `unsubscribe`: Mark with any value to unsubscribe
 
 ## Authentication Setup
@@ -83,3 +86,6 @@ The tool includes sophisticated error handling:
 - Implemented proper multi-line description handling
 - Enhanced error details extraction for better debugging
 - Moved time import to module level
+- Fixed subscription ID validation bug
+- Added --filter-date option to filter channels by last activity
+- Implemented channel last video date fetching using YouTube Search API

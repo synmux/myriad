@@ -2,6 +2,7 @@
 
 import sys
 import time
+from datetime import datetime, timezone
 
 import click
 
@@ -44,7 +45,17 @@ def subscriptions():
 
 @subscriptions.command()
 @click.argument("filename", required=False, metavar="[FILENAME]")
-def list(filename):
+@click.option(
+    "--filter-date",
+    help="Only include channels that haven't posted since this date (YYYY-MM-DD)",
+    type=click.DateTime(formats=["%Y-%m-%d"]),
+)
+@click.option(
+    "--save-partial/--no-save-partial",
+    default=True,
+    help="Save partial results if quota is exceeded during filtering (default: save)",
+)
+def list(filename, filter_date, save_partial):
     """Download your YouTube subscriptions to a CSV file.
 
     This command authenticates with YouTube using OAuth2, fetches all your current
@@ -64,6 +75,7 @@ def list(filename):
     • thumbnail_url: URL of the channel's thumbnail image
     • video_count: Total number of videos in the channel
     • new_video_count: Number of unwatched videos
+    • last_video_date: Date of the channel's most recent video
     • unsubscribe: Empty field you can fill to mark channels for removal
 
     Examples:
@@ -76,8 +88,18 @@ def list(filename):
         # Download to file in specific directory
         uv run subscriptions list ~/Downloads/youtube_subs.csv
 
+        # Filter for channels inactive since January 1, 2024
+        uv run subscriptions list --filter-date 2024-01-01
+
+        # Don't save results if quota is exceeded during filtering
+        uv run subscriptions list --filter-date 2024-01-01 --no-save-partial
+
     Note: This command requires internet access and valid YouTube API credentials.
     On first run, you'll be prompted to complete OAuth2 authentication in your browser.
+
+    Quota limits: YouTube API has daily quota limits. When filtering by date, each
+    channel requires an additional API call. By default, partial results are saved
+    if quota is exceeded. Use --no-save-partial to disable this behavior.
     """
     # Use default filename if none provided
     if not filename:
@@ -94,10 +116,128 @@ def list(filename):
 
         # Fetch subscriptions
         click.echo("📥 Downloading subscriptions...")
+        if filter_date:
+            click.echo(
+                f"🔍 Filtering for channels inactive since {filter_date.strftime('%Y-%m-%d')}"
+            )
+
         try:
             with click.progressbar(length=1, label="Fetching data") as bar:
                 subscriptions = youtube_client.get_subscriptions()
                 bar.update(1)
+
+            # If filter_date is provided, fetch channel activity and filter
+            if filter_date:
+                click.echo("📊 Checking channel activity...")
+                filtered_subscriptions = []
+
+                # Make filter_date timezone-aware (UTC) to match YouTube API dates
+                filter_date_aware = filter_date.replace(tzinfo=timezone.utc)
+
+                # Track quota errors
+                quota_errors = 0
+                channels_checked = 0
+
+                with click.progressbar(
+                    subscriptions, label="Filtering channels"
+                ) as subs:
+                    for sub in subs:
+                        channel_id = (
+                            sub.get("snippet", {})
+                            .get("resourceId", {})
+                            .get("channelId")
+                        )
+                        if channel_id:
+                            try:
+                                last_video_date = (
+                                    youtube_client.get_channel_last_video_date(
+                                        channel_id
+                                    )
+                                )
+                                channels_checked += 1
+
+                                # Add last_video_date to subscription data
+                                sub["last_video_date"] = (
+                                    last_video_date.isoformat()
+                                    if last_video_date
+                                    else ""
+                                )
+
+                                # Include channel if no videos or last video is before filter date
+                                if (
+                                    not last_video_date
+                                    or last_video_date < filter_date_aware
+                                ):
+                                    filtered_subscriptions.append(sub)
+
+                                # Add small delay to avoid rate limits
+                                time.sleep(0.05)
+
+                            except APIError as e:
+                                if "quota exceeded" in str(e).lower():
+                                    quota_errors += 1
+                                    click.echo(
+                                        f"\n⚠️  Quota exceeded after checking {channels_checked} channels",
+                                        err=True,
+                                    )
+
+                                    # For remaining channels, include them without checking
+                                    click.echo(
+                                        "Including remaining channels without activity check...",
+                                        err=True,
+                                    )
+                                    sub["last_video_date"] = ""
+                                    filtered_subscriptions.append(sub)
+
+                                    # Add all remaining subscriptions
+                                    for remaining_sub in subs:
+                                        remaining_sub["last_video_date"] = ""
+                                        filtered_subscriptions.append(remaining_sub)
+                                    break
+                                else:
+                                    # Other API errors - include channel and continue
+                                    click.echo(
+                                        f"\n⚠️  Could not check activity for {sub.get('snippet', {}).get('title', 'Unknown')}: {e}",
+                                        err=True,
+                                    )
+                                    sub["last_video_date"] = ""
+                                    filtered_subscriptions.append(sub)
+                            except Exception as e:
+                                # Non-API errors - include channel and continue
+                                click.echo(
+                                    f"\n⚠️  Error checking {sub.get('snippet', {}).get('title', 'Unknown')}: {e}",
+                                    err=True,
+                                )
+                                sub["last_video_date"] = ""
+                                filtered_subscriptions.append(sub)
+                        else:
+                            # Keep subscriptions without channel ID (shouldn't happen but be safe)
+                            filtered_subscriptions.append(sub)
+
+                subscriptions = filtered_subscriptions
+
+                if quota_errors > 0:
+                    click.echo(
+                        f"\n⚠️  Quota exceeded after checking {channels_checked} of {len(subscriptions)} channels",
+                        err=True,
+                    )
+                    if not save_partial:
+                        click.echo(
+                            "❌ Not saving partial results (--no-save-partial flag is set)",
+                            err=True,
+                        )
+                        click.echo(
+                            "💡 YouTube quota resets daily at midnight Pacific Time",
+                            err=True,
+                        )
+                        return  # Exit without saving
+                    else:
+                        click.echo(
+                            "📝 Saving partial results with channels checked so far",
+                            err=True,
+                        )
+                else:
+                    click.echo(f"✅ Found {len(subscriptions)} inactive channels")
         except Exception as e:
             # Provide more context for subscription fetching errors
             if "quota" in str(e).lower():
@@ -163,6 +303,7 @@ def unsubscribe(filename):
     • thumbnail_url: URL of the channel's thumbnail image
     • video_count: Total number of videos in the channel
     • new_video_count: Number of unwatched videos
+    • last_video_date: Date of the channel's most recent video
     • unsubscribe: Mark with any non-empty value to unsubscribe
 
     The command will:

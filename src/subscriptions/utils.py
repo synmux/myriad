@@ -61,6 +61,7 @@ def validate_csv_format(filename: str) -> bool:
         "thumbnail_url",
         "video_count",
         "new_video_count",
+        "last_video_date",
         "unsubscribe",
     }
 

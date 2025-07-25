@@ -3,6 +3,7 @@
 import logging
 import random
 import time
+from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional
 
 from googleapiclient.errors import HttpError
@@ -65,6 +66,65 @@ class YouTubeClient:
             APIError: If API request fails with non-recoverable error
         """
         return self._unsubscribe_with_retry(subscription_id)
+
+    def get_channel_last_video_date(
+        self, channel_id: str, wait_for_quota: bool = True
+    ) -> Optional[datetime]:
+        """Get the date of the most recent video posted by a channel.
+
+        Args:
+            channel_id: The YouTube channel ID
+            wait_for_quota: Whether to wait for quota reset if exceeded
+
+        Returns:
+            datetime of the most recent video, or None if no videos found
+
+        Raises:
+            APIError: If API request fails
+        """
+        max_retries = 3
+        for attempt in range(max_retries):
+            try:
+                # Use search API to get the most recent video from the channel
+                request = self.service.search().list(
+                    part="snippet",
+                    channelId=channel_id,
+                    order="date",
+                    maxResults=1,
+                    type="video",
+                )
+
+                response = request.execute()
+
+                items = response.get("items", [])
+                if items:
+                    # Get the publish date of the most recent video
+                    published_at = items[0]["snippet"]["publishedAt"]
+                    # Parse ISO 8601 date string
+                    return datetime.fromisoformat(published_at.replace("Z", "+00:00"))
+
+                return None
+
+            except HttpError as e:
+                if e.resp.status == 404:
+                    # Channel not found or no videos
+                    return None
+
+                # Check if it's a quota error and we should wait
+                if e.resp.status == 403 and wait_for_quota:
+                    error_content = str(e.content)
+                    if "quotaExceeded" in error_content:
+                        if attempt < max_retries - 1:
+                            # Short retry for temporary quota issues
+                            wait_time = self._calculate_backoff_delay(attempt)
+                            self.logger.warning(
+                                f"Quota exceeded for channel {channel_id}, waiting {wait_time:.1f}s before retry"
+                            )
+                            time.sleep(wait_time)
+                            continue
+
+                # If not retryable or last attempt, raise error
+                self._handle_api_error(e, f"fetching videos for channel {channel_id}")
 
     def _paginate_subscriptions(
         self, page_token: Optional[str] = None
@@ -238,6 +298,43 @@ class YouTubeClient:
 
         # Cap at 30 seconds
         return min(base_delay + jitter, 30.0)
+
+    def _get_quota_reset_time(self) -> datetime:
+        """Calculate when YouTube API quota will reset.
+
+        YouTube quotas reset daily at midnight Pacific Time (UTC-8 or UTC-7 during DST).
+
+        Returns:
+            datetime: The next quota reset time in UTC
+        """
+        try:
+            # Try to use zoneinfo for proper timezone handling (Python 3.9+)
+            from zoneinfo import ZoneInfo
+
+            pacific = ZoneInfo("America/Los_Angeles")
+        except ImportError:
+            # Fallback: Use a simple approximation
+            # This won't handle DST transitions perfectly but is close enough
+            # PST = UTC-8, PDT = UTC-7
+            # Rough DST: Second Sunday in March to first Sunday in November
+            now = datetime.now(timezone.utc)
+            month = now.month
+            if 3 < month < 11:  # Approximate DST period
+                pacific = timezone(timedelta(hours=-7))  # PDT
+            else:
+                pacific = timezone(timedelta(hours=-8))  # PST
+
+        # Get current time in Pacific timezone
+        now_utc = datetime.now(timezone.utc)
+        now_pacific = now_utc.astimezone(pacific)
+
+        # Calculate next midnight Pacific Time
+        next_midnight_pacific = now_pacific.replace(
+            hour=0, minute=0, second=0, microsecond=0
+        ) + timedelta(days=1)
+
+        # Convert back to UTC
+        return next_midnight_pacific.astimezone(timezone.utc)
 
     def _handle_api_error(self, error: HttpError, operation: str) -> None:
         """Handle YouTube API errors with appropriate retry logic.

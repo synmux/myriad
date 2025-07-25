@@ -59,6 +59,9 @@ uv run subscriptions list
 
 # Export to specific file
 uv run subscriptions list my_subscriptions.csv
+
+# Filter for channels inactive since a specific date
+uv run subscriptions list --filter-date 2024-01-01
 ```
 
 The CSV file includes:
@@ -69,6 +72,7 @@ The CSV file includes:
 - Channel thumbnail URL
 - Total video count
 - Unwatched video count
+- Last video date (when the channel last posted)
 - Unsubscribe column (for marking channels)
 
 ### Unsubscribe from Channels
@@ -106,6 +110,7 @@ The tool will:
 | thumbnail_url   | Channel's profile image URL                         |
 | video_count     | Total videos in channel                             |
 | new_video_count | Number of unwatched videos                          |
+| last_video_date | Date of the channel's most recent video             |
 | unsubscribe     | Mark with any value to unsubscribe                  |
 
 ## Authentication
@@ -123,6 +128,10 @@ The tool only requests the minimum required scope: `https://www.googleapis.com/a
 The tool handles various error scenarios:
 
 - **API quota exceeded**: Gracefully reports and suggests waiting
+  - YouTube API quotas reset daily at midnight Pacific Time (PT)
+  - Default quota is 10,000 units per day
+  - By default, saves partial results if quota is exceeded during filtering
+  - Use `--no-save-partial` flag to disable saving partial results
 - **Rate limits**: Automatic exponential backoff with retry
 - **Network errors**: Detailed messages with troubleshooting steps
 - **Invalid CSV format**: Validation before processing with helpful error messages
