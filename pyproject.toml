@@ -1,0 +1,17 @@
+[project]
+name = "subscriptions"
+version = "0.1.0"
+description = "List and remove YouTube subscriptions"
+readme = "README.md"
+authors = [
+    { name = "Dave Williams", email = "dave@dave.io" }
+]
+requires-python = ">=3.13"
+dependencies = []
+
+[project.scripts]
+subscriptions = "subscriptions:main"
+
+[build-system]
+requires = ["uv_build>=0.8.2,<0.9.0"]
+build-backend = "uv_build"
