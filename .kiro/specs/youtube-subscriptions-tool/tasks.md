@@ -1,19 +1,19 @@
 # Implementation Plan
 
-- [ ] 1. Set up project structure and dependencies
-  - Create the src/subscriptions directory structure with __init__.py files
+- [x] 1. Set up project structure and dependencies
+  - Create the src/subscriptions directory structure with **init**.py files
   - Configure pyproject.toml with required dependencies and script entry point
   - Set up the main CLI entry point to be runnable via `uv run subscriptions`
   - _Requirements: 5.1, 5.2, 5.3, 5.4_
 
-- [ ] 2. Implement core utility functions
+- [x] 2. Implement core utility functions
   - Create utils.py with timestamp-based filename generation function
   - Implement CSV format validation function to check required columns
   - Add error handling utilities and custom exception classes
   - Write unit tests for utility functions
   - _Requirements: 1.1, 2.6, 2.7_
 
-- [ ] 3. Implement OAuth2 authentication module
+- [x] 3. Implement OAuth2 authentication module
   - Create auth.py with YouTubeAuthenticator class for handling OAuth2 flow
   - Implement credential loading, saving, and refresh functionality
   - Add support for client_secrets.json file and token storage
@@ -21,7 +21,7 @@
   - Write unit tests for authentication module with mocked OAuth flow
   - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5_
 
-- [ ] 4. Implement YouTube API client wrapper
+- [x] 4. Implement YouTube API client wrapper
   - Create youtube_client.py with YouTubeClient class
   - Implement get_subscriptions method with pagination support
   - Implement unsubscribe_from_channel method for removing subscriptions
@@ -29,7 +29,7 @@
   - Write unit tests for YouTube client with mocked API responses
   - _Requirements: 1.3, 1.4, 1.5, 2.2, 2.3, 2.4, 2.5_
 
-- [ ] 5. Implement CSV file handling
+- [x] 5. Implement CSV file handling
   - Create csv_handler.py with SubscriptionCSVHandler class
   - Implement write_subscriptions method to export subscription data to CSV
   - Implement read_unsubscribe_list method to parse CSV for unsubscribe operations
@@ -37,7 +37,7 @@
   - Write unit tests for CSV operations with temporary test files
   - _Requirements: 1.2, 1.3, 2.1, 2.6, 2.7_
 
-- [ ] 6. Implement the list command
+- [x] 6. Implement the list command
   - Create the main CLI structure in cli.py using Click decorators
   - Implement the list command that downloads subscriptions to CSV
   - Add filename argument handling with default timestamp-based naming
@@ -46,7 +46,7 @@
   - Write integration tests for the list command
   - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5, 4.1, 4.2, 4.4_
 
-- [ ] 7. Implement the unsubscribe command
+- [x] 7. Implement the unsubscribe command
   - Implement the unsubscribe command that processes CSV files
   - Add CSV file validation and parsing for unsubscribe operations
   - Integrate with YouTube client to perform actual unsubscriptions
@@ -55,7 +55,7 @@
   - Write integration tests for the unsubscribe command
   - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5, 4.1, 4.3, 4.4_
 
-- [ ] 8. Add comprehensive error handling and user experience
+- [x] 8. Add comprehensive error handling and user experience
   - Implement proper exception handling throughout all modules
   - Add helpful error messages for common failure scenarios
   - Implement retry logic for transient API errors
@@ -73,8 +73,10 @@
 
 - [ ] 10. Final integration and testing
   - Create comprehensive integration tests that test the complete workflow
-  - Test the tool with actual YouTube API (using test account)
+  - Test the tool with actual YouTube API (credentials for a REAL ACCOUNT are in place)
+  - Execute ONLY READ-ONLY COMMANDS. Do not execute `uv run subscriptions unsubscribe`.
+  - You can execute `uv run subscriptions list` if you want, as that is read only.
   - Verify the tool works correctly with `uv run subscriptions` command
-  - Test edge cases like empty subscription lists and network failures
+  - Test edge cases like (SYNTHETIC) empty subscription lists and network failures
   - Validate CSV output format matches requirements exactly
   - _Requirements: 1.1, 1.2, 1.3, 2.1, 2.2, 5.3_

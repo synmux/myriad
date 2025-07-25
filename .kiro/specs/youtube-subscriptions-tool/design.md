@@ -21,6 +21,7 @@ src/subscriptions/
 ```
 
 The tool uses a layered architecture:
+
 - **CLI Layer**: Click-based command interface
 - **Service Layer**: YouTube API operations and CSV handling
 - **Authentication Layer**: OAuth2 credential management
@@ -61,19 +62,19 @@ class YouTubeAuthenticator:
         self.credentials_file = credentials_file
         self.token_file = token_file
         self.scopes = ['https://www.googleapis.com/auth/youtube']
-    
+
     def get_authenticated_service(self):
         """Returns authenticated YouTube service object."""
         pass
-    
+
     def _load_credentials(self):
         """Load existing credentials from token file."""
         pass
-    
+
     def _save_credentials(self, credentials):
         """Save credentials to token file."""
         pass
-    
+
     def _run_oauth_flow(self):
         """Run OAuth2 flow for new credentials."""
         pass
@@ -87,15 +88,15 @@ Wraps YouTube API operations:
 class YouTubeClient:
     def __init__(self, service):
         self.service = service
-    
+
     def get_subscriptions(self):
         """Fetch all user subscriptions with pagination."""
         pass
-    
+
     def unsubscribe_from_channel(self, subscription_id):
         """Unsubscribe from a channel by subscription ID."""
         pass
-    
+
     def _paginate_subscriptions(self, page_token=None):
         """Handle pagination for subscription listing."""
         pass
@@ -110,15 +111,15 @@ class SubscriptionCSVHandler:
     def __init__(self, filename):
         self.filename = filename
         self.fieldnames = ['channel_name', 'description', 'subscription_id', 'unsubscribe']
-    
+
     def write_subscriptions(self, subscriptions):
         """Write subscriptions data to CSV file."""
         pass
-    
+
     def read_unsubscribe_list(self):
         """Read CSV and return channels marked for unsubscription."""
         pass
-    
+
     def _format_subscription_row(self, subscription):
         """Format subscription data for CSV row."""
         pass
@@ -168,16 +169,19 @@ channel_name,description,subscription_id,unsubscribe
 ## Error Handling
 
 ### Authentication Errors
+
 - Missing credentials file: Provide clear instructions for obtaining credentials
 - Expired tokens: Automatically refresh or prompt for re-authentication
 - Invalid scopes: Guide user to correct OAuth2 setup
 
 ### API Errors
+
 - Rate limiting: Implement exponential backoff and retry logic
 - Network errors: Retry with timeout and provide meaningful error messages
 - Invalid subscription IDs: Log errors but continue processing other subscriptions
 
 ### File Operations
+
 - Missing CSV file: Clear error message with file path
 - Invalid CSV format: Validate headers and provide format guidance
 - Permission errors: Check file permissions and provide solutions
@@ -205,18 +209,21 @@ class FileError(YouTubeSubscriptionsError):
 ## Testing Strategy
 
 ### Unit Tests
+
 - Test each module independently with mocked dependencies
 - Test CSV parsing and generation logic
 - Test authentication flow with mock credentials
 - Test error handling scenarios
 
 ### Integration Tests
+
 - Test complete workflow with test YouTube account
 - Test OAuth2 flow end-to-end
 - Test CSV file operations with temporary files
 - Test API rate limiting and error recovery
 
 ### Test Structure
+
 ```
 tests/
 ├── unit/
@@ -236,6 +243,7 @@ tests/
 ### Dependencies and Package Management
 
 The tool will use the following key dependencies:
+
 - `click`: CLI framework for command-line interface
 - `google-api-python-client`: Official Google API client
 - `google-auth-oauthlib`: OAuth2 authentication flow
