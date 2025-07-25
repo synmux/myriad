@@ -52,7 +52,17 @@ def validate_csv_format(filename: str) -> bool:
     Raises:
         FileError: If file doesn't exist or has invalid format
     """
-    required_columns = {"channel_name", "description", "subscription_id", "unsubscribe"}
+    required_columns = {
+        "channel_name",
+        "channel_id",
+        "description",
+        "subscription_id",
+        "published_at",
+        "thumbnail_url",
+        "video_count",
+        "new_video_count",
+        "unsubscribe",
+    }
 
     if not os.path.exists(filename):
         raise FileError(

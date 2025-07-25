@@ -7,13 +7,7 @@ from typing import Any, Dict, List, Optional
 
 from googleapiclient.errors import HttpError
 
-from .utils import YouTubeSubscriptionsError
-
-
-class APIError(YouTubeSubscriptionsError):
-    """YouTube API-related errors."""
-
-    pass
+from .utils import APIError
 
 
 class YouTubeClient:
@@ -87,7 +81,7 @@ class YouTubeClient:
             HttpError: If API request fails
         """
         request_params = {
-            "part": "snippet",
+            "part": "snippet,contentDetails,subscriberSnippet",
             "mine": True,
             "maxResults": 50,  # Maximum allowed by API
         }
@@ -259,8 +253,10 @@ class YouTubeClient:
 
         if status_code == 403:
             # Check if it's a quota exceeded error
-            error_details = error.error_details
-            if any("quotaExceeded" in str(detail) for detail in error_details):
+            error_details = getattr(error, "error_details", [])
+            if error_details and any(
+                "quotaExceeded" in str(detail) for detail in error_details
+            ):
                 raise APIError(
                     f"YouTube API quota exceeded while {operation}. Please try again later."
                 )

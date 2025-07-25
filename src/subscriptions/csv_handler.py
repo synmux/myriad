@@ -2,7 +2,7 @@
 
 import csv
 import os
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 from .utils import FileError, ensure_directory_exists, validate_csv_format
 
@@ -19,8 +19,13 @@ class SubscriptionCSVHandler:
         self.filename = filename
         self.fieldnames = [
             "channel_name",
+            "channel_id",
             "description",
             "subscription_id",
+            "published_at",
+            "thumbnail_url",
+            "video_count",
+            "new_video_count",
             "unsubscribe",
         ]
 
@@ -162,10 +167,31 @@ class SubscriptionCSVHandler:
         try:
             # Extract data from YouTube API response format
             snippet = subscription.get("snippet", {})
+            content_details = subscription.get("contentDetails", {})
 
+            # Basic fields from snippet
             channel_name = snippet.get("title", "").strip()
             description = snippet.get("description", "").strip()
             subscription_id = subscription.get("id", "").strip()
+            published_at = snippet.get("publishedAt", "").strip()
+
+            # Channel ID from resourceId
+            resource_id = snippet.get("resourceId", {})
+            channel_id = resource_id.get("channelId", "").strip()
+
+            # Thumbnail URL (prefer high quality)
+            thumbnails = snippet.get("thumbnails", {})
+            thumbnail_url = ""
+            if "high" in thumbnails:
+                thumbnail_url = thumbnails["high"].get("url", "")
+            elif "medium" in thumbnails:
+                thumbnail_url = thumbnails["medium"].get("url", "")
+            elif "default" in thumbnails:
+                thumbnail_url = thumbnails["default"].get("url", "")
+
+            # Content details
+            video_count = str(content_details.get("totalItemCount", ""))
+            new_video_count = str(content_details.get("newItemCount", ""))
 
             # Validate required fields
             if not channel_name:
@@ -173,10 +199,18 @@ class SubscriptionCSVHandler:
             if not subscription_id:
                 raise FileError("Subscription missing subscription ID")
 
+            # Clean multi-line descriptions by replacing newlines with spaces
+            description = " ".join(description.splitlines())
+
             return {
                 "channel_name": channel_name,
+                "channel_id": channel_id,
                 "description": description,
                 "subscription_id": subscription_id,
+                "published_at": published_at,
+                "thumbnail_url": thumbnail_url,
+                "video_count": video_count,
+                "new_video_count": new_video_count,
                 "unsubscribe": "",  # Empty by default
             }
 

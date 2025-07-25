@@ -1,6 +1,5 @@
 """OAuth2 authentication module for YouTube API access."""
 
-import json
 import os
 from pathlib import Path
 from typing import Optional
@@ -10,11 +9,7 @@ from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 
-
-class AuthenticationError(Exception):
-    """Authentication-related errors."""
-
-    pass
+from .utils import AuthenticationError
 
 
 class YouTubeAuthenticator:

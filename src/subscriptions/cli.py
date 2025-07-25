@@ -1,12 +1,19 @@
 """Main CLI entry point for YouTube subscriptions management tool."""
 
 import sys
+import time
 
 import click
 
-from .auth import AuthenticationError, YouTubeAuthenticator
+from .auth import YouTubeAuthenticator
 from .csv_handler import SubscriptionCSVHandler
-from .utils import APIError, FileError, format_error_message, generate_default_filename
+from .utils import (
+    APIError,
+    AuthenticationError,
+    FileError,
+    format_error_message,
+    generate_default_filename,
+)
 from .youtube_client import YouTubeClient
 
 
@@ -50,8 +57,13 @@ def list(filename):
 
     The CSV format includes these columns:
     • channel_name: The display name of the YouTube channel
+    • channel_id: The unique ID of the subscribed channel
     • description: Brief description of the channel
     • subscription_id: Internal ID used for unsubscription operations
+    • published_at: When the subscription was created
+    • thumbnail_url: URL of the channel's thumbnail image
+    • video_count: Total number of videos in the channel
+    • new_video_count: Number of unwatched videos
     • unsubscribe: Empty field you can fill to mark channels for removal
 
     Examples:
@@ -144,8 +156,13 @@ def unsubscribe(filename):
 
     FILENAME must be a valid CSV file with the required columns:
     • channel_name: Display name of the channel
+    • channel_id: The unique ID of the subscribed channel
     • description: Channel description
     • subscription_id: Internal subscription ID (required for API calls)
+    • published_at: When the subscription was created
+    • thumbnail_url: URL of the channel's thumbnail image
+    • video_count: Total number of videos in the channel
+    • new_video_count: Number of unwatched videos
     • unsubscribe: Mark with any non-empty value to unsubscribe
 
     The command will:
@@ -253,8 +270,6 @@ def unsubscribe(filename):
                         click.echo(f"  ❌ Error unsubscribing from {channel_name}: {e}")
 
                 # Small delay to avoid hitting rate limits
-                import time
-
                 time.sleep(0.2)
 
         # Summary
