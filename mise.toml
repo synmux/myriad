@@ -1,0 +1,15 @@
+[env]
+SUBSCRIPTIONS_MISE_ACTIVE = 'true'
+
+[settings]
+env_file = '.env'
+idiomatic_version_file = false
+idiomatic_version_file_enable_tools = []
+
+[tools]
+python = { version = '3.13.5' }
+
+[tasks]
+'claude' = { run = "bun x @anthropic-ai/claude-code", description = "Invoke the latest Claude Code" }
+'gemini' = { run = "bun x @google/gemini-cli", description = "Invoke the latest Gemini CLI" }
+'codex' = { run = "bun x @openai/codex", description = "Invoke the latest Codex" }
