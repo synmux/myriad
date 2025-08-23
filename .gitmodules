@@ -13,6 +13,3 @@
 [submodule "just3ws--nerd-font-cheatsheets"]
 	path = submodules/just3ws--nerd-font-cheatsheets
 	url = https://github.com/just3ws/nerd-font-cheatsheets.git
-[submodule "submodules/just3ws--nerd-font-cheatsheets"]
-	path = submodules/just3ws--nerd-font-cheatsheets
-	url = https://github.com/just3ws/nerd-font-cheatsheets.git
