@@ -1,5 +1,1 @@
-# Block all
-
-User-agent: *
-Disallow: /
-Disallow: *
+../robots.txt
