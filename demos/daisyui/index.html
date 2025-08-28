@@ -46,6 +46,13 @@
         background: oklch(var(--color-base-content) / 0.5);
       }
     </style>
+    <script>
+      // Initialize theme immediately to prevent FOUC
+      (function () {
+        const savedTheme = localStorage.getItem("theme") || "light";
+        document.documentElement.setAttribute("data-theme", savedTheme);
+      })();
+    </script>
   </head>
   <body class="min-h-screen bg-base-100">
     <!-- Theme Controller in top-right -->
@@ -366,32 +373,32 @@
                 <div class="avatar">
                   <div class="w-24 rounded">
                     <img
-                      src="https://picsum.photos/100/100?random=1"
-                      alt="Avatar"
+                      src="https://via.placeholder.com/100x100/9ca3af/1f2937?text=User+1"
+                      alt="User avatar 1"
                     />
                   </div>
                 </div>
                 <div class="avatar">
                   <div class="w-24 rounded-full">
                     <img
-                      src="https://picsum.photos/100/100?random=2"
-                      alt="Avatar"
+                      src="https://via.placeholder.com/100x100/a78bfa/1f2937?text=User+2"
+                      alt="User avatar 2"
                     />
                   </div>
                 </div>
                 <div class="avatar online">
                   <div class="w-24 rounded-full">
                     <img
-                      src="https://picsum.photos/100/100?random=3"
-                      alt="Avatar"
+                      src="https://via.placeholder.com/100x100/93c5fd/1f2937?text=User+3"
+                      alt="User avatar 3"
                     />
                   </div>
                 </div>
                 <div class="avatar offline">
                   <div class="w-24 rounded-full">
                     <img
-                      src="https://picsum.photos/100/100?random=4"
-                      alt="Avatar"
+                      src="https://via.placeholder.com/100x100/86efac/1f2937?text=User+4"
+                      alt="User avatar 4"
                     />
                   </div>
                 </div>
@@ -407,24 +414,24 @@
                   <div class="avatar">
                     <div class="w-12">
                       <img
-                        src="https://picsum.photos/50/50?random=5"
-                        alt="Avatar"
+                        src="https://via.placeholder.com/50x50/fbbf24/1f2937?text=U5"
+                        alt="Small user avatar 5"
                       />
                     </div>
                   </div>
                   <div class="avatar">
                     <div class="w-12">
                       <img
-                        src="https://picsum.photos/50/50?random=6"
-                        alt="Avatar"
+                        src="https://via.placeholder.com/50x50/fb923c/1f2937?text=U6"
+                        alt="Small user avatar 6"
                       />
                     </div>
                   </div>
                   <div class="avatar">
                     <div class="w-12">
                       <img
-                        src="https://picsum.photos/50/50?random=7"
-                        alt="Avatar"
+                        src="https://via.placeholder.com/50x50/f87171/1f2937?text=U7"
+                        alt="Small user avatar 7"
                       />
                     </div>
                   </div>
@@ -468,8 +475,8 @@
                 <div class="card bg-base-200 shadow-xl">
                   <figure>
                     <img
-                      src="https://picsum.photos/400/200?random=8"
-                      alt="Random"
+                      src="https://via.placeholder.com/400x200/818cf8/1f2937?text=Card+Image+1"
+                      alt="Card image 1 placeholder"
                     />
                   </figure>
                   <div class="card-body">
@@ -484,8 +491,8 @@
                 <div class="card bg-base-200 shadow-xl">
                   <figure>
                     <img
-                      src="https://picsum.photos/400/200?random=9"
-                      alt="Random"
+                      src="https://via.placeholder.com/400x200/6ee7b7/1f2937?text=Card+Image+2"
+                      alt="Card image 2 placeholder"
                     />
                   </figure>
                   <div class="card-body">
@@ -506,8 +513,8 @@
                 >
                   <figure class="w-1/3">
                     <img
-                      src="https://picsum.photos/200/200?random=10"
-                      alt="Random"
+                      src="https://via.placeholder.com/200x200/fde047/1f2937?text=Card+3"
+                      alt="Card image 3 placeholder"
                       class="h-full object-cover"
                     />
                   </figure>
@@ -527,30 +534,30 @@
               <div class="carousel w-full max-w-4xl">
                 <div class="carousel-item w-full">
                   <img
-                    src="https://picsum.photos/800/400?random=11"
+                    src="https://via.placeholder.com/800x400/ef4444/ffffff?text=Slide+1"
                     class="w-full"
-                    alt="Slide 1"
+                    alt="Carousel slide 1 - demo content"
                   />
                 </div>
                 <div class="carousel-item w-full">
                   <img
-                    src="https://picsum.photos/800/400?random=12"
+                    src="https://via.placeholder.com/800x400/f59e0b/ffffff?text=Slide+2"
                     class="w-full"
-                    alt="Slide 2"
+                    alt="Carousel slide 2 - demo content"
                   />
                 </div>
                 <div class="carousel-item w-full">
                   <img
-                    src="https://picsum.photos/800/400?random=13"
+                    src="https://via.placeholder.com/800x400/10b981/ffffff?text=Slide+3"
                     class="w-full"
-                    alt="Slide 3"
+                    alt="Carousel slide 3 - demo content"
                   />
                 </div>
                 <div class="carousel-item w-full">
                   <img
-                    src="https://picsum.photos/800/400?random=14"
+                    src="https://via.placeholder.com/800x400/3b82f6/ffffff?text=Slide+4"
                     class="w-full"
-                    alt="Slide 4"
+                    alt="Carousel slide 4 - demo content"
                   />
                 </div>
               </div>
@@ -563,7 +570,7 @@
                   <div class="chat-image avatar">
                     <div class="w-10 rounded-full">
                       <img
-                        src="https://picsum.photos/50/50?random=15"
+                        src="https://via.placeholder.com/50x50/60a5fa/ffffff?text=U15"
                         alt="Avatar"
                       />
                     </div>
@@ -579,7 +586,7 @@
                   <div class="chat-image avatar">
                     <div class="w-10 rounded-full">
                       <img
-                        src="https://picsum.photos/50/50?random=16"
+                        src="https://via.placeholder.com/50x50/60a5fa/ffffff?text=U16"
                         alt="Avatar"
                       />
                     </div>
@@ -662,14 +669,14 @@
               <figure class="diff aspect-[16/9] max-w-md">
                 <div class="diff-item-1">
                   <img
-                    src="https://picsum.photos/400/300?random=17"
-                    alt="daisy"
+                    src="https://via.placeholder.com/400x300/06b6d4/ffffff?text=Component17"
+                    alt="DaisyUI logo"
                   />
                 </div>
                 <div class="diff-item-2">
                   <img
-                    src="https://picsum.photos/400/300?random=18"
-                    alt="daisy"
+                    src="https://via.placeholder.com/400x300/06b6d4/ffffff?text=Component18"
+                    alt="DaisyUI logo"
                   />
                 </div>
                 <div class="diff-resizer"></div>
@@ -748,7 +755,7 @@
                     <div class="avatar online">
                       <div class="w-16 rounded-full">
                         <img
-                          src="https://picsum.photos/100/100?random=19"
+                          src="https://via.placeholder.com/100x100/8b5cf6/ffffff?text=M19"
                           alt="Avatar"
                         />
                       </div>
@@ -1977,7 +1984,7 @@
                   <div class="avatar">
                     <div class="w-12 rounded-full">
                       <img
-                        src="https://picsum.photos/50/50?random=20"
+                        src="https://via.placeholder.com/50x50/60a5fa/ffffff?text=U20"
                         alt="Avatar"
                       />
                     </div>
@@ -1992,7 +1999,7 @@
                   <div class="avatar">
                     <div class="w-12 rounded-full">
                       <img
-                        src="https://picsum.photos/50/50?random=21"
+                        src="https://via.placeholder.com/50x50/60a5fa/ffffff?text=U21"
                         alt="Avatar"
                       />
                     </div>
@@ -2007,7 +2014,7 @@
                   <div class="avatar">
                     <div class="w-12 rounded-full">
                       <img
-                        src="https://picsum.photos/50/50?random=22"
+                        src="https://via.placeholder.com/50x50/60a5fa/ffffff?text=U22"
                         alt="Avatar"
                       />
                     </div>
@@ -2025,18 +2032,18 @@
               <h3 class="text-xl font-semibold mb-4">Stack</h3>
               <div class="stack w-32">
                 <img
-                  src="https://picsum.photos/200/200?random=23"
-                  alt="Image 1"
+                  src="https://via.placeholder.com/200x200/22c55e/ffffff?text=IMG23"
+                  alt="Stack layout image 1"
                   class="rounded"
                 />
                 <img
-                  src="https://picsum.photos/200/200?random=24"
-                  alt="Image 2"
+                  src="https://via.placeholder.com/200x200/22c55e/ffffff?text=IMG24"
+                  alt="Stack layout image 2"
                   class="rounded"
                 />
                 <img
-                  src="https://picsum.photos/200/200?random=25"
-                  alt="Image 3"
+                  src="https://via.placeholder.com/200x200/22c55e/ffffff?text=IMG25"
+                  alt="Stack layout image 3"
                   class="rounded"
                 />
               </div>
@@ -2125,8 +2132,8 @@
                   <div class="card glass shadow-xl">
                     <figure>
                       <img
-                        src="https://picsum.photos/400/200?random=40"
-                        alt="Glass"
+                        src="https://via.placeholder.com/400x200/f43f5e/ffffff?text=Demo40"
+                        alt="Glass effect demonstration"
                       />
                     </figure>
                     <div class="card-body">
@@ -2218,8 +2225,8 @@
                 <div class="avatar shadow-3d">
                   <div class="w-12 rounded-full">
                     <img
-                      src="https://picsum.photos/50/50?random=41"
-                      alt="3D Avatar"
+                      src="https://via.placeholder.com/50x50/60a5fa/ffffff?text=U41"
+                      alt="3D avatar mockup example"
                     />
                   </div>
                 </div>
@@ -2487,63 +2494,63 @@
               <div class="flex flex-wrap gap-4">
                 <img
                   class="mask mask-squircle w-24 h-24"
-                  src="https://picsum.photos/100/100?random=26"
-                  alt="Squircle"
+                  src="https://via.placeholder.com/100x100/8b5cf6/ffffff?text=M26"
+                  alt="Mask with squircle shape"
                 />
                 <img
                   class="mask mask-heart w-24 h-24"
-                  src="https://picsum.photos/100/100?random=27"
-                  alt="Heart"
+                  src="https://via.placeholder.com/100x100/8b5cf6/ffffff?text=M27"
+                  alt="Mask with heart shape"
                 />
                 <img
                   class="mask mask-hexagon w-24 h-24"
-                  src="https://picsum.photos/100/100?random=28"
-                  alt="Hexagon"
+                  src="https://via.placeholder.com/100x100/8b5cf6/ffffff?text=M28"
+                  alt="Mask with hexagon shape"
                 />
                 <img
                   class="mask mask-hexagon-2 w-24 h-24"
-                  src="https://picsum.photos/100/100?random=29"
-                  alt="Hexagon 2"
+                  src="https://via.placeholder.com/100x100/8b5cf6/ffffff?text=M29"
+                  alt="Mask with alternative hexagon shape"
                 />
                 <img
                   class="mask mask-decagon w-24 h-24"
-                  src="https://picsum.photos/100/100?random=30"
-                  alt="Decagon"
+                  src="https://via.placeholder.com/100x100/8b5cf6/ffffff?text=M30"
+                  alt="Mask with decagon shape"
                 />
                 <img
                   class="mask mask-pentagon w-24 h-24"
-                  src="https://picsum.photos/100/100?random=31"
-                  alt="Pentagon"
+                  src="https://via.placeholder.com/100x100/8b5cf6/ffffff?text=M31"
+                  alt="Mask with pentagon shape"
                 />
                 <img
                   class="mask mask-diamond w-24 h-24"
-                  src="https://picsum.photos/100/100?random=32"
-                  alt="Diamond"
+                  src="https://via.placeholder.com/100x100/8b5cf6/ffffff?text=M32"
+                  alt="Mask with diamond shape"
                 />
                 <img
                   class="mask mask-square w-24 h-24"
-                  src="https://picsum.photos/100/100?random=33"
-                  alt="Square"
+                  src="https://via.placeholder.com/100x100/8b5cf6/ffffff?text=M33"
+                  alt="Mask with square shape"
                 />
                 <img
                   class="mask mask-circle w-24 h-24"
-                  src="https://picsum.photos/100/100?random=34"
-                  alt="Circle"
+                  src="https://via.placeholder.com/100x100/8b5cf6/ffffff?text=M34"
+                  alt="Mask with circle shape"
                 />
                 <img
                   class="mask mask-star w-24 h-24"
-                  src="https://picsum.photos/100/100?random=35"
-                  alt="Star"
+                  src="https://via.placeholder.com/100x100/8b5cf6/ffffff?text=M35"
+                  alt="Mask with star shape"
                 />
                 <img
                   class="mask mask-star-2 w-24 h-24"
-                  src="https://picsum.photos/100/100?random=36"
-                  alt="Star 2"
+                  src="https://via.placeholder.com/100x100/8b5cf6/ffffff?text=M36"
+                  alt="Mask with alternative star shape"
                 />
                 <img
                   class="mask mask-triangle w-24 h-24"
-                  src="https://picsum.photos/100/100?random=37"
-                  alt="Triangle"
+                  src="https://via.placeholder.com/100x100/8b5cf6/ffffff?text=M37"
+                  alt="Mask with triangle shape"
                 />
               </div>
             </div>
@@ -2666,23 +2673,30 @@
       }
       setInterval(updateCountdown, 1000);
 
-      // Theme persistence
-      const savedTheme = localStorage.getItem("theme") || "light";
-      document.documentElement.setAttribute("data-theme", savedTheme);
+      // Theme persistence with error handling
+      try {
+        const savedTheme = localStorage.getItem("theme") || "light";
 
-      // Get the theme selector specifically (first select element on page)
-      const themeSelector = document.querySelector(
-        ".fixed.top-4.right-4 select",
-      );
-      if (themeSelector) {
-        themeSelector.value = savedTheme;
+        // Get the theme selector specifically (first select element on page)
+        const themeSelector = document.querySelector(
+          ".fixed.top-4.right-4 select",
+        );
+        if (themeSelector) {
+          themeSelector.value = savedTheme;
 
-        // Add event listener to save theme changes
-        themeSelector.addEventListener("change", (e) => {
-          const newTheme = e.target.value;
-          document.documentElement.setAttribute("data-theme", newTheme);
-          localStorage.setItem("theme", newTheme);
-        });
+          // Add event listener to save theme changes
+          themeSelector.addEventListener("change", (e) => {
+            const newTheme = e.target.value;
+            document.documentElement.setAttribute("data-theme", newTheme);
+            try {
+              localStorage.setItem("theme", newTheme);
+            } catch (err) {
+              console.warn("Failed to save theme preference:", err);
+            }
+          });
+        }
+      } catch (err) {
+        console.warn("Theme initialization error:", err);
       }
     </script>
   </body>
