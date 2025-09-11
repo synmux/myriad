@@ -74,7 +74,7 @@ const quotesData = [
   },
   {
     id: 9,
-    text: "Called for 'Nuremberg-style trials' for providers of gender-affirming care",
+    text: "If Donald Trump wins, we need Nuremberg-style trials for the doctors mutilating children",
     target_communities: ["LGBTQ+", "Transgender"],
     date: null,
     source: "Scene Magazine",
