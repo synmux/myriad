@@ -130,7 +130,7 @@ git worktree list
 
 Creates a new working tree at the specified path.
 
-#### Synopsis
+#### Add — Synopsis
 
 ```bash
 git worktree add [options] <path> [<commit-ish>]
@@ -139,7 +139,7 @@ git worktree add [options] <path> --detach [<commit-ish>]
 git worktree add [options] <path> --orphan <new-branch>
 ```
 
-#### Options
+#### Add — Options
 
 - `<path>`: **Required**. Directory for the new worktree (created if doesn't exist)
 - `<commit-ish>`: Branch, tag, or commit to checkout (defaults to HEAD)
@@ -154,7 +154,7 @@ git worktree add [options] <path> --orphan <new-branch>
 - `-q, --quiet`: Suppress output
 - `--track/--no-track`: Set upstream tracking
 
-#### Behavior
+#### Add — Behavior
 
 ```mermaid
 sequenceDiagram
@@ -171,7 +171,7 @@ sequenceDiagram
     Git-->>User: Worktree ready at path
 ```
 
-#### Examples
+#### Add — Examples
 
 ```bash
 # Add worktree for existing branch
@@ -203,13 +203,13 @@ git worktree add --track -b feature ~/work/feature origin/feature
 
 Lists all working trees associated with the repository.
 
-#### Synopsis
+#### List — Synopsis
 
 ```bash
 git worktree list [--porcelain] [-z] [-v]
 ```
 
-#### Options
+#### List — Options
 
 - `--porcelain`: Machine-readable output
 - `-z`: Terminate lines with NUL (with --porcelain)
@@ -219,13 +219,13 @@ git worktree list [--porcelain] [-z] [-v]
 
 Normal output:
 
-```
+```text
 <path> <commit> [<branch>] [locked]
 ```
 
 Porcelain output:
 
-```
+```text
 worktree <path>
 HEAD <commit>
 branch <ref>
@@ -233,7 +233,7 @@ locked <reason>  # if locked
 prunable <reason>  # if prunable
 ```
 
-#### Examples
+#### List — Examples
 
 ```bash
 # Basic list
@@ -265,25 +265,25 @@ done
 
 Removes a working tree.
 
-#### Synopsis
+#### Remove — Synopsis
 
 ```bash
 git worktree remove [-f] <worktree>
 ```
 
-#### Options
+#### Remove — Options
 
 - `<worktree>`: Path to the worktree to remove
 - `-f, --force`: Force removal even with uncommitted changes
 
-#### Behavior
+#### Remove — Behavior
 
 - Removes worktree directory and registration
 - Fails if worktree has uncommitted changes (unless forced)
 - Cannot remove main worktree
 - Cannot remove locked worktree (must unlock first)
 
-#### Examples
+#### Remove — Examples
 
 ```bash
 # Remove worktree
@@ -314,18 +314,18 @@ fi
 
 Moves a working tree to a new location.
 
-#### Synopsis
+#### Move — Synopsis
 
 ```bash
 git worktree move <worktree> <new-path>
 ```
 
-#### Options
+#### Move — Options
 
 - `<worktree>`: Current path of the worktree
 - `<new-path>`: New location for the worktree
 
-#### Behavior
+#### Move — Behavior
 
 - Moves worktree directory to new location
 - Updates repository references
@@ -333,7 +333,7 @@ git worktree move <worktree> <new-path>
 - Cannot move locked worktree
 - Cannot move main worktree
 
-#### Examples
+#### Move — Examples
 
 ```bash
 # Move to new location
@@ -355,13 +355,13 @@ git worktree move ~/work/bugfix-123 ~/work/bugfixes/123
 
 Removes stale worktree references.
 
-#### Synopsis
+#### Prune — Synopsis
 
 ```bash
 git worktree prune [-n] [-v] [--expire <time>]
 ```
 
-#### Options
+#### Prune — Options
 
 - `-n, --dry-run`: Show what would be pruned
 - `-v, --verbose`: Show pruning details
@@ -374,7 +374,7 @@ git worktree prune [-n] [-v] [--expire <time>]
 - Directory on network drive that's offline
 - Corrupted worktree references
 
-#### Examples
+#### Prune — Examples
 
 ```bash
 # Prune stale worktrees
@@ -399,14 +399,14 @@ git worktree list  # Verify cleanup
 
 Prevents or allows automatic removal of a working tree.
 
-#### Synopsis
+#### Lock/Unlock — Synopsis
 
 ```bash
 git worktree lock [--reason <string>] <worktree>
 git worktree unlock <worktree>
 ```
 
-#### Options
+#### Lock/Unlock — Options
 
 - `<worktree>`: Path to the worktree
 - `--reason <string>`: Human-readable reason for locking
@@ -418,7 +418,7 @@ git worktree unlock <worktree>
 - Preventing accidental removal
 - Temporary network mounts
 
-#### Examples
+#### Lock/Unlock — Examples
 
 ```bash
 # Lock with reason
@@ -446,13 +446,13 @@ git worktree list --porcelain | \
 
 Repairs administrative files if worktree or repository is moved.
 
-#### Synopsis
+#### Repair — Synopsis
 
 ```bash
 git worktree repair [<path>...]
 ```
 
-#### Options
+#### Repair — Options
 
 - `<path>`: Specific worktree paths to repair (repairs all if omitted)
 
@@ -463,7 +463,7 @@ git worktree repair [<path>...]
 - After filesystem corruption
 - Network drive reconnection issues
 
-#### Examples
+#### Repair — Examples
 
 ```bash
 # Repair all worktrees
@@ -1028,6 +1028,6 @@ z feature  # Jump back later
 
 ---
 
-_Version: Compatible with Git 2.5.0+_  
-_Last updated for Git 2.50.1_  
+_Version: Compatible with Git 2.5.0+_
+_Last updated for Git 2.50.1_
 _Optimal with Git 2.30.0+ (includes `repair` command)_
