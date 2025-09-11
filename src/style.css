@@ -1,0 +1,225 @@
+/*
+  Minimal, clean landing page styles.
+  Designed for readability and quick scanning with accessible contrast.
+*/
+
+:root {
+  --bg: #0e0f14;
+  --panel: #121420;
+  --panel-2: #171a2a;
+  --text: #e8eaf1;
+  --muted: #aeb4c6;
+  --accent: #6ea8fe;
+  --accent-2: #a58bff;
+  --border: #262a40;
+  --shadow: rgba(0, 0, 0, 0.4);
+}
+
+* {
+  box-sizing: border-box;
+}
+html,
+body {
+  height: 100%;
+}
+body {
+  margin: 0;
+  color: var(--text);
+  background:
+    radial-gradient(
+      1200px 600px at 10% -10%,
+      rgba(110, 168, 254, 0.15),
+      transparent 60%
+    ),
+    radial-gradient(
+      1000px 600px at 110% -20%,
+      rgba(165, 139, 255, 0.15),
+      transparent 60%
+    ),
+    var(--bg);
+  font-family:
+    ui-sans-serif,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    "Helvetica Neue",
+    Arial,
+    "Noto Sans",
+    "Apple Color Emoji",
+    "Segoe UI Emoji";
+  line-height: 1.5;
+}
+
+.container {
+  width: min(1100px, calc(100% - 2rem));
+  margin-inline: auto;
+}
+
+/* Header */
+.site-header {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent 60%),
+    linear-gradient(
+      120deg,
+      rgba(110, 168, 254, 0.15),
+      rgba(165, 139, 255, 0.08)
+    );
+  border-bottom: 1px solid var(--border);
+  padding: 3rem 0 2.25rem;
+}
+.site-title {
+  margin: 0;
+  font-size: clamp(1.6rem, 2.8vw, 2.25rem);
+  letter-spacing: 0.2px;
+}
+.site-subtitle {
+  margin: 0.35rem 0 0;
+  color: var(--muted);
+}
+
+/* Cards */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+  gap: 1.25rem;
+  padding: 2rem 0 3rem;
+}
+
+.card {
+  position: relative;
+  background: linear-gradient(180deg, var(--panel), var(--panel-2));
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 1.25rem 1.25rem 1rem;
+  box-shadow: 0 8px 24px var(--shadow);
+}
+
+.card-badge {
+  position: absolute;
+  top: -10px;
+  left: 12px;
+  background: rgba(110, 168, 254, 0.16);
+  border: 1px solid rgba(110, 168, 254, 0.35);
+  color: var(--text);
+  padding: 0.2rem 0.6rem;
+  font-size: 0.75rem;
+  border-radius: 999px;
+  backdrop-filter: blur(6px);
+}
+
+.card-title {
+  margin: 0.4rem 0 0.25rem;
+  font-size: 1.15rem;
+}
+
+.card-desc {
+  color: var(--muted);
+  margin: 0.25rem 0 0.75rem;
+}
+
+.card-meta {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.9rem;
+}
+.pill {
+  font-size: 0.75rem;
+  line-height: 1;
+  padding: 0.35rem 0.55rem;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+}
+
+.card-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+.btn {
+  appearance: none;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text);
+  padding: 0.55rem 0.9rem;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+}
+.btn:hover {
+  filter: brightness(1.05);
+}
+.btn.primary {
+  background: linear-gradient(180deg, var(--accent), var(--accent-2));
+  color: #0a0a0a;
+  border-color: transparent;
+}
+.btn.ghost {
+  background: rgba(255, 255, 255, 0.06);
+}
+a.btn {
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Modal */
+.modal {
+  position: fixed;
+  inset: 0;
+  display: none;
+}
+.modal[open],
+.modal.show {
+  display: block;
+}
+.modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+}
+.modal-dialog {
+  position: relative;
+  margin: 5vh auto;
+  width: min(1100px, calc(100% - 2rem));
+  background: #0b0c12;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+}
+.modal-close {
+  position: absolute;
+  right: 0.5rem;
+  top: 0.5rem;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text);
+  font-size: 1.25rem;
+  cursor: pointer;
+}
+.modal-body {
+  padding: 0.75rem;
+}
+.modal-body iframe {
+  display: block;
+  width: 100%;
+  height: min(70vh, 900px);
+  border: none;
+  background: #11131d;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .card {
+    transition:
+      transform 0.2s ease,
+      box-shadow 0.2s ease;
+  }
+  .card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 28px var(--shadow);
+  }
+}

@@ -17,8 +17,9 @@
     <!-- End Google Tag Manager -->
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Nope</title>
-    <link href="../css/main.css" rel="stylesheet" type="text/css" media="all" />
+    <title>Page Not Found</title>
+    <link rel="icon" href="/favicon.ico" />
+    <link rel="stylesheet" href="../style.css" />
   </head>
   <body>
     <!-- Google Tag Manager (noscript) -->
@@ -31,8 +32,31 @@
       ></iframe
     ></noscript>
     <!-- End Google Tag Manager (noscript) -->
-    <h1>This directory contains machine-readable data.</h1>
-    <p>It wouldn't be of much value to you even if you could list it.</p>
-    <p>Which you can't.</p>
+    <header class="site-header">
+      <div class="container">
+        <h1 class="site-title">Inaccessible</h1>
+      </div>
+    </header>
+
+    <main class="container">
+      <section class="cards">
+        <article class="card">
+          <div class="card-badge">Machine-readable</div>
+          <h2 class="card-title">
+            This directory contains machine-readable data
+          </h2>
+          <p class="card-desc">
+            It wouldn't be much use of you even if you could list its contents.
+            <br />
+            Which you can't.
+          </p>
+          <div class="card-actions">
+            <a class="btn primary" href="../">Go to Home</a>
+          </div>
+        </article>
+      </section>
+    </main>
+
+    <script src="../app.js" defer></script>
   </body>
 </html>

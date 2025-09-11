@@ -8,14 +8,11 @@ GEM
     benchmark (0.4.1)
     diff-lcs (1.6.2)
     domain_name (0.6.20240107)
-    ffi (1.17.2)
     ffi (1.17.2-aarch64-linux-gnu)
     ffi (1.17.2-aarch64-linux-musl)
     ffi (1.17.2-arm-linux-gnu)
     ffi (1.17.2-arm-linux-musl)
     ffi (1.17.2-arm64-darwin)
-    ffi (1.17.2-x86-linux-gnu)
-    ffi (1.17.2-x86-linux-musl)
     ffi (1.17.2-x86_64-darwin)
     ffi (1.17.2-x86_64-linux-gnu)
     ffi (1.17.2-x86_64-linux-musl)
@@ -42,7 +39,6 @@ GEM
       ffi-compiler (~> 1.0)
       rake (~> 13.0)
     logger (1.7.0)
-    mini_portile2 (2.8.9)
     neocities (0.1.1)
       http (~> 5.3, >= 5.3.1)
       pastel (~> 0.8, = 0.8.0)
@@ -50,9 +46,6 @@ GEM
       tty-prompt (~> 0.23, = 0.23.1)
       tty-table (~> 0.12, = 0.12.0)
       whirly (~> 0.3, >= 0.3.0)
-    nokogiri (1.18.9)
-      mini_portile2 (~> 2.8.2)
-      racc (~> 1.4)
     nokogiri (1.18.9-aarch64-linux-gnu)
       racc (~> 1.4)
     nokogiri (1.18.9-aarch64-linux-musl)
@@ -87,8 +80,8 @@ GEM
     regexp_parser (2.11.2)
     reverse_markdown (3.0.0)
       nokogiri
-    rexml (3.4.1)
-    rubocop (1.80.0)
+    rexml (3.4.4)
+    rubocop (1.80.2)
       json (~> 2.3)
       language_server-protocol (~> 3.17.0.2)
       lint_roller (~> 1.1.0)
@@ -159,9 +152,6 @@ PLATFORMS
   arm-linux-gnu
   arm-linux-musl
   arm64-darwin
-  ruby
-  x86-linux-gnu
-  x86-linux-musl
   x86_64-darwin
   x86_64-linux-gnu
   x86_64-linux-musl
