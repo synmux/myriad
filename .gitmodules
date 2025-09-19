@@ -13,3 +13,6 @@
 [submodule "just3ws--nerd-font-cheatsheets"]
 	path = submodules/just3ws--nerd-font-cheatsheets
 	url = https://github.com/just3ws/nerd-font-cheatsheets.git
+[submodule "zie619--n8n-workflows"]
+	path = submodules/zie619--n8n-workflows
+	url = https://github.com/Zie619/n8n-workflows.git
