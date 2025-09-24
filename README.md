@@ -8,6 +8,8 @@ _One repository to rule them all, one repository to find them..._
 
 `myriad` is a grab-bag of experiments, prototypes, scripts, and other things I've written over the years.
 
+It containes all manner of things, from small scripts to large projects. Many of them exist on branches.
+
 If any of it is useful to you, have at it.
 
 ## Layout
