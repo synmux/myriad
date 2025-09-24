@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Trump Administration Anti-LGBTQ Actions: Second 100 Days</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <header class="timeline-header">
+        <h1>Trump Administration Anti-LGBTQ Actions</h1>
+        <h2>Second 100 Days</h2>
+        <p>Days 101-200 (May - August 2025)</p>
+      </header>
+
+      <div class="statistics-section">
+        <div class="stats-container">
+          <div class="stat-item">
+            <span class="stat-number" id="totalEvents">23</span>
+            <span class="stat-label">Total Events</span>
+          </div>
+          <div class="stat-breakdown" id="categoryBreakdown">
+            <!-- Category breakdown will be populated by JavaScript -->
+          </div>
+        </div>
+      </div>
+
+      <div class="timeline-controls">
+        <div class="search-container">
+          <input
+            type="text"
+            id="searchInput"
+            class="form-control"
+            placeholder="Search events by keywords..."
+          />
+        </div>
+
+        <div class="filter-container">
+          <label class="form-label">Filter by Category:</label>
+          <select id="categoryFilter" class="form-control">
+            <option value="all">All Categories</option>
+            <option value="research">Research & Health</option>
+            <option value="military">Military & Service</option>
+            <option value="legal">Legal & Courts</option>
+            <option value="funding">Funding & Budget</option>
+            <option value="policy">Policy & Administration</option>
+          </select>
+        </div>
+
+        <div class="date-filter-container">
+          <label class="form-label">Filter by Date Range:</label>
+          <div class="date-range">
+            <input
+              type="date"
+              id="startDate"
+              class="form-control"
+              value="2025-05-01"
+              min="2025-05-01"
+              max="2025-08-01"
+            />
+            <span>to</span>
+            <input
+              type="date"
+              id="endDate"
+              class="form-control"
+              value="2025-08-01"
+              min="2025-05-01"
+              max="2025-08-01"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div class="timeline-container">
+        <div class="timeline-line"></div>
+        <div id="timelineEvents" class="timeline-events">
+          <!-- Timeline events will be populated by JavaScript -->
+        </div>
+      </div>
+
+      <div id="noResults" class="no-results hidden">
+        <p>No events found matching your criteria.</p>
+        <p>Try adjusting your search terms or filters.</p>
+      </div>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
