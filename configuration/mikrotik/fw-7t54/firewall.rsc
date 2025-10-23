@@ -212,5 +212,5 @@ add action=accept chain=accepts     protocol=ipsec-esp                          
 add action=accept chain=accepts     port=33434-33534 protocol=udp                   comment="accepts:accept:traceroute"
 add action=return chain=accepts                                                     comment="accepts:return"
 
-add action=accept chain=conntracked connection-state=invalid,established,untracked  comment="conntracked:accept:ieu"
+add action=accept chain=conntracked connection-state=established,related,untracked  comment="conntracked:accept:eru"
 add action=return chain=conntracked                                                 comment="conntracked:return"
