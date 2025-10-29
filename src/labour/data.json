@@ -1,0 +1,214 @@
+{
+  "government_actions": {
+    "positive": [
+      {
+        "title": "Hate Crime Legislation Strengthened",
+        "date": "June 2025",
+        "description": "Government committed to making anti-LGBTQ+ hate crimes aggravated offences with tougher sentences, putting them on equal footing with racial and religious hate crimes.",
+        "sources": ["web:32", "web:35"],
+        "impact": "Enhanced legal protections and deterrent effect"
+      },
+      {
+        "title": "Gender Clinic Waiting List Support Pilot",
+        "date": "September 2025",
+        "description": "\u00a3125,000 pilot providing mental health and wellbeing support for adults waiting for gender services (some wait 8+ years)",
+        "sources": ["web:45", "web:55"],
+        "impact": "Addresses mental health crisis during long waits"
+      },
+      {
+        "title": "Adult Gender Services Review",
+        "date": "2025",
+        "description": "NHS commissioned independent review (Levy Review) into operation and delivery of adult gender dysphoria clinics",
+        "sources": ["web:45", "web:55"],
+        "impact": "Potential for service improvements, though concerns about scope"
+      },
+      {
+        "title": "Conversion Therapy Ban Promised",
+        "date": "July 2024 (ongoing)",
+        "description": "Reaffirmed commitment to full trans-inclusive ban on conversion therapy in King's Speech",
+        "sources": ["web:23", "web:25"],
+        "impact": "Not yet implemented - draft bill not published after 15+ months"
+      }
+    ],
+    "negative": [
+      {
+        "title": "Permanent Puberty Blockers Ban",
+        "date": "December 2024",
+        "description": "Health Secretary Wes Streeting made temporary ban permanent for under-18s outside clinical trials",
+        "sources": ["web:21", "web:24"],
+        "impact": "Restricts access to treatment, criticized by LGBT+ Labour and medical organizations"
+      },
+      {
+        "title": "Endorsement of Supreme Court Ruling",
+        "date": "April 2025",
+        "description": "PM Starmer welcomed ruling defining \"sex\" as biological sex, reversing previous position that \"trans women are women\"",
+        "sources": ["web:7", "web:19", "web:44"],
+        "impact": "Enables exclusion of trans people from single-sex spaces"
+      },
+      {
+        "title": "Position Shifts on Trans Women",
+        "date": "April 2025",
+        "description": "Starmer's spokesperson stated PM no longer believes \"trans women are women\", reversing 2022 position",
+        "sources": ["web:7", "web:19"],
+        "impact": "Perceived as abandoning trans community, internal party dissent"
+      }
+    ],
+    "delayed_or_stalled": [
+      {
+        "title": "Gender Recognition Reform",
+        "date": "Pre-election promise - no progress",
+        "description": "Pledged to \"modernise and simplify\" GRC process, but no legislation introduced",
+        "sources": ["web:6", "web:15"],
+        "impact": "No change to current system requiring medical diagnosis"
+      },
+      {
+        "title": "Conversion Therapy Ban",
+        "date": "Promised July 2024 - still pending",
+        "description": "Draft bill promised but not published 15+ months after King's Speech",
+        "sources": ["web:23", "web:25", "web:28"],
+        "impact": "Conversion therapy remains legal despite repeated promises"
+      },
+      {
+        "title": "Single-Sex Spaces Guidance",
+        "date": "October 2025 - delayed",
+        "description": "Minister Bridget Phillipson has not approved EHRC's 300-page code of practice on single-sex spaces",
+        "sources": ["web:34", "web:37", "web:39"],
+        "impact": "Organizations continue using potentially unlawful guidance; creates uncertainty"
+      }
+    ],
+    "external_context": [
+      {
+        "title": "Supreme Court Ruling",
+        "date": "April 2025",
+        "description": "Court ruled \"sex\" in Equality Act means biological sex, not gender identity (Not a government action)",
+        "sources": ["web:44"],
+        "impact": "Major legal shift enabling exclusion from single-sex spaces"
+      },
+      {
+        "title": "NHS Cass Review Implementation",
+        "date": "August 2024",
+        "description": "NHS England began implementing Cass Review recommendations on children's gender services",
+        "sources": ["web:22", "web:27"],
+        "impact": "Closure of Tavistock, opening of regional centers, restricted treatments"
+      }
+    ]
+  },
+  "safety_indicators": {
+    "mental_health": [
+      {
+        "metric": "Suicide consideration among LGBTQ+ youth",
+        "value": "52%",
+        "note": "Over half considered suicide in past year, with trans/non-binary youth at significantly higher rates",
+        "source": "web:56"
+      },
+      {
+        "metric": "Trans youth who attempted suicide",
+        "value": "19%",
+        "note": "Rate more than double that of cisgender peers",
+        "source": "web:56"
+      },
+      {
+        "metric": "Trans adults who have attempted suicide",
+        "value": "48%",
+        "note": "At least once in their lives (Stonewall data)",
+        "source": "web:57"
+      },
+      {
+        "metric": "Trans people who have considered suicide",
+        "value": "84%",
+        "note": "With many reporting repeated thoughts of self-harm",
+        "source": "web:57"
+      },
+      {
+        "metric": "Trans youth facing discrimination who considered suicide",
+        "value": "72%",
+        "note": "In the past year (2024 survey)",
+        "source": "web:57"
+      }
+    ],
+    "trust_institutions": [
+      {
+        "metric": "Trans people trust in police",
+        "value": "25%",
+        "note": "Almost halved from 41% in 2022",
+        "source": "web:54"
+      },
+      {
+        "metric": "Trans people trust in judges/legal system",
+        "value": "31%",
+        "note": "Low confidence in justice system",
+        "source": "web:54"
+      },
+      {
+        "metric": "Trans people trust in NHS",
+        "value": "72%",
+        "note": "Despite 59% reporting difficulties accessing healthcare",
+        "source": "web:54"
+      },
+      {
+        "metric": "Trans people distrust Labour government",
+        "value": "91%",
+        "note": "Survey from October 2025",
+        "source": "web:54"
+      }
+    ],
+    "healthcare_access": [
+      {
+        "metric": "NHS gender clinic waiting times (South West)",
+        "value": "8+ years",
+        "note": "Over 5,000 people waiting for first appointment",
+        "source": "web:55"
+      },
+      {
+        "metric": "NHS gender clinic waiting times (Northern region)",
+        "value": "6 years 8 months",
+        "note": "Person at top of waiting list (as of July 2025)",
+        "source": "web:59"
+      },
+      {
+        "metric": "Trans people waiting more than third of adult life",
+        "value": "Majority",
+        "note": "To get first NHS gender clinic appointment",
+        "source": "web:54"
+      }
+    ]
+  },
+  "policy_promises": {
+    "manifesto_commitments": [
+      {
+        "promise": "Ban conversion therapy (trans-inclusive)",
+        "status": "Promised but not delivered",
+        "timeline": "Draft bill not published 15+ months after King's Speech"
+      },
+      {
+        "promise": "Make hate crime against LGBTQ+ people aggravated offence",
+        "status": "In progress",
+        "timeline": "Committed in Crime Bill June 2025, awaiting final passage"
+      },
+      {
+        "promise": "Modernise and simplify gender recognition",
+        "status": "Not implemented",
+        "timeline": "No legislation introduced"
+      },
+      {
+        "promise": "Implement Cass Review recommendations",
+        "status": "Implemented",
+        "timeline": "NHS began implementation August 2024"
+      },
+      {
+        "promise": "Protect single-sex spaces",
+        "status": "Guidance delayed",
+        "timeline": "EHRC code awaiting ministerial approval"
+      }
+    ]
+  },
+  "party_divisions": {
+    "internal_tensions": [
+      "LGBT+ Labour expressed \"deep concerns\" at puberty blocker ban",
+      "32 Labour MPs wrote to EHRC concerned about proposed single-sex guidance",
+      "LGBT+ Labour \"deeply disappointed\" by Supreme Court endorsement",
+      "Gender-critical Labour members welcomed puberty blocker ban",
+      "Bridget Phillipson facing pressure from both sides on single-sex guidance"
+    ]
+  }
+}

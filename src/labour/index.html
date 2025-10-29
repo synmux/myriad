@@ -1,0 +1,379 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Labour Government Trans Policy Analysis: 2024-2025</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div id="app">
+      <!-- Navigation -->
+      <nav class="nav">
+        <div class="nav-container">
+          <h1 class="nav-title">Labour Government Trans Policy Analysis</h1>
+          <div class="nav-buttons">
+            <button class="nav-btn active" data-view="summary">
+              Executive Summary
+            </button>
+            <button class="nav-btn" data-view="timeline">Timeline</button>
+            <button class="nav-btn" data-view="policy">Policy Areas</button>
+            <button class="nav-btn" data-view="safety">
+              Safety Indicators
+            </button>
+            <button class="nav-btn" data-view="actions">
+              Detailed Actions
+            </button>
+          </div>
+        </div>
+      </nav>
+
+      <!-- View 1: Executive Summary -->
+      <div id="view-summary" class="view active">
+        <div class="container">
+          <div class="summary-header">
+            <h2>Labour Government Trans Policy Analysis</h2>
+            <h3>October 2024 - October 2025</h3>
+            <p class="subtitle">
+              An objective, evidence-based assessment of government actions and
+              their impact
+            </p>
+          </div>
+
+          <div class="metrics-grid">
+            <div class="metric-card">
+              <div class="metric-value">10</div>
+              <div class="metric-label">Total Actions Tracked</div>
+            </div>
+            <div class="metric-card positive">
+              <div class="metric-value">4</div>
+              <div class="metric-label">Positive Actions</div>
+            </div>
+            <div class="metric-card negative">
+              <div class="metric-value">3</div>
+              <div class="metric-label">Restrictive Actions</div>
+            </div>
+            <div class="metric-card delayed">
+              <div class="metric-value">3</div>
+              <div class="metric-label">Delayed/Stalled Promises</div>
+            </div>
+          </div>
+
+          <div class="methodology-box">
+            <h4>Methodology</h4>
+            <p>
+              This analysis tracks
+              <strong>only direct government actions</strong> taken by the
+              Labour government since taking office in July 2024. External
+              events such as Supreme Court rulings are noted for context but
+              clearly distinguished from government policy decisions. Actions
+              are categorized based on their direct impact on trans people's
+              rights, healthcare access, and safety.
+            </p>
+            <p>
+              <strong>Data sources:</strong> Official government statements, NHS
+              England announcements, parliamentary records, and verified news
+              reporting. All claims are sourced and verifiable.
+            </p>
+            <p>
+              <strong>Assessment criteria:</strong> Actions are evaluated on
+              whether they expand or restrict rights, improve or worsen access
+              to services, and enhance or diminish legal protections for trans
+              people.
+            </p>
+          </div>
+
+          <div class="quick-nav">
+            <h4>Explore the Analysis</h4>
+            <div class="quick-nav-grid">
+              <button
+                class="quick-nav-btn"
+                onclick="navigateToView('timeline')"
+              >
+                <div class="quick-nav-icon">📅</div>
+                <div class="quick-nav-text">View Interactive Timeline</div>
+              </button>
+              <button class="quick-nav-btn" onclick="navigateToView('policy')">
+                <div class="quick-nav-icon">📋</div>
+                <div class="quick-nav-text">Browse Policy Areas</div>
+              </button>
+              <button class="quick-nav-btn" onclick="navigateToView('safety')">
+                <div class="quick-nav-icon">📊</div>
+                <div class="quick-nav-text">Safety Indicators Dashboard</div>
+              </button>
+              <button class="quick-nav-btn" onclick="navigateToView('actions')">
+                <div class="quick-nav-icon">📄</div>
+                <div class="quick-nav-text">Detailed Action Cards</div>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- View 2: Interactive Timeline -->
+      <div id="view-timeline" class="view">
+        <div class="container">
+          <div class="view-header">
+            <h2>Interactive Timeline</h2>
+            <p>
+              Chronological view of all government actions and relevant context
+            </p>
+          </div>
+
+          <div class="filter-controls">
+            <div class="filter-label">Filter by type:</div>
+            <div class="filter-buttons">
+              <button class="filter-btn active" data-filter="all">All</button>
+              <button class="filter-btn" data-filter="positive">
+                Positive
+              </button>
+              <button class="filter-btn" data-filter="negative">
+                Restrictive
+              </button>
+              <button class="filter-btn" data-filter="delayed">Delayed</button>
+              <button class="filter-btn" data-filter="external">
+                External Context
+              </button>
+            </div>
+          </div>
+
+          <div class="timeline-container" id="timeline">
+            <!-- Timeline items will be inserted here by JavaScript -->
+          </div>
+        </div>
+      </div>
+
+      <!-- View 3: Policy Areas -->
+      <div id="view-policy" class="view">
+        <div class="container">
+          <div class="view-header">
+            <h2>Policy Areas</h2>
+            <p>Detailed breakdown by policy domain</p>
+          </div>
+
+          <div class="tabs">
+            <button class="tab-btn active" data-tab="healthcare">
+              Healthcare
+            </button>
+            <button class="tab-btn" data-tab="legal">Legal Recognition</button>
+            <button class="tab-btn" data-tab="hate-crime">Hate Crime</button>
+            <button class="tab-btn" data-tab="conversion">
+              Conversion Therapy
+            </button>
+            <button class="tab-btn" data-tab="spaces">Single-Sex Spaces</button>
+            <button class="tab-btn" data-tab="equality">Equality Act</button>
+          </div>
+
+          <div class="tab-content" id="policy-content">
+            <!-- Policy content will be inserted here by JavaScript -->
+          </div>
+        </div>
+      </div>
+
+      <!-- View 4: Safety Indicators -->
+      <div id="view-safety" class="view">
+        <div class="container">
+          <div class="view-header">
+            <h2>Safety Indicators Dashboard</h2>
+            <p>
+              Data on mental health, institutional trust, and healthcare access
+            </p>
+          </div>
+
+          <div class="safety-section">
+            <h3>Mental Health Statistics</h3>
+            <p class="section-note">
+              Research shows alarmingly high rates of suicidal ideation and
+              attempts among trans people
+            </p>
+            <div class="indicators-grid">
+              <div class="indicator-card">
+                <div class="indicator-bar">
+                  <div class="indicator-fill" style="width: 52%"></div>
+                </div>
+                <div class="indicator-value">52%</div>
+                <div class="indicator-label">
+                  LGBTQ+ youth considered suicide in past year
+                </div>
+                <div class="indicator-note">
+                  Trans/non-binary youth at significantly higher rates
+                </div>
+              </div>
+              <div class="indicator-card">
+                <div class="indicator-bar">
+                  <div class="indicator-fill" style="width: 19%"></div>
+                </div>
+                <div class="indicator-value">19%</div>
+                <div class="indicator-label">
+                  Trans youth who attempted suicide
+                </div>
+                <div class="indicator-note">
+                  More than double that of cisgender peers
+                </div>
+              </div>
+              <div class="indicator-card">
+                <div class="indicator-bar">
+                  <div class="indicator-fill" style="width: 48%"></div>
+                </div>
+                <div class="indicator-value">48%</div>
+                <div class="indicator-label">
+                  Trans adults who have attempted suicide
+                </div>
+                <div class="indicator-note">At least once in their lives</div>
+              </div>
+              <div class="indicator-card">
+                <div class="indicator-bar">
+                  <div class="indicator-fill" style="width: 84%"></div>
+                </div>
+                <div class="indicator-value">84%</div>
+                <div class="indicator-label">
+                  Trans people who have considered suicide
+                </div>
+                <div class="indicator-note">
+                  Many reporting repeated thoughts of self-harm
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="safety-section">
+            <h3>Trust in Institutions</h3>
+            <p class="section-note">
+              Survey data from October 2025 showing trans people's trust levels
+            </p>
+            <div class="indicators-grid">
+              <div class="indicator-card trust">
+                <div class="indicator-bar">
+                  <div
+                    class="indicator-fill trust-low"
+                    style="width: 25%"
+                  ></div>
+                </div>
+                <div class="indicator-value">25%</div>
+                <div class="indicator-label">Trust in police</div>
+                <div class="indicator-note">Almost halved from 41% in 2022</div>
+              </div>
+              <div class="indicator-card trust">
+                <div class="indicator-bar">
+                  <div
+                    class="indicator-fill trust-low"
+                    style="width: 31%"
+                  ></div>
+                </div>
+                <div class="indicator-value">31%</div>
+                <div class="indicator-label">Trust in judges/legal system</div>
+                <div class="indicator-note">
+                  Low confidence in justice system
+                </div>
+              </div>
+              <div class="indicator-card trust">
+                <div class="indicator-bar">
+                  <div
+                    class="indicator-fill trust-high"
+                    style="width: 72%"
+                  ></div>
+                </div>
+                <div class="indicator-value">72%</div>
+                <div class="indicator-label">Trust in NHS</div>
+                <div class="indicator-note">
+                  Despite 59% reporting healthcare access difficulties
+                </div>
+              </div>
+              <div class="indicator-card trust">
+                <div class="indicator-bar">
+                  <div
+                    class="indicator-fill trust-negative"
+                    style="width: 91%"
+                  ></div>
+                </div>
+                <div class="indicator-value">91%</div>
+                <div class="indicator-label">Distrust Labour government</div>
+                <div class="indicator-note">Survey from October 2025</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="safety-section">
+            <h3>Healthcare Access</h3>
+            <p class="section-note">
+              NHS gender clinic waiting times and service availability
+            </p>
+            <div class="healthcare-cards">
+              <div class="healthcare-card">
+                <div class="healthcare-time">8+ years</div>
+                <div class="healthcare-label">Waiting time in South West</div>
+                <div class="healthcare-detail">
+                  Over 5,000 people waiting for first appointment
+                </div>
+              </div>
+              <div class="healthcare-card">
+                <div class="healthcare-time">6 years 8 months</div>
+                <div class="healthcare-label">Northern region waiting time</div>
+                <div class="healthcare-detail">
+                  Person at top of waiting list (July 2025)
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- View 5: Detailed Action Cards -->
+      <div id="view-actions" class="view">
+        <div class="container">
+          <div class="view-header">
+            <h2>Detailed Action Cards</h2>
+            <p>Comprehensive list of all tracked government actions</p>
+          </div>
+
+          <div class="search-container">
+            <input
+              type="text"
+              id="search-input"
+              class="search-input"
+              placeholder="Search actions by keyword..."
+            />
+          </div>
+
+          <div class="filter-controls">
+            <div class="filter-label">Filter by category:</div>
+            <div class="filter-buttons">
+              <button class="filter-btn active" data-filter="all">All</button>
+              <button class="filter-btn" data-filter="positive">
+                Positive
+              </button>
+              <button class="filter-btn" data-filter="negative">
+                Restrictive
+              </button>
+              <button class="filter-btn" data-filter="delayed">Delayed</button>
+              <button class="filter-btn" data-filter="external">
+                External Context
+              </button>
+            </div>
+          </div>
+
+          <div class="actions-container" id="actions-list">
+            <!-- Action cards will be inserted here by JavaScript -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="footer">
+      <div class="container">
+        <p>
+          This analysis tracks direct government actions only. All data is
+          sourced from official statements, parliamentary records, and verified
+          reporting. Last updated: October 2025.
+        </p>
+        <p>
+          <strong>Disclaimer:</strong> This report presents factual information
+          without political bias. Users are encouraged to review sources and
+          draw their own conclusions.
+        </p>
+      </div>
+    </footer>
+
+    <script src="app.js"></script>
+  </body>
+</html>

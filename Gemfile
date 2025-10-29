@@ -2,7 +2,7 @@
 
 source 'https://rubygems.org' # https://github.com/rubygems/rubygems
 
-ruby '3.4.6'
+ruby '3.4.7'
 
 gem 'neocities' # https://github.com/neocities/neocities-ruby
 
