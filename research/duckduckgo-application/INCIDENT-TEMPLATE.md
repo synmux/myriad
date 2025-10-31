@@ -1,8 +1,8 @@
 # Post-Incident Report: DuckDuckJoke Service Outage
 
-**Date:** [Date of Incident]  
-**Duration:** [Start Time] - [End Time] UTC  
-**Severity:** [Critical/High/Medium/Low]  
+**Date:** [Date of Incident]
+**Duration:** [Start Time] - [End Time] UTC
+**Severity:** [Critical/High/Medium/Low]
 **Status:** Resolved
 
 ---
@@ -148,13 +148,13 @@
 
 ### Error Logs
 
-```
+```plaintext
 [Relevant log excerpts]
 ```
 
 ### Configuration Changes
 
-```
+```plaintext
 [Any config changes made]
 ```
 
@@ -184,8 +184,8 @@
 
 ---
 
-**Report Prepared By:** [Anonymised]  
-**Date:** [Submission Date]  
+**Report Prepared By:** [Anonymised]
+**Date:** [Submission Date]
 **Time Spent:** [Troubleshooting: X hours | Report: Y hours]
 
 ---
