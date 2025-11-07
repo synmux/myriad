@@ -1,0 +1,147 @@
+---
+networks:
+  external_network: {}
+  internal_network:
+    internal: true
+services:
+  es:
+    container_name: elasticsearch
+    environment:
+      - bootstrap.memory_lock=false
+      - cluster.name=es
+      - discovery.type=single-node
+      - ES_JAVA_OPTS=-Xms512m -Xmx1024m
+      - thread_pool.write.queue_size=1000
+      - xpack.graph.enabled=false
+      - xpack.license.self_generated.type=basic
+      - xpack.ml.enabled=false
+      - xpack.security.enabled=false
+      - xpack.watcher.enabled=false
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - curl --silent --fail localhost:9200/_cluster/health || exit 1
+    image: docker.elastic.co/elasticsearch/elasticsearch-wolfi:9.2.0
+    pull_policy: always
+    networks:
+      - external_network
+      - internal_network
+    ports:
+      - 127.0.0.1:9200:9200
+    read_only: false
+    restart: always
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp:exec,size=200m
+      - /usr/share/elasticsearch/logs:noexec,nosuid,size=100m
+      - /usr/share/elasticsearch/tmp:exec,size=100m
+      - /var/log:noexec,nosuid,size=50m
+    ulimits:
+      memlock:
+        hard: -1
+        soft: -1
+      nofile:
+        hard: 65536
+        soft: 65536
+    volumes:
+      - elasticsearchStorage:/usr/share/elasticsearch/data:rw
+  sidekiq:
+    command: bundle exec sidekiq
+    container_name: basilisk-glitch-sidekiq
+    env_file: .env
+    platform: linux/amd64
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - ps aux | grep -v grep | grep sidekiq > /dev/null || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    image: ghcr.io/glitch-soc/mastodon:v4.5.0
+    pull_policy: always
+    networks:
+      - external_network
+      - internal_network
+    read_only: false
+    restart: always
+    security_opt:
+      - no-new-privileges:true
+    volumes:
+      - mastodonStorage:/mastodon/public/system:rw
+  socat:
+    command:
+      - TCP-LISTEN:25062,fork,reuseaddr
+      - OPENSSL-CONNECT:basilisk-gallery-redis-do-user-318785-0.b.db.ondigitalocean.com:25061,verify=0
+    container_name: socat
+    env_file: .env
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - ps aux | grep 'socat' || false
+    image: alpine/socat:1.8.0.3
+    pull_policy: always
+    networks:
+      - external_network
+      - internal_network
+    read_only: true
+    restart: always
+    security_opt:
+      - no-new-privileges:true
+  streaming:
+    image: ghcr.io/glitch-soc/mastodon-streaming:v4.5.0
+    pull_policy: always
+    command: node ./streaming/index.js
+    container_name: basilisk-glitch-streaming
+    platform: linux/amd64
+    depends_on:
+      - sidekiq
+    env_file: .env
+    environment:
+      - DB_SSLMODE=no-verify
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - curl -s --noproxy localhost localhost:4000/api/v1/streaming/health | grep -q 'OK' || exit 1
+    networks:
+      - external_network
+      - internal_network
+    ports:
+      - 127.0.0.1:4000:4000
+    read_only: true
+    restart: always
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp:noexec,nosuid,size=100m
+  web:
+    command: bundle exec puma -C config/puma.rb
+    container_name: basilisk-glitch-web
+    platform: linux/amd64
+    depends_on:
+      - sidekiq
+      - streaming
+    env_file: .env
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - curl -s --noproxy localhost localhost:3000/health | grep -q 'OK' || exit 1
+    image: ghcr.io/glitch-soc/mastodon:v4.5.0
+    pull_policy: always
+    networks:
+      - external_network
+      - internal_network
+    ports:
+      - 127.0.0.1:3000:3000
+    read_only: false
+    restart: always
+    security_opt:
+      - no-new-privileges:true
+    volumes:
+      - mastodonStorage:/mastodon/public/system:rw
+volumes:
+  elasticsearchStorage:
+    driver: local
+  mastodonStorage:
+    driver: local
