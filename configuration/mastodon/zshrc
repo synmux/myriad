@@ -1,0 +1,21 @@
+# set PATH so it includes user's private bin if it exists
+if [ -d "$HOME/.local/bin" ] ; then
+    PATH="$HOME/.local/bin:$PATH"
+fi
+
+eval "$(starship init zsh)"
+
+alias vi=nvim
+alias vim=nvim
+
+# Warpify function
+warpify() {
+    printf '\eP$f{"hook": "SourcedRcFileForWarp", "value": { "shell": "zsh", "uname": "Linux" }}\e\\'
+}
+
+alias mcons="docker run --rm -it --env-file mastodon/.env --network mastodon_external_network --network mastodon_internal_network -v mastodon_mastodonStorage:/mastodon/public/system:rw ghcr.io/glitch-soc/mastodon:v4.5.0 /bin/bash"
+
+export PATH="$HOME/.local/bin:$HOME/bin:$PATH"
+
+alias maint='docker run --rm --env-file mastodon/.env --network mastodon_external_network --network mastodon_internal_network -v mastodon_mastodonStorage:/mastodon/public/system:rw ghcr.io/glitch-soc/mastodon:v4.5.0 /bin/bash -c "bin/tootctl upgrade storage-schema && bin/tootctl statuses remove --days=7 --clean-followed --compress-database && bin/tootctl preview_cards remove --days=7 && bin/tootctl media remove --days=7 --prune-profiles --include-follows && bin/tootctl media remove --days=7 --remove-headers --include-follows && bin/tootctl media remove-orphans --fix-permissions && bin/tootctl search deploy --reset-chewy"'
+
