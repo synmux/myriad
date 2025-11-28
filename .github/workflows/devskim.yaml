@@ -19,6 +19,6 @@ jobs:
       - name: analysis
         uses: microsoft/DevSkim-Action@4b5047945a44163b94642a1cecc0d93a3f428cc6
       - name: upload
-        uses: github/codeql-action/upload-sarif@59ce4c1340a74f56c129f758767ef33668e572b0
+        uses: github/codeql-action/upload-sarif@c178e03ec888882ce814ed2b300db864f3580f88
         with:
           sarif_file: devskim-results.sarif
