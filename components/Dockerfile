@@ -330,7 +330,6 @@ RUN mkdir -p \
 COPY ntopng.conf /etc/ntopng.conf
 COPY redis.conf /etc/redis/redis.conf
 COPY ntopng.bash /opt/ntopng.bash
-COPY resolv.conf /etc/resolv.conf
 
 # Set proper permissions in a single layer
 #
