@@ -5,10 +5,10 @@ FROM jdxcode/mise@sha256:cff42e2bf1063ae6a8729c148a1003357d5befa2fe7656c5d0c99e6
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Build arguments for versions - pinned for cache consistency
-ARG NDPI_VERSION="4.14"
-ARG NTOP_VERSION="6.4"
-ARG NETFLOW2NG_VERSION="0.0.5"
-ARG GO_VERSION="1.24.5"
+ARG NDPI_VERSION="4.14" # latest: 5.0
+ARG NTOP_VERSION="6.4" # latest: 6.6
+ARG NETFLOW2NG_VERSION="0.1.0" # latest: 0.1.0
+ARG GO_VERSION="1.25.4" # latest: 1.25.4
 
 # GeoIP credentials for build-time download
 ARG GEOIPUPDATE_ACCOUNT_ID
@@ -332,6 +332,11 @@ COPY redis.conf /etc/redis/redis.conf
 COPY ntopng.bash /opt/ntopng.bash
 
 # Set proper permissions in a single layer
+#
+# Note: the container runs as the unprivileged `ntopng` user (see USER directive
+# below), so Redis also runs as `ntopng`. To avoid permission issues when
+# starting Redis with /etc/redis/redis.conf, all Redis state and config
+# locations must be owned by `ntopng` and traversable by it.
 RUN chmod +x /opt/ntopng.bash \
     && chown -R ntopng:ntopng \
       /etc/ntopng \
@@ -344,11 +349,12 @@ RUN chmod +x /opt/ntopng.bash \
       /usr/share/GeoIP \
       /var/lib/GeoIP \
       /etc/GeoIP \
-    && chown -R redis:redis \
+    && chown -R ntopng:ntopng \
+      /etc/redis \
       /var/lib/redis \
       /var/log/redis \
       /var/run/redis \
-      /etc/redis/redis.conf \
+    && chmod 755 /etc/redis \
     && chmod 644 /etc/redis/redis.conf
 
 USER ntopng
