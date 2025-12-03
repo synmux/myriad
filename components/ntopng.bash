@@ -225,5 +225,5 @@ if [[ ! -x /usr/local/bin/netflow2ng ]]; then
   exit 1
 fi
 
-# Start main function
+# Start main()
 main "$@"
