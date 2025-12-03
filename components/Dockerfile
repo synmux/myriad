@@ -330,6 +330,7 @@ RUN mkdir -p \
 COPY ntopng.conf /etc/ntopng.conf
 COPY redis.conf /etc/redis/redis.conf
 COPY ntopng.bash /opt/ntopng.bash
+COPY resolv.conf /etc/resolv.conf
 
 # Set proper permissions in a single layer
 #
@@ -355,8 +356,7 @@ RUN chmod +x /opt/ntopng.bash \
       /var/log/redis \
       /var/run/redis \
     && chmod 755 /etc/redis \
-    && chmod 644 /etc/redis/redis.conf \
-    && echo "nameserver 8.8.8.8" > /etc/resolv.conf
+    && chmod 644 /etc/redis/redis.conf
 
 USER ntopng
 
