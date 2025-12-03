@@ -355,7 +355,8 @@ RUN chmod +x /opt/ntopng.bash \
       /var/log/redis \
       /var/run/redis \
     && chmod 755 /etc/redis \
-    && chmod 644 /etc/redis/redis.conf
+    && chmod 644 /etc/redis/redis.conf \
+    && echo "nameserver 8.8.8.8" > /etc/resolv.conf
 
 USER ntopng
 
