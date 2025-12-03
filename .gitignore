@@ -1,3 +1,6 @@
 docker-compose.yml
 .env
 
+
+# OpenMemory - IDE/Assistant specific rules
+.cursor/rules/openmemory.mdc
