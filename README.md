@@ -131,16 +131,39 @@ def get_access_token(env: str, client_id: str, client_secret: str) -> str:
     grant_type=client_credentials [web:21][web:22]
     """
     url = f"{base_url(env)}/v1/oauth2/token"
-    r = requests.post(
-        url,
-        headers={"Accept": "application/json"},
-        auth=(client_id, client_secret),
-        data={"grant_type": "client_credentials"},
-        timeout=30,
-    )
-    if r.status_code != 200:
-        raise RuntimeError(f"Token request failed: {r.status_code} {r.text}")
-    return r.json()["access_token"]
+    max_retries = 3
+    last_details = None
+
+    for attempt in range(max_retries):
+        try:
+            r = requests.post(
+                url,
+                headers={"Accept": "application/json"},
+                auth=(client_id, client_secret),
+                data={"grant_type": "client_credentials"},
+                timeout=30,
+            )
+            if r.status_code == 200:
+                return r.json()["access_token"]
+
+            last_details = f"Status: {r.status_code}, Body: {r.text}"
+
+            # Retry on server errors (5xx)
+            if 500 <= r.status_code < 600:
+                if attempt < max_retries - 1:
+                    time.sleep(2 ** attempt)
+                continue
+
+            # Non-retriable error (e.g. 4xx)
+            raise RuntimeError(f"Token request failed: {r.status_code} {r.text}")
+
+        except requests.RequestException as e:
+            last_details = f"Exception: {e}"
+            if attempt < max_retries - 1:
+                time.sleep(2 ** attempt)
+            continue
+
+    raise RuntimeError(f"Token request failed after {max_retries} attempts. Last details: {last_details}")
 
 
 def api_request(

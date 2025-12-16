@@ -3,7 +3,7 @@ name = "paypal-cancel"
 version = "0.1.0"
 description = "Cancel all PayPal billing agreements"
 readme = "README.md"
-requires-python = ">=3.14"
+requires-python = ">=3.13"
 dependencies = [
     "playwright>=1.57.0",
     "requests>=2.32.5",
