@@ -526,7 +526,7 @@ def new_cancel_subscription(env: str, token: str, subscription_id: str, reason: 
     body = {"reason": reason}
     r = api_request(env, "POST", f"/v1/billing/subscriptions/{subscription_id}/cancel", token, json_body=body)
     # Docs show 204 No Content on success. [web:0]
-    if r.status_code != 204:
+    if r.status_code != 204 and r.status_code != 200:
         raise RuntimeError(f"[new] cancel {subscription_id} failed: {r.status_code} {r.text}")
 
 
