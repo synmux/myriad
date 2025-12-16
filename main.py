@@ -20,7 +20,8 @@ def ensure_dir(p: str) -> Path:
 def slug(s: str) -> str:
     s = s.strip().lower()
     s = re.sub(r"[^a-z0-9]+", "_", s)
-    return (s[:60] or "item").strip("_")
+    s = s.strip("_")
+    return s[:60] or "item"
 
 
 def main() -> int:
