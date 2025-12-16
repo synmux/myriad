@@ -1,0 +1,24 @@
+name: devskim
+on:
+  push: null
+  pull_request: null
+permissions:
+  actions: read
+  contents: read
+  id-token: write
+  issues: write
+  pull-requests: write
+  security-events: write
+jobs:
+  devskim:
+    name: devskim
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8
+      - name: analysis
+        uses: microsoft/DevSkim-Action@4b5047945a44163b94642a1cecc0d93a3f428cc6
+      - name: upload
+        uses: github/codeql-action/upload-sarif@267c4672a565967e4531438f2498370de5e8a98d
+        with:
+          sarif_file: devskim-results.sarif

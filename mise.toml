@@ -1,0 +1,12 @@
+[env]
+MYRIAD_PAYPAL_CANCEL_MISE_ACTIVE = 'true'
+
+[settings]
+env_file = '.env'
+idiomatic_version_file_enable_tools = []
+
+[tools]
+python = { version = '3.14.2' }
+
+[tasks]
+'cc' = { run = "claude", description = "Invoke Claude Code" }
