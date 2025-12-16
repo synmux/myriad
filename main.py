@@ -2,13 +2,17 @@
 from __future__ import annotations
 
 import argparse
+import logging
 import re
 from pathlib import Path
 
+from playwright.sync_api import Error as PWError
 from playwright.sync_api import TimeoutError as PWTimeoutError
 from playwright.sync_api import sync_playwright
 
 AUTOPAY_URL = "https://www.paypal.com/myaccount/autopay"  # entry point to automatic payments area. [web:74]
+
+logger = logging.getLogger(__name__)
 
 
 def ensure_dir(p: str) -> Path:
@@ -107,8 +111,19 @@ def main() -> int:
                 el = loc.nth(i)
                 try:
                     txt = (el.inner_text(timeout=200) or "").strip()
-                except Exception:
+                except (PWTimeoutError, PWError) as e:
+                    logger.warning(
+                        "Skipping candidate %s due to %s: %s",
+                        i,
+                        type(e).__name__,
+                        e,
+                    )
                     continue
+                except Exception:
+                    logger.exception(
+                        "Unexpected error reading text for candidate %s", i
+                    )
+                    raise
                 if not txt or len(txt) > 80:
                     continue
                 if re.search(
@@ -138,6 +153,21 @@ def main() -> int:
             print("Nothing cancelled (pass --cancel-all).")
             context.close()
             return 0
+
+        if args.cancel_all and not args.dry_run:
+            print("WARNING: You are about to cancel ALL autopay subscriptions!")
+            try:
+                confirm = input(
+                    "Are you sure you want to cancel ALL autopay subscriptions? Type YES to confirm: "
+                )
+                if confirm.strip() != "YES":
+                    print("Aborted.")
+                    context.close()
+                    return 0
+            except KeyboardInterrupt:
+                print("\nAborted.")
+                context.close()
+                return 0
 
         cancelled = 0
         for name, el in merchants:
