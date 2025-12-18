@@ -12,6 +12,16 @@ It containes all manner of things, from small scripts to large projects. Many of
 
 If any of it is useful to you, have at it.
 
+## Current Projects
+
+### Pendant Audio Capture
+Wearable audio recording pendant based on M5 Capsule (ESP32-S3). See [`pendant/`](pendant/) directory.
+
+- **Hardware**: M5 Capsule with microphone and SD card
+- **Features**: Voice-activated recording, audio filtering, SD storage
+- **Status**: In development (Phase 1: Audio capture)
+- **Docs**: [Learning Pathway](docs/PENDANT-LEARNING-PATHWAY.md) | [Quick Start](pendant/QUICK-START.md)
+
 ## Layout
 
 ### [`main`](https://github.com/daveio/myriad/tree/main)

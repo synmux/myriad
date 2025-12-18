@@ -1,0 +1,36 @@
+# PlatformIO
+.pio/
+.vscode/
+.pioenvs/
+.piolibdeps/
+.clang_complete
+.gcc-flags.json
+
+# Build outputs
+build/
+sdkconfig
+sdkconfig.old
+
+# IDE
+*.swp
+*.swo
+*~
+.DS_Store
+.idea/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+
+# Logs
+*.log
+
+# Test recordings (don't commit actual audio)
+*.wav
+*.mp3
+recordings/
