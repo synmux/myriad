@@ -1,5 +1,3 @@
-import json
-
 import plotly.graph_objects as go
 
 # Data - all 11 chips

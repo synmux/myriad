@@ -1,5 +1,3 @@
-import json
-
 # Load the data
 data = {
     "architecture_groups": [
