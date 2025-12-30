@@ -1,0 +1,861 @@
+# Comprehensive Terminal Emulator Research Report
+
+## Executive Summary
+
+This report provides an extensive analysis of 11 modern terminal emulators, examining their features, performance characteristics, platform support, and suitability for various use cases. The terminals reviewed span a range of philosophies—from minimalist performance-focused tools to feature-rich, modern interfaces with AI integration.
+
+---
+
+## 1. ALACRITTY
+
+### Overview
+A GPU-accelerated terminal emulator written in Rust, designed for simplicity and speed.
+
+### Performance
+- **GPU Rendering**: Yes (OpenGL-based)
+- **Startup Time**: ~75ms (very fast)
+- **CPU Usage**: Low (5-8% with standard use, 75% during heavy output)
+- **Scrolling Performance**: Extremely smooth, excellent
+- **Rendering Target**: 60Hz vsync, efficient frame management
+
+### Key Features
+- Cross-platform (Windows, macOS, Linux, BSD)
+- Minimal feature set by design (no tabs, splits, or plugins)
+- GPU-accelerated rendering via OpenGL
+- Highly customizable via TOML config files
+- Excellent font rendering with ligature support
+- True color support (24-bit)
+- Simple, focused philosophy
+
+### Limitations
+- No built-in tabs or split panes (requires tmux)
+- No text reflow on window resize
+- Limited features compared to competitors
+- Config requires dotfiles management
+- No GUI configuration
+
+### Use Cases
+- Developers prioritizing raw speed
+- Users comfortable with tmux/screen
+- Minimal desktop environments
+- Performance-critical workflows
+- Cross-platform needs with lightweight requirements
+
+### Architecture
+- Pure Rust implementation
+- No external UI frameworks
+- Integrated with system shells directly
+- Efficient memory footprint
+
+---
+
+## 2. GHOSTTY
+
+### Overview
+A modern GPU-accelerated terminal built with Zig by Mitchell Hashimoto (creator of Terraform/Vagrant), released as v1.0 in December 2024. Aims to balance speed, features, and native UI.
+
+### Performance
+- **GPU Rendering**: Yes (Metal on macOS, OpenGL on Linux)
+- **Startup Time**: Fast (~150ms)
+- **Frame Rate**: 500+ FPS capable
+- **CPU Usage**: 6-8% idle, efficient under load
+- **Scroll Performance**: Extremely smooth, superior to many competitors
+
+### Key Features
+- **Cross-platform**: macOS (native), Linux (GTK)
+- **Native UI Integration**: 
+  - macOS: Quicklook, Secure Input API, native tabs/splits
+  - Linux: GTK single app process, primary clipboard support
+- **100+ built-in themes** with real-time preview
+- **Built-in inspector** (Ctrl+Shift+I, like browser DevTools)
+- **Native tabs and splits** with seamless management
+- **Shell integration**: Bash, Zsh, Fish, Elvish
+- **Advanced rendering**: Ligatures, variable fonts, grapheme clustering
+- **Xterm compatibility** with Kitty graphics protocol support
+- **Real-time configuration reload**
+- **Complex prompt redrawing** on window resize
+
+### Technical Stack
+- **Language**: Zig (modern systems language with C speed + Rust safety)
+- **Rendering**: Metal (macOS) / OpenGL (Linux)
+- **Architecture**: Single-file configuration, no plugins needed
+
+### Limitations
+- Relatively new (v1 just released)
+- Fewer third-party extensions than mature alternatives
+- macOS-first development (though Linux support strong)
+- Feature set still evolving
+
+### Use Cases
+- Developers wanting balance of speed and features
+- macOS users seeking native integration
+- Performance-conscious users who want built-in tabs/splits
+- Developers who prefer configured-over-scripted approach
+- Those wanting modern features without bloat
+
+### Community & Support
+- Active development post-v1 release
+- Growing ecosystem
+- Good documentation
+- Design philosophy well-documented on ghostty.org
+
+---
+
+## 3. HYPER
+
+### Overview
+A terminal emulator built on Electron and web technologies (HTML/CSS/JavaScript), prioritizing aesthetics and extensibility.
+
+### Performance
+- **Rendering**: Electron-based (Software rendering)
+- **CPU Usage**: High (50-130MB RAM, 15-20% CPU idle)
+- **Startup Time**: Slow (2-3 seconds typical)
+- **Scrolling**: Janky, noticeable lag with large outputs
+- **Hardware Requirements**: Needs 8GB+ RAM for smooth experience
+
+### Key Features
+- **Aesthetic Design**: Modern, highly customizable appearance
+- **Plugin Ecosystem**: Rich plugin API with popular extensions
+  - hyper-search, hypercwd, hyper-pane, hyperpower
+- **Web Technology Stack**: HTML, CSS, JavaScript customization
+- **Theme Support**: Extensive theme marketplace
+- **Cross-platform**: Windows, macOS, Linux
+
+### Limitations
+- **Performance Issues**: Slowest of modern terminals
+- **Resource Heavy**: High CPU and memory consumption
+- **Electron Bloat**: Criticized for using Electron for a terminal
+- **Startup Overhead**: Slow initial launch
+- **Scrolling Lag**: Noticeable performance issues with heavy output
+
+### Technical Stack
+- Built on Electron
+- Uses xterm.js as terminal engine
+- JavaScript-based plugins and theming
+
+### Use Cases
+- Developers prioritizing appearance over performance
+- Teams standardizing on Electron stack
+- Extensibility-focused power users
+- Not recommended for resource-constrained systems
+
+### Community Status
+- Active development
+- Large plugin ecosystem
+- Popular among web developers initially, but declining due to performance
+
+---
+
+## 4. iTERM2
+
+### Overview
+The most feature-rich macOS terminal emulator, long-standing industry standard for macOS users.
+
+### Performance
+- **GPU Rendering**: Yes (can be disabled on battery)
+- **CPU Usage**: 10-20% (higher than modern alternatives)
+- **Startup Time**: Reasonable (~500ms)
+- **Scrolling**: Good with GPU enabled, poor with GPU disabled
+- **Memory**: Moderate (depends on session count)
+
+### Key Features
+- **macOS Native**: Built with native Objective-C, tight OS integration
+- **Advanced Session Management**:
+  - Split panes (vertical/horizontal)
+  - Tabbed sessions with thumbnails
+  - Window grouping
+- **Hotkey Window**: Global hotkey to bring iTerm2 to foreground
+- **Instant Replay**: Rewind and view terminal history in real-time
+- **Search & Autocomplete**: Powerful search across output
+- **Paste History**: Access to recent paste buffer
+- **Comprehensive Customization**: Profiles, keymaps, appearance
+- **256+ Color Support**: True color support
+- **Mouse Support**: Full mouse integration
+- **Shell Integration**: Works with all shells
+
+### Limitations
+- **macOS-only**: Not cross-platform
+- **Performance**: Slower than modern GPU-accelerated alternatives
+- **Feature Bloat**: Complex interface, steep learning curve
+- **Resource Usage**: Higher than minimalist terminals
+- **Update Frequency**: Active but older codebase
+
+### Advanced Features
+- Deep customization of every aspect
+- Advanced profile management with variables
+- Semantic history tracking
+- Command-line configuration possible
+
+### Use Cases
+- macOS exclusive users
+- Users needing advanced session management
+- Teams standardized on iTerm2
+- Developers wanting feature richness
+- Those comfortable with complexity for power
+
+### Community
+- Large user base
+- Excellent documentation
+- Active development continues
+
+---
+
+## 5. KITTY
+
+### Overview
+A GPU-accelerated, feature-rich terminal emphasizing performance, keyboard-centric workflow, and graphical capabilities.
+
+### Performance
+- **GPU Rendering**: Yes (OpenGL with threaded rendering)
+- **CPU Usage**: 6-8% (excellent)
+- **Startup Time**: Very fast
+- **Scrolling**: Exceptionally smooth, excellent frame consistency
+- **Rendering**: Uses SIMD vector CPU instructions for optimal performance
+- **Performance Tradeoffs**: Configurable to tune responsiveness vs efficiency
+
+### Key Features
+- **GPU-Accelerated Rendering**: SIMD-optimized with threading
+- **Graphics Protocol**: Kitty Image Protocol for inline image display
+- **Font Support**: Ligatures, emoji handling with proper spacing, combining accents
+- **True Color**: Full 24-bit color support
+- **Tabs & Windows**: Multiple layouts with keyboard-centric navigation
+- **Kittens**: Plugin ecosystem for extending functionality
+- **Copy/Paste**: Multiple buffers like Vim
+- **Keyboard-Centric**: Designed for power users
+- **Configuration**: Single config file, simple format
+- **Scrollback**: Efficient with timestamp support
+- **Cross-platform**: Linux, macOS, some BSD distributions
+
+### Technical Details
+- **Language**: Python (frontend) + C (rendering engine)
+- **Rendering**: OpenGL with GPU acceleration
+- **Architecture**: Clean separation of concerns
+
+### Limitations
+- **Learning Curve**: Keyboard shortcuts can be complex
+- **macOS Status**: Good but Linux-first development
+- **Plugin Ecosystem**: Smaller than iTerm2 or Hyper
+- **Complex Features**: Advanced features have steep learning curve
+
+### Use Cases
+- Linux terminal enthusiasts
+- Developers needing inline graphics
+- Keyboard-centric workflow users
+- Systems administrators
+- Performance-sensitive applications (rendering graphs, images)
+
+### Community
+- Active development
+- Strong documentation
+- Growing ecosystem
+- Popular among Linux professionals
+
+### Advanced Features
+- Hyperlink support
+- Customizable colors and themes
+- Advanced key binding strategies
+- Window tiling and layout management
+
+---
+
+## 6. TABBY
+
+### Overview
+An Electron-based terminal emulator emphasizing feature richness and modern UI, with support for SSH, Serial, and local shells.
+
+### Performance
+- **Framework**: Electron (TypeScript)
+- **Startup Time**: Slow (splash screen, 2-3 seconds)
+- **CPU/Memory**: High (Electron overhead)
+- **UI Responsiveness**: Sluggish with animations enabled
+- **Actual Terminal Emulation**: Acceptable once running
+
+### Key Features
+- **Integrated SSH Client**: Full SSH connection management
+- **Multi-Protocol Support**: 
+  - SSH/Telnet
+  - Serial connections
+  - Local shells (Bash, PowerShell, etc.)
+- **Session Management**:
+  - Session profiles with saved settings
+  - SFTP file transfer integration
+  - Z-modem support
+- **UI Features**:
+  - Tabbed interface with rich customization
+  - Split panes
+  - Status bar
+  - Theme/color scheme library (25+)
+- **Plugin System**: Extensible architecture
+- **Cross-Platform**: Windows, macOS, Linux
+- **CSS Customization**: Style UI with CSS
+- **Full Unicode**: Double-width character support
+
+### Technical Stack
+- **Language**: TypeScript
+- **Framework**: Electron
+- **UI**: Complex component hierarchy
+
+### Limitations
+- **Performance**: Slow startup and animations
+- **Resource Heavy**: Electron overhead significant
+- **Animations**: Default animations make UI feel sluggish (can disable)
+- **Loading Screen**: Undesirable startup behavior
+- **Theme Limitations**: Not all theme colors apply completely
+- **Complexity**: Feature bloat vs simplicity tradeoff
+
+### Use Cases
+- Cross-platform SSH management
+- Development teams needing comprehensive features
+- Serial console users
+- Users prioritizing feature count over speed
+- Those who disable animations for acceptable performance
+
+### Community
+- 40k+ GitHub stars
+- Active development
+- Good documentation
+- Growing ecosystem
+
+---
+
+## 7. WARP
+
+### Overview
+An AI-powered, next-generation terminal built with Rust, revolutionizing terminal interaction through intelligent features, team collaboration, and modern UX.
+
+### Performance
+- **Language**: Rust
+- **Rendering**: Fast, modern
+- **CPU/Memory**: Efficient (Rust benefits)
+- **Latency**: Low for interactive use
+- **AI Response Time**: Optimized per use case (different models for different tasks)
+
+### Key Features
+- **AI Integration** (Warp AI):
+  - Natural language command suggestions
+  - Automatic error detection and fixes
+  - Missing dependency identification
+  - ChatGPT-like natural language interface
+  - Agent Mode for autonomous multi-step tasks
+  - Voice input support
+  - 40+ free AI requests/month
+- **Block-Based Interface**:
+  - Commands and outputs grouped atomically
+  - Individual block execution and sharing
+  - Filterable with regex patterns
+  - Save/recall specific command blocks
+- **Collaboration** (Warp Drive):
+  - Share command blocks with permalinks
+  - Team workflows and notebooks
+  - Shared command history and prompts
+  - Real-time team knowledge base
+- **Modern UX**:
+  - IDE-like input editor
+  - Autocomplete with AI suggestions
+  - Command palette
+  - Session management
+  - Markdown viewer integration
+- **Cross-Platform**: macOS, Linux (Windows in development)
+- **Shell Integration**: Bash, Zsh, Fish, PowerShell
+
+### AI Capabilities
+- **Foundation Models**: Anthropic Claude, OpenAI GPT, Google Gemini
+- **Model Routing**: Different models for different tasks
+- **Local Processing**: Privacy-focused on-device AI
+- **Enterprise Support**: Audit logging, security controls
+- **Team Features**: Shared workflows, team playbooks
+
+### Limitations
+- **Relatively New**: Still evolving feature set
+- **Windows Support**: Not yet available (in development)
+- **AI Dependency**: Requires connectivity for full features
+- **Telemetry**: Data collection for free tier
+- **Learning Curve**: Different paradigm from traditional terminals
+
+### Use Cases
+- Modern developers valuing AI assistance
+- DevOps teams managing infrastructure
+- Teams needing collaboration features
+- Developers wanting productivity enhancement
+- Learning terminal commands more efficiently
+
+### Architecture
+- Built with Rust for performance
+- Electron-like UI but native performance
+- Modern plugin system (Model Context Protocol)
+
+### Community
+- 500k+ active users
+- Enterprise adoption growing
+- Well-funded (Series B+)
+- Strong documentation
+
+---
+
+## 8. WAVE
+
+### Overview
+An open-source, modern terminal designed for seamless workflows, combining traditional terminal capabilities with graphical tools and AI assistance.
+
+### Performance
+- **Language**: Open-source, fast
+- **Rendering**: Modern, responsive
+- **Memory**: Efficient
+- **Startup**: Quick
+- **Cross-Platform**: macOS, Linux, Windows
+
+### Key Features
+- **Hybrid Terminal/UI Model**:
+  - Block-based command output (like Warp)
+  - Integrated web browser
+  - Graphical file previews
+  - Inline editor for remote files
+- **Advanced File Handling**:
+  - Built-in editor (Monaco/VSCode engine)
+  - Code preview with syntax highlighting
+  - Markdown rendering
+  - Image/PDF/CSV viewers
+  - Directory browsing
+- **SSH Management**:
+  - Persistent SSH connections (survives disconnects/reboots)
+  - Workspace organization by device
+  - SSH tunnel management
+  - Remote file editing via codeedit
+- **Smart History**:
+  - Universal command history across all sessions
+  - Cross-device history search
+  - Command bookmarking
+  - History synchronization
+- **AI Features** (Wave AI):
+  - Integrated ChatGPT/Claude support
+  - 200 requests/day limit (generous)
+  - Support for multiple LLMs
+  - Locally deployed model support
+  - Code execution context
+- **Customization**:
+  - Flexible block organization (drag & drop)
+  - Multiple workspace support
+  - Color-coded tabs
+  - Extensive theming
+
+### Technical Stack
+- **Language**: Open-source implementation
+- **Rendering**: Modern web technologies
+- **Extensibility**: Plugin architecture for previews
+
+### Limitations
+- **Newer Project**: Still maturing compared to established tools
+- **Less Polished**: Some features still in development
+- **Plugin Ecosystem**: Smaller than established alternatives
+- **Windows Support**: Relatively new
+
+### Use Cases
+- Developers valuing graphical capabilities
+- System administrators managing remote servers
+- Teams wanting knowledge base integration
+- Visual developers preferring graphical workflows
+- DevOps practitioners needing infrastructure tools
+
+### Philosophy
+- "Don't switch contexts" - keep everything in terminal
+- Hybrid approach between TUI and GUI
+- AI-first terminal design
+
+### Community
+- Open-source with active development
+- Growing user base
+- Responsive to feature requests
+
+---
+
+## 9. WEZTERM
+
+### Overview
+A GPU-accelerated terminal emulator written in Rust, notable for powerful Lua-based configuration and excellent feature/performance balance.
+
+### Performance
+- **Language**: Rust
+- **GPU Rendering**: Yes (OpenGL)
+- **CPU Usage**: Efficient (Rust optimization)
+- **Startup Time**: Fast
+- **Scrolling**: Smooth and responsive
+- **Throughput**: Competitive with other GPU-accelerated options
+
+### Key Features
+- **Lua Configuration**:
+  - Full Lua 5.4 scripting for configuration
+  - Programmable appearance and behavior
+  - Event-driven architecture
+  - Powerful customization comparable to Neovim
+  - Consistent with editor configuration (Neovim + WezTerm combo)
+- **Window/Tab Management**:
+  - Native tabs and splits
+  - Window multiplexing (built-in, like tmux)
+  - Workspace navigation
+  - Dynamic window creation via Lua
+- **Advanced Features**:
+  - Custom hyperlink highlighting rules
+  - Searchable scrollback
+  - Image support (Kitty Image Protocol)
+  - Ligature support
+  - Status bar customization
+  - Modal keybindings and leader keys
+  - Smart split management
+- **Cross-Platform**: Windows, macOS, Linux
+- **Shell Integration**: All major shells supported
+
+### Configuration Philosophy
+- Text-based configuration (Lua) in dotfiles
+- Portable across machines
+- No GUI configuration needed
+- Event system (update-status, window-focus, etc.)
+- Utility functions for system state access
+
+### Limitations
+- **Lua Learning Curve**: Configuration more complex than TOML
+- **Inconsistent Performance**: Some users report variable performance
+- **Windows Support**: Less polished than macOS/Linux
+- **Ecosystem**: Smaller than iTerm2
+
+### Advanced Capabilities
+- **Status Bar**: Real-time system information display
+- **Event Handlers**: Custom callbacks for terminal events
+- **Terminal State Access**: Query mouse position, window state, etc.
+- **File System Access**: Full Lua filesystem capabilities
+- **Network Capabilities**: Can make HTTP requests from config
+
+### Use Cases
+- Developers comfortable with Lua scripting
+- Neovim users (Lua configuration consistency)
+- Power users wanting deep customization
+- Cross-platform users needing dotfile portability
+- Infrastructure professionals
+
+### Community
+- Strong user base among infrastructure/DevOps
+- Active development
+- Good documentation
+- Growing Lua config examples
+
+---
+
+## 10. WINDTERM
+
+### Overview
+A free, open-source, multi-platform SSH/Telnet/Serial/Shell terminal emphasizing professional features, session management, and cross-platform support.
+
+### Performance
+- **Rendering**: Fast, optimized
+- **Resource Usage**: Efficient
+- **Startup**: Quick
+- **Cross-Platform**: Windows, macOS, Linux (truly universal)
+
+### Key Features
+- **Professional SSH Client**:
+  - Full SSH v2 support with modern encryption (ECDSA, ED25519, SHA256, AES-256)
+  - Public/private key authentication
+  - Keyboard-interactive and GSSAPI authentication
+  - SSH ControlMaster support
+  - ProxyCommand/ProxyJump support
+  - SSH agent support with auto-execution
+  - X11 forwarding
+  - Port forwarding (direct/local, reverse/remote, dynamic/SOCKS)
+- **Multi-Protocol Support**:
+  - Telnet
+  - Raw TCP
+  - Serial connections
+  - Shell (local command execution)
+  - All with unified interface
+- **Session Management**:
+  - Session manager with tree view
+  - Session groups/folders
+  - Integrated SFTP client
+  - SCP support
+  - X/Y/Z-modem support
+  - Local file manager integration
+- **Advanced Features**:
+  - Multilingual UI
+  - Unicode 13 support
+  - Focus mode and sync input across sessions
+  - Command palette
+  - Tab color customization
+  - Tab searching
+  - Powerline support (Oh-My-Zsh, Oh-My-Posh)
+  - Vim keybindings mode
+  - Mouse cursor hiding while typing
+- **Customization**:
+  - VSCode-style color schemes
+  - Theme support
+  - Full UI theme customization
+  - Keyboard remapping
+
+### Technical Details
+- **Language**: Open-source (free)
+- **Architecture**: Modern, well-designed
+- **Configuration**: Clear, sensible defaults
+
+### Limitations
+- **Learning Curve**: Features can be overwhelming initially
+- **UI Complexity**: Many options available
+- **Documentation**: Could be more comprehensive
+- **Community**: Smaller than major alternatives
+
+### Use Cases
+- System administrators across platforms
+- Network engineers managing devices
+- Cross-platform SSH management
+- Users needing serial console access
+- Teams standardizing on single tool across OS
+
+### Philosophy
+- "Quicker and better SSH/Telnet/Serial/Shell"
+- Comprehensive professional features
+- Modern implementation of terminal classics
+
+### Community
+- Open-source on GitHub
+- Active development
+- Good for sysadmins and NetOps
+
+---
+
+## 11. ZOC
+
+### Overview
+A professional, commercial terminal emulator and SSH client for Windows and macOS, established since 1993, known for comprehensive features and robust engineering.
+
+### Performance
+- **CPU Usage**: Efficient
+- **Rendering**: Fast, native code
+- **Startup**: Quick
+- **Platforms**: Windows 10/11, macOS Sequoia
+
+### Key Features
+- **Extensive Terminal Emulations**:
+  - VT52, VT100, VT102, VT220, VT420/VT520 (full implementation)
+  - Tested with vttest suite (105 points - excellent)
+  - ANSI-BBS, ANSI-SCO, Avatar
+  - Sun-CDE, Wyse WY-30/50/60
+  - TVI 9xx series, QNX, HP, ATT, SNI
+  - TTY and many proprietary terminals
+- **SSH/Security**:
+  - Modern Secure Shell (based on OpenSSH v9.1)
+  - Public/private key authentication
+  - Smart-card support (PKCS#11, CAC/PIV)
+  - Port forwarding and tunneling
+  - FIDO2 hardware tokens and Yubikey support
+  - SSH Agent forwarding
+  - Dynamic port forwarding (SOCKS proxy)
+  - X11 forwarding
+- **Communication Protocols**:
+  - Telnet (RFC-Telnet, SSL-Telnet with TLS 1.2/1.3)
+  - Rlogin
+  - Modem via serial port and TAPI
+  - Direct serial console via USB/serial adapters
+  - ISDN with X.25/X.31 support
+  - IPv6 support
+- **Advanced Features**:
+  - Tabbed sessions with thumbnail overview
+  - Session thumbnails showing live preview
+  - Colorful tabs (tint UI by host)
+  - Full keyboard remapping
+  - Host directory with folders
+  - User-defined button bar with macros
+  - F-Macro keys
+  - Local typing with history
+- **File Transfer**:
+  - SCP, FTP, SFTP, FTPS
+  - X/Y/Z-modem, Kermit
+  - Character translation
+  - IND$FILE (IBM mainframes)
+- **Automation & Scripting**:
+  - REXX language support (75+ extensions)
+  - AutoLogin sequences
+  - Auto Macros (trigger on sending text)
+  - Auto Replies (trigger on receiving text)
+  - DDE support (Windows)
+  - AppleScript support (macOS)
+- **Logging & Monitoring**:
+  - Scrollback (3 variants)
+  - Auto Highlight of text patterns
+  - Raw data trace (text/binary)
+  - Hex debug mode
+  - File-log with timestamps
+  - Printer output
+
+### Technical Details
+- **License**: Commercial ($80 USD)
+- **Free Trial**: 30-day evaluation
+- **Language**: Professional native code
+- **Architecture**: Robust, proven design
+
+### Limitations
+- **Cost**: $80 commercial license required
+- **Closed Source**: Not open-source
+- **Platform Limited**: Windows and macOS only (no Linux)
+- **User Base**: Smaller than open-source alternatives
+- **UI Styling**: Somewhat dated appearance
+
+### Advanced Capabilities
+- **Terminal Emulation Depth**: Unmatched legacy support (mainframes, terminals from 1970s-1980s)
+- **Scripting Power**: REXX language with 75+ extensions
+- **Character Accuracy**: Industry-standard vttest suite validation
+- **Hardware Support**: Smart cards, tokens, serial devices
+
+### Use Cases
+- Enterprise IT departments
+- Legacy system administrators
+- Mainframe operators (TN3270/TN5250)
+- Professional users needing certainty
+- Network engineers with diverse equipment
+- Organizations with legacy infrastructure
+
+### Philosophy
+- "Swiss Army Knife of terminal emulators"
+- Versatile, robust, proven engineering
+- Professional-grade reliability
+
+### Community
+- Established user base
+- Professional support
+- Enterprise adoption
+- Solo developer support (excellent responsiveness)
+
+---
+
+## Performance Comparison Matrix
+
+| Terminal | GPU Accel | Startup (ms) | Idle CPU | Scroll Perf | Memory | Feature Count |
+|----------|-----------|--------------|----------|------------|--------|---------------|
+| Alacritty | Yes | ~75 | 5-8% | Excellent | Very Low | Low |
+| Ghostty | Yes | ~150 | 6-8% | Excellent | Low | Medium-High |
+| Hyper | No (Electron) | 2000+ | 15-20% | Poor | High | High |
+| iTerm2 | Yes | ~500 | 10-20% | Good | Moderate | High |
+| Kitty | Yes | Fast | 6-8% | Excellent | Low | High |
+| Tabby | No (Electron) | 2000+ | High | Fair | High | Very High |
+| Warp | Native Rust | Fast | Efficient | Good | Low-Mod | Very High |
+| Wave | Modern | Fast | Efficient | Good | Moderate | Very High |
+| WezTerm | Yes | Fast | Efficient | Good | Low-Mod | High |
+| WindTerm | Native | Fast | Efficient | Good | Low-Mod | Very High |
+| ZOC | Native | Fast | Efficient | Good | Low-Mod | Very High |
+
+---
+
+## Feature Comparison Matrix
+
+| Feature | Alacritty | Ghostty | Hyper | iTerm2 | Kitty | Tabby | Warp | Wave | WezTerm | WindTerm | ZOC |
+|---------|-----------|---------|-------|--------|-------|-------|------|------|---------|----------|-----|
+| Cross-Platform | Yes | Yes | Yes | No (Mac) | Yes | Yes | Partial | Yes | Yes | Yes | No (Win/Mac) |
+| Native Tabs/Splits | No | Yes | No | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes |
+| GPU Accel | Yes | Yes | No | Yes | Yes | No | Partial | Modern | Yes | Native | Native |
+| Ligatures | Yes | Yes | Yes | Yes | Yes | Yes | No | Yes | Yes | No | No |
+| Image Support | No | Limited | No | Limited | Yes | No | Limited | Yes | Yes | No | No |
+| SSH Built-in | No | No | No | No | No | Yes | No | Yes | No | Yes | Yes |
+| AI Features | No | No | No | No | No | No | Yes | Yes | No | No | No |
+| Theme Count | Limited | 100+ | Extensive | Limited | Extensive | 25+ | Limited | Moderate | Moderate | Moderate | Moderate |
+| Configuration | TOML | Simple TOML | JS Plugin | GUI/Prefs | TOML | GUI/Plugin | Limited | Modern | Lua | GUI/Config | GUI/Dialog |
+| Plugin System | No | No | Yes | No | Yes (kittens) | Yes | No | Yes | Limited | No | Scripts (REXX) |
+| Multiplexing | Via tmux | Native | No | Native | Built-in | Native | Built-in | Native | Built-in | Native | Sessions |
+| Serial Support | No | No | No | No | No | No | No | No | No | Yes | Yes |
+| Telnet Support | No | No | No | No | No | No | No | No | No | Yes | Yes |
+| Legacy Terminal Emus | No | No | No | No | No | No | No | No | No | Standard | Extensive (15+) |
+| Scripting | No | No | JS | No | Python plugins | TS | No | Modern | Lua | Config | REXX |
+| Community Size | Large | Growing | Large | Very Large | Large | Medium | Growing | Growing | Medium | Medium | Small (Pro) |
+| Open Source | Yes | Yes | Yes | No | Yes | Yes | Partial | Yes | Yes | Yes | No |
+
+---
+
+## Platform Support Summary
+
+### macOS Only
+- **iTerm2** (most feature-rich option for Mac)
+
+### Windows + macOS
+- **ZOC** (professional, legacy support)
+- **Warp** (Linux in development)
+
+### Windows + macOS + Linux
+- **Alacritty** (minimal, fast)
+- **Ghostty** (modern, feature-complete)
+- **Hyper** (Electron-based)
+- **Kitty** (Linux-first)
+- **Tabby** (Electron-based)
+- **WezTerm** (Rust-based)
+- **WindTerm** (open-source, professional)
+- **Wave** (modern, AI-first)
+
+### Special Roles
+- **Legacy Systems**: ZOC (TN3270, TN5250, mainframes)
+- **SSH Management**: WindTerm, ZOC, Tabby, Warp
+- **Serial/Telnet**: WindTerm, ZOC
+- **Developer-First**: Alacritty, Ghostty, Kitty, WezTerm
+- **Enterprise**: ZOC, Warp, WindTerm
+
+---
+
+## Selection Guide
+
+### For Raw Speed
+1. **Alacritty** - Absolute minimal, fastest startup
+2. **Ghostty** - Feature-rich with excellent speed
+3. **Kitty** - Feature-rich with great performance
+4. **WezTerm** - Good speed with powerful config
+
+### For macOS Users
+1. **iTerm2** - Established, feature-complete
+2. **Ghostty** - Modern alternative, native integration
+3. **WezTerm** - Powerful Lua config
+4. **Kitty** - Excellent features, good performance
+
+### For Power Users
+1. **WezTerm** - Lua scripting depth
+2. **Kitty** - Feature richness + performance
+3. **ZOC** - Enterprise features
+4. **WindTerm** - SSH + comprehensive features
+
+### For Modern Workflows
+1. **Warp** - AI-powered, collaboration
+2. **Wave** - Graphical + AI integration
+3. **Ghostty** - Fast + intuitive
+4. **WezTerm** - Powerful, flexible
+
+### For Cross-Platform Teams
+1. **WindTerm** - Universal free tool
+2. **Warp** - AI-first, team features
+3. **WezTerm** - Consistent Lua config
+4. **Alacritty** - Minimal, same everywhere
+
+### For Legacy Systems / Enterprise
+1. **ZOC** - Mainframe, TN3270/TN5250
+2. **WindTerm** - Comprehensive, professional
+3. **Tabby** - Feature-rich with SSH
+4. **WezTerm** - Modern but professional
+
+### Minimum Requirements
+- **Budget Conscious**: Alacritty, Ghostty, Kitty, WezTerm, WindTerm (free)
+- **Feature Budget**: Warp (free tier with limits)
+- **Enterprise Budget**: ZOC (~$80), Warp (commercial)
+
+---
+
+## Conclusion
+
+The terminal emulator landscape has evolved dramatically. Modern options fall into distinct categories:
+
+1. **Performance-First**: Alacritty, Ghostty, Kitty - GPU-accelerated, minimal overhead
+2. **Feature-Complete**: iTerm2, WezTerm, WindTerm, ZOC - comprehensive with configuration depth
+3. **AI-Integrated**: Warp, Wave - next-generation with intelligent assistance
+4. **Aesthetic-First**: Hyper, Tabby - prioritizing appearance (at performance cost)
+
+The "best" terminal depends entirely on your priorities and use case. Consider this framework:
+
+- **Speed over everything?** → Alacritty
+- **Speed + features?** → Ghostty, Kitty
+- **Mac + maximum features?** → iTerm2
+- **Lua config + cross-platform?** → WezTerm
+- **Professional SSH/enterprise?** → ZOC, WindTerm
+- **AI + collaboration?** → Warp
+- **Graphical workflows?** → Wave
+- **Open-source + professional?** → WindTerm, Kitty
+
+The convergence is clear: modern terminals are moving toward GPU acceleration, intelligent features, and native UX while maintaining configuration depth. The next generation (Warp, Wave, Ghostty) balance this better than predecessors.

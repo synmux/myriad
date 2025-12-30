@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gmail AI Tools Comparison Dashboard</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div id="app">
+      <!-- Header -->
+      <header class="header">
+        <div class="header-content">
+          <div class="header-left">
+            <h1>Gmail AI Tools Comparison</h1>
+            <p class="subtitle">
+              Find the perfect AI assistant for intelligent email labeling
+            </p>
+          </div>
+          <div class="header-right">
+            <button
+              id="darkModeToggle"
+              class="btn btn--secondary"
+              aria-label="Toggle dark mode"
+            >
+              <span class="icon">🌙</span>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <!-- Statistics Dashboard -->
+      <section class="stats-dashboard">
+        <div class="stat-card">
+          <div class="stat-value" id="totalTools">0</div>
+          <div class="stat-label">Total Tools</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="autoLabelTools">0%</div>
+          <div class="stat-label">With Auto-Labeling</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="avgPrice">—</div>
+          <div class="stat-label">Price Range</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="topFeature">—</div>
+          <div class="stat-label">Most Common Type</div>
+        </div>
+      </section>
+
+      <!-- Quick Links -->
+      <section class="quick-links">
+        <button class="quick-link-btn" data-filter="best-labeling">
+          ⭐ Best for Auto-Labeling
+        </button>
+        <button class="quick-link-btn" data-filter="best-value">
+          💰 Best Value
+        </button>
+        <button class="quick-link-btn" data-filter="unusual">
+          ✨ Most Unusual Features
+        </button>
+      </section>
+
+      <div class="main-container">
+        <!-- Sidebar Filters -->
+        <aside class="filters-sidebar">
+          <div class="filters-header">
+            <h2>Filters</h2>
+            <button id="resetFilters" class="btn-text">Reset All</button>
+          </div>
+
+          <div class="filter-group">
+            <label class="filter-label">Search</label>
+            <div class="search-wrapper">
+              <input
+                type="text"
+                id="searchInput"
+                class="form-control"
+                placeholder="Search tools..."
+              />
+              <button
+                id="clearSearch"
+                class="btn-clear"
+                aria-label="Clear search"
+              >
+                ×
+              </button>
+            </div>
+          </div>
+
+          <div class="filter-group">
+            <label class="filter-label" for="autoLabelingFilter"
+              >Auto-Labeling</label
+            >
+            <select id="autoLabelingFilter" class="form-control">
+              <option value="all">All Options</option>
+              <option value="primary">Yes - Primary Feature</option>
+              <option value="yes">Yes</option>
+              <option value="limited">Limited</option>
+              <option value="no">No</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label class="filter-label" for="priceFilter">Price Range</label>
+            <select id="priceFilter" class="form-control">
+              <option value="all">All Prices</option>
+              <option value="free">Free</option>
+              <option value="under10">Under $10/month</option>
+              <option value="10-25">$10-$25/month</option>
+              <option value="25-40">$25-$40/month</option>
+              <option value="40plus">$40+/month</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label class="filter-label" for="platformFilter">Platform</label>
+            <select id="platformFilter" class="form-control">
+              <option value="all">All Platforms</option>
+              <option value="gmail-only">Gmail Only</option>
+              <option value="multi-platform">Multi-platform</option>
+              <option value="standalone">Standalone</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label class="filter-label" for="learningCurveFilter"
+              >Learning Curve</label
+            >
+            <select id="learningCurveFilter" class="form-control">
+              <option value="all">Any Level</option>
+              <option value="very-low">Very Low</option>
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label class="filter-label">Draft Writing</label>
+            <div class="toggle-group">
+              <button class="toggle-btn" data-filter="draft" data-value="all">
+                All
+              </button>
+              <button class="toggle-btn" data-filter="draft" data-value="yes">
+                Yes
+              </button>
+              <button
+                class="toggle-btn"
+                data-filter="draft"
+                data-value="limited"
+              >
+                Limited
+              </button>
+              <button class="toggle-btn" data-filter="draft" data-value="no">
+                No
+              </button>
+            </div>
+          </div>
+
+          <div class="filter-group">
+            <label class="filter-label">Team Features</label>
+            <div class="toggle-group">
+              <button class="toggle-btn" data-filter="team" data-value="all">
+                All
+              </button>
+              <button class="toggle-btn" data-filter="team" data-value="yes">
+                Yes
+              </button>
+              <button
+                class="toggle-btn"
+                data-filter="team"
+                data-value="limited"
+              >
+                Limited
+              </button>
+              <button class="toggle-btn" data-filter="team" data-value="no">
+                No
+              </button>
+            </div>
+          </div>
+
+          <div class="filter-group">
+            <label class="filter-label" for="customizationFilter"
+              >Customization Level</label
+            >
+            <select id="customizationFilter" class="form-control">
+              <option value="all">Any Level</option>
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+              <option value="very-high">Very High</option>
+              <option value="maximum">Maximum</option>
+            </select>
+          </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="content-area">
+          <!-- Controls Bar -->
+          <div class="controls-bar">
+            <div class="controls-left">
+              <div class="results-count" id="resultsCount">
+                Showing 0 of 0 tools
+              </div>
+            </div>
+            <div class="controls-right">
+              <select id="sortBy" class="form-control sort-select">
+                <option value="name-asc">Name (A-Z)</option>
+                <option value="name-desc">Name (Z-A)</option>
+                <option value="price-asc">Price (Low to High)</option>
+                <option value="price-desc">Price (High to Low)</option>
+                <option value="best-labeling">Best for Auto-Labeling</option>
+                <option value="easiest">Easiest to Learn</option>
+                <option value="most-customizable">Most Customizable</option>
+              </select>
+
+              <div class="view-toggle">
+                <button
+                  class="view-btn active"
+                  data-view="cards"
+                  aria-label="Card view"
+                >
+                  <span class="icon">▦</span>
+                </button>
+                <button
+                  class="view-btn"
+                  data-view="table"
+                  aria-label="Table view"
+                >
+                  <span class="icon">☰</span>
+                </button>
+              </div>
+
+              <button id="exportBtn" class="btn btn--secondary btn--sm">
+                Export
+              </button>
+            </div>
+          </div>
+
+          <!-- Comparison Bar -->
+          <div id="comparisonBar" class="comparison-bar hidden">
+            <div class="comparison-info">
+              <span id="comparisonCount">0 tools selected</span>
+            </div>
+            <button id="compareBtn" class="btn btn--primary">
+              Compare Selected
+            </button>
+            <button id="clearComparison" class="btn-text">Clear</button>
+          </div>
+
+          <!-- Cards View -->
+          <div id="cardsView" class="cards-grid">
+            <!-- Cards will be inserted here -->
+          </div>
+
+          <!-- Table View -->
+          <div id="tableView" class="table-container hidden">
+            <table class="tools-table">
+              <thead>
+                <tr>
+                  <th data-sort="compare"></th>
+                  <th data-sort="name">Name</th>
+                  <th data-sort="type">Type</th>
+                  <th data-sort="auto_labeling">Auto-Labeling</th>
+                  <th data-sort="draft_writing">Draft Writing</th>
+                  <th data-sort="pricing">Pricing</th>
+                  <th data-sort="platform">Platform</th>
+                  <th data-sort="learning_curve">Learning Curve</th>
+                  <th data-sort="actions">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="tableBody">
+                <!-- Rows will be inserted here -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Empty State -->
+          <div id="emptyState" class="empty-state hidden">
+            <div class="empty-icon">🔍</div>
+            <h3>No tools found</h3>
+            <p>Try adjusting your filters or search terms</p>
+            <button id="resetFromEmpty" class="btn btn--primary">
+              Reset Filters
+            </button>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <!-- Detail Modal -->
+    <div id="detailModal" class="modal hidden">
+      <div class="modal-overlay"></div>
+      <div class="modal-content">
+        <button class="modal-close" aria-label="Close modal">×</button>
+        <div id="detailContent">
+          <!-- Detail content will be inserted here -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Comparison Modal -->
+    <div id="comparisonModal" class="modal hidden">
+      <div class="modal-overlay"></div>
+      <div class="modal-content modal-content--wide">
+        <button class="modal-close" aria-label="Close modal">×</button>
+        <div id="comparisonContent">
+          <!-- Comparison content will be inserted here -->
+        </div>
+      </div>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
