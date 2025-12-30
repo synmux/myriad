@@ -15,6 +15,7 @@ If any of it is useful to you, have at it.
 ## Current Projects
 
 ### Pendant Audio Capture
+
 Wearable audio recording pendant based on M5 Capsule (ESP32-S3). See [`pendant/`](pendant/) directory.
 
 - **Hardware**: M5 Capsule with microphone and SD card
