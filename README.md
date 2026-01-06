@@ -4,45 +4,60 @@
 
 _One repository to rule them all, one repository to find them..._
 
-## About
+A grab-bag of experiments, prototypes, scripts, research, and configurations I've written over the years. If any of it is useful to you, have at it.
 
-`myriad` is a grab-bag of experiments, prototypes, scripts, and other things I've written over the years.
+## Repository Structure
 
-It containes all manner of things, from small scripts to large projects. Many of them exist on branches.
+This repo uses a **branch-per-project** model:
 
-If any of it is useful to you, have at it.
+| Branch                                                                 | Contents                                                             |
+| ---------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| [`main`](https://github.com/daveio/myriad/tree/main)                   | Documentation, research, images, configuration templates, submodules |
+| [`meta/boneyard`](https://github.com/daveio/myriad/tree/meta/boneyard) | Request retired code to be rehydrated from backups                   |
+| [`meta/monorepo`](https://github.com/daveio/myriad/tree/meta/monorepo) | Historical snapshot (read-only fallback)                             |
+| Other branches                                                         | Full projects with their own dependencies                            |
+
+## Main Branch Contents
+
+```plaintext
+myriad/
+├── configuration/   # Reusable templates (Claude, Cursor, Trunk, TypeScript, etc.)
+├── data/            # Data files
+├── docs/            # Documentation
+├── images/          # Image assets (AVIF)
+├── planning/        # Architecture diagrams (Mermaid)
+├── research/        # Research documents, comparisons, guides
+├── submodules/      # External repos kept checked out
+└── writing/         # Writing projects
+```
+
+### Configuration Templates
+
+The `configuration/` directory contains ready-to-use templates:
+
+- **AI Assistants**: Claude instructions, Cursor rules, Goose hints
+- **Linting**: Trunk configs, Biome, ESLint
+- **Languages**: TypeScript configs, Python tooling
+- **CI/CD**: GitHub Actions workflows, Dependabot
+- **Services**: Cloudflare, MCP servers, PostgreSQL
 
 ## Current Projects
 
 ### Pendant Audio Capture
 
-Wearable audio recording pendant based on M5 Capsule (ESP32-S3). See [`pendant/`](pendant/) directory.
+Wearable audio recording pendant based on M5 Capsule (ESP32-S3).
 
-- **Hardware**: M5 Capsule with microphone and SD card
-- **Features**: Voice-activated recording, audio filtering, SD storage
-- **Status**: In development (Phase 1: Audio capture)
-- **Docs**: [Learning Pathway](docs/PENDANT-LEARNING-PATHWAY.md) | [Quick Start](pendant/QUICK-START.md)
+|              |                                                                                               |
+| ------------ | --------------------------------------------------------------------------------------------- |
+| **Hardware** | M5 Capsule with microphone and SD card                                                        |
+| **Features** | Voice-activated recording, audio filtering, SD storage                                        |
+| **Status**   | In development (Phase 1: Audio capture)                                                       |
+| **Docs**     | [Learning Pathway](docs/PENDANT-LEARNING-PATHWAY.md) \| [Quick Start](pendant/QUICK-START.md) |
 
-## Layout
+## For AI Agents
 
-### [`main`](https://github.com/daveio/myriad/tree/main)
+See [`AGENTS.md`](AGENTS.md) for commands, conventions, and detailed guidance.
 
-The `main` branch contains small scripts, documentation, research, images, and other bits and pieces. It also includes a `submodules/` directory with repos I like to keep checked out.
+## License
 
-### [`meta/boneyard`](https://github.com/daveio/myriad/tree/meta/boneyard)
-
-The `meta/boneyard` branch is for special use.
-
-It allows people to request old code of mine which has been retired from GitHub, but I have backups of everything.
-
-By filing a `boneyard` request, you can ask me to rehydrate anything you need.
-
-### Other branches
-
-Projects which need supporting files like `uv` configuration and `package.json`, that sort of thing, live in their own Git branches. Check out what you want and go to town.
-
-### Fallback
-
-If I screwed anything up, you can check out the [`meta/monorepo`](https://github.com/daveio/myriad/tree/meta/monorepo) branch, which is how things used to be.
-
-It won't see any updates or changes, but it's a safe snapshot of everything.
+See [`LICENSE`](LICENSE).
