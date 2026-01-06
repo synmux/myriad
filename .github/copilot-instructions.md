@@ -15,7 +15,7 @@ Guide for AI agents working in this repository.
 
 ## Directory Layout (main branch)
 
-```
+```plaintext
 myriad/
 ├── configuration/     # Templates for AI assistants, linters, services
 │   ├── claude/        # Claude configuration template
