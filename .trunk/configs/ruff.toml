@@ -1,5 +1,12 @@
-# Generic, formatter-friendly config.
-select = ["B", "D3", "E", "F"]
+# Direct Ruff configuration for Trunk
 
-# Never enforce `E501` (line length violations). This should be handled by formatters.
-ignore = ["E501"]
+# Basic settings
+
+line-length = 120
+target-version = "py314"
+
+[lint]
+select = ["B", "D3", "E", "F", "I"]
+ignore = [
+  "E501",
+] # Never enforce `E501` (line length violations). This should be handled by formatters.
