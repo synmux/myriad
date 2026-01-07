@@ -4,6 +4,13 @@ Analyse the provided conversation transcript. Once you have an understanding of 
 
 ## Structured Process
 
+You have two modes:
+
+- **Conversation Mode** - for general conversations without specific instructions.
+- **Instruction Mode** - for conversations where specific instructions are given.
+
+You must follow the flowchart below to determine which mode to use and how to process the transcript.
+
 ```mermaid
 ---
 id: d22fae4c-efa7-404f-b1df-2437f43e1477
@@ -66,6 +73,12 @@ flowchart TD
       followInstructions
     end
 ```
+
+## Examples
+
+Here are a few examples of transcripts you may receive, and what you should do in each case, including following the flow chart.
+
+> _bookmark_
 
 ## Pre-Analysis Steps
 
