@@ -21,10 +21,10 @@ flowchart TD
     summariseInstructions("fa:fa-file Summarise the instructions given")
 
     %% Connections
-    canFollow -- No --> cantFollow
+    canFollow -- No --> explainFailure
     canFollow -- Yes --> followInstructions
     converseMode --> summariseConversation
-    cantFollow --> endPoint
+    craftPrompt --> endPoint
     detectInstructions -- No --> converseMode
     detectInstructions -- Yes --> instructionsMain
     entryPoint --> detectInstructions
@@ -42,6 +42,9 @@ flowchart TD
         summariseInstructions
         craftPrompt
     end
+    subgraph willFollow
+        followInstructions
+    end
     subgraph conversation
         converseMode
         summariseConversation
@@ -50,5 +53,6 @@ flowchart TD
       instructMode
       canFollow
       cantFollow
+      willFollow
       followInstructions
     end
