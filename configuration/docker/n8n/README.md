@@ -9,13 +9,13 @@ command in the current folder.
 
 **IMPORTANT:** But before you do that change the default users and passwords in the [`.env`](.env) file!
 
-```bash
+```
 docker-compose up -d
 ```
 
 To stop it execute:
 
-```bash
+```
 docker-compose stop
 ```
 

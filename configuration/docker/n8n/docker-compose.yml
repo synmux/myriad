@@ -1,3 +1,5 @@
+version: "3.8"
+
 volumes:
   db_storage:
   n8n_storage:
@@ -32,25 +34,6 @@ services:
   postgres:
     image: postgres:16
     restart: always
-    entrypoint:
-      - /bin/bash
-      - -lc
-      - |
-        cat > /docker-entrypoint-initdb.d/init-data.sh <<'EOF'
-        #!/bin/bash
-        set -e
-        if [[ -n ${POSTGRES_NON_ROOT_USER-} ]] && [[ -n ${POSTGRES_NON_ROOT_PASSWORD-} ]]; then
-        psql -v ON_ERROR_STOP=1 --username "${POSTGRES_USER}" --dbname "${POSTGRES_DB}" <<-EOSQL
-        CREATE USER ${POSTGRES_NON_ROOT_USER} WITH PASSWORD '${POSTGRES_NON_ROOT_PASSWORD}';
-        GRANT ALL PRIVILEGES ON DATABASE ${POSTGRES_DB} TO ${POSTGRES_NON_ROOT_USER};
-        GRANT CREATE ON SCHEMA public TO ${POSTGRES_NON_ROOT_USER};
-        EOSQL
-        else
-        echo "SETUP INFO: No Environment variables given!"
-        fi
-        EOF
-        chmod +x /docker-entrypoint-initdb.d/init-data.sh
-        exec docker-entrypoint.sh postgres
     environment:
       - POSTGRES_USER
       - POSTGRES_PASSWORD
@@ -59,10 +42,13 @@ services:
       - POSTGRES_NON_ROOT_PASSWORD
     volumes:
       - db_storage:/var/lib/postgresql/data
+      - ./init-data.sh:/docker-entrypoint-initdb.d/init-data.sh
     healthcheck:
       test:
-        - CMD-SHELL
-        - "pg_isready -h localhost -U ${POSTGRES_USER} -d ${POSTGRES_DB}"
+        [
+          "CMD-SHELL",
+          "pg_isready -h localhost -U ${POSTGRES_USER} -d ${POSTGRES_DB}",
+        ]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -73,10 +59,7 @@ services:
     volumes:
       - redis_storage:/data
     healthcheck:
-      test:
-        - CMD
-        - redis-cli
-        - ping
+      test: ["CMD", "redis-cli", "ping"]
       interval: 5s
       timeout: 5s
       retries: 10
