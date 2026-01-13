@@ -16,3 +16,6 @@
 [submodule "zie619--n8n-workflows"]
 	path = submodules/zie619--n8n-workflows
 	url = https://github.com/Zie619/n8n-workflows.git
+[submodule "n8n-hosting"]
+	path = configuration/docker/n8n/n8n-hosting
+	url = https://github.com/n8n-io/n8n-hosting.git
