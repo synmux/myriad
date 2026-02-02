@@ -27,8 +27,6 @@ procs:
     shell: cd infrastructure; git fetch --all --prune --tags --prune-tags --recurse-submodules=yes; git pull --all --prune --rebase
   loop:
     shell: cd loop; git fetch --all --prune --tags --prune-tags --recurse-submodules=yes; git pull --all --prune --rebase
-  multipost:
-    shell: cd multipost; git fetch --all --prune --tags --prune-tags --recurse-submodules=yes; git pull --all --prune --rebase
   myriad:
     shell: cd myriad; git fetch --all --prune --tags --prune-tags --recurse-submodules=yes; git pull --all --prune --rebase
   npm:
