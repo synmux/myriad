@@ -34,7 +34,7 @@ After obtaining the formatted timestamp, use the Notion MCP's `notion-update-pag
 
 **Append to page content:**
 
-```
+```plaintext
 command: insert_content_after
 selection_with_ellipsis: "<last paragraph>..."
 new_str: "\n\n**Last updated:** {timestamp}"
@@ -42,7 +42,7 @@ new_str: "\n\n**Last updated:** {timestamp}"
 
 **Update a property (for database pages):**
 
-```
+```plaintext
 command: update_properties
 properties: {"Last Updated": "{timestamp}"}
 ```
