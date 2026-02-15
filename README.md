@@ -1,63 +1,39 @@
-# Myriad 🌈
+## extsplit
 
-[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/daveio/myriad)
+Split audio files from `input/` into top-level bucket directories named:
 
-_One repository to rule them all, one repository to find them..._
+`<extension>.<bit_depth>.<sample_rate>`
 
-A grab-bag of experiments, prototypes, scripts, research, and configurations I've written over the years. If any of it is useful to you, have at it.
+Example: `flac.24.96000`
 
-## Repository Structure
+The script scans `.m4a`, `.mp3`, and `.flac` files and preserves relative
+directory structure under each bucket.
 
-This repo uses a **branch-per-project** model:
+Metadata is read using the Python `mutagen` library (no `ffprobe` subprocess).
+If bit depth or sample rate is unavailable for a file, `unknown` is used.
 
-| Branch                                                                 | Contents                                                             |
-| ---------------------------------------------------------------------- | -------------------------------------------------------------------- |
-| [`main`](https://github.com/daveio/myriad/tree/main)                   | Documentation, research, images, configuration templates, submodules |
-| [`meta/boneyard`](https://github.com/daveio/myriad/tree/meta/boneyard) | Request retired code to be rehydrated from backups                   |
-| [`meta/monorepo`](https://github.com/daveio/myriad/tree/meta/monorepo) | Historical snapshot (read-only fallback)                             |
-| Other branches                                                         | Full projects with their own dependencies                            |
+By default, files are copied. Use `--mv` to move instead.
 
-## Main Branch Contents
+### Usage
 
-```plaintext
-myriad/
-├── configuration/   # Reusable templates (Claude, Cursor, Trunk, TypeScript, etc.)
-├── data/            # Data files
-├── docs/            # Documentation
-├── images/          # Image assets (AVIF)
-├── planning/        # Architecture diagrams (Mermaid)
-├── research/        # Research documents, comparisons, guides
-├── submodules/      # External repos kept checked out
-└── writing/         # Writing projects
+```bash
+uv run main.py
 ```
 
-### Configuration Templates
+Move instead of copy:
 
-The `configuration/` directory contains ready-to-use templates:
+```bash
+uv run main.py --mv
+```
 
-- **AI Assistants**: Claude instructions, Cursor rules, Goose hints
-- **Linting**: Trunk configs, Biome, ESLint
-- **Languages**: TypeScript configs, Python tooling
-- **CI/CD**: GitHub Actions workflows, Dependabot
-- **Services**: Cloudflare, MCP servers, PostgreSQL
+Dry run (no filesystem changes):
 
-## Current Projects
+```bash
+uv run main.py --dry-run
+```
 
-### Pendant Audio Capture
+Optional input directory:
 
-Wearable audio recording pendant based on M5 Capsule (ESP32-S3).
-
-|              |                                                                                               |
-| ------------ | --------------------------------------------------------------------------------------------- |
-| **Hardware** | M5 Capsule with microphone and SD card                                                        |
-| **Features** | Voice-activated recording, audio filtering, SD storage                                        |
-| **Status**   | In development (Phase 1: Audio capture)                                                       |
-| **Docs**     | [Learning Pathway](docs/PENDANT-LEARNING-PATHWAY.md) \| [Quick Start](pendant/QUICK-START.md) |
-
-## For AI Agents
-
-See [`AGENTS.md`](AGENTS.md) for commands, conventions, and detailed guidance.
-
-## License
-
-See [`LICENSE`](LICENSE).
+```bash
+uv run main.py /path/to/input --dry-run
+```
