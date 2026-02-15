@@ -41,7 +41,9 @@ def probe_audio_profile(source_path: Path) -> tuple[int | None, int | None]:
     return bit_depth, sample_rate
 
 
-def build_bucket_name(source_path: Path, bit_depth: int | None, sample_rate: int | None) -> str:
+def build_bucket_name(
+    source_path: Path, bit_depth: int | None, sample_rate: int | None
+) -> str:
     ext = source_path.suffix.lower().lstrip(".")
     depth_part = str(bit_depth) if bit_depth is not None else "unknown"
     sample_rate_part = str(sample_rate) if sample_rate is not None else "unknown"
@@ -80,6 +82,7 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+# noinspection PyBroadException,D
 def run(input_dir: Path, move_files: bool, dry_run: bool) -> int:
     logger = logging.getLogger("extsplit")
     stats = Stats()
@@ -161,7 +164,9 @@ def run(input_dir: Path, move_files: bool, dry_run: bool) -> int:
             else:
                 shutil.copy2(source_path, destination_path)
             stats.processed_files += 1
-            logger.info("%s: %s -> %s", action_past_tense, source_path, destination_path)
+            logger.info(
+                "%s: %s -> %s", action_past_tense, source_path, destination_path
+            )
         except Exception:
             stats.errors += 1
             logger.exception("Failed to process file: %s", source_path)
