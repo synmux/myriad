@@ -30,7 +30,7 @@ jobs:
           fetch-depth: 1
       - name: claude
         id: claude
-        uses: anthropics/claude-code-action@c22f7c3f9dbdf2faa98a4c3139f7ec9eb5a691dc
+        uses: anthropics/claude-code-action@68cfeead1890300cc87935dbe2c023825be87b8a
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           additional_permissions: |
