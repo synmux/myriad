@@ -18,7 +18,7 @@ jobs:
           fetch-depth: 1
       - name: claude-review
         id: claude-review
-        uses: anthropics/claude-code-action@2f8ba26a219c06cfb0f468eef8d97055fa814f97
+        uses: anthropics/claude-code-action@0cf5eeec4f908121edd03a81411b55485994f8d3
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           prompt: |
