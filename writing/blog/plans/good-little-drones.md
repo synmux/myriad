@@ -29,7 +29,7 @@ But there's a harder truth underneath: we mistook subcultural identity for polit
 
 ## Argument Structure (The Through-Line)
 
-```
+```plaintext
 PREMISE 1: Hacker culture was genuinely counterculture — documented, principled, anti-authoritarian
     ↓
 PREMISE 2: But Silicon Valley was never "outside the system" — it was entangled
@@ -123,13 +123,13 @@ CONCLUSION: The answer is not "find better nerds" — it is "build better
 
 **Purpose**: Show the specific mechanisms by which hacker values were linguistically captured and inverted.
 
-**Step 1: Translate the vocabulary into corporate legitimacy**
+#### Step 1: Translate the vocabulary into corporate legitimacy
 
 The founders who built Silicon Valley used hacker language explicitly. The garage mythology. "Don't be evil." "Move fast and break things." The norms of the Homebrew Club — share freely, judge by output, hierarchy is bullshit — became startup culture, minus the sharing and minus the anti-hierarchy.
 
 The words were kept. The politics were stripped.
 
-**Step 2: Manufacture the in-group through compensation architecture**
+#### Step 2: Manufacture the in-group through compensation architecture
 
 The billionaire class doesn't need every tech worker to be a true believer. They just need tech workers to feel like they're _on the same side_.
 
@@ -141,7 +141,7 @@ The tools:
 - **Mission framing**: You're not shipping features — you're _changing the world_. The teleological framing of the Hacker Ethic ("technology improves humanity") gets weaponised to mean "therefore, maximising our growth serves humanity." Carolyn Chen's _Work Pray Code_ argues Silicon Valley has replaced religion with work: tech professionals look to work for meaning, belonging, purpose, and transcendence — making dissent feel like self-destruction.
 - **Shared enemy construction**: The enemies of the billionaire class (regulators, unions, "legacy media," governments that want to tax them) are reframed as enemies of _innovation_, enemies of _you_, enemies of _the future_.
 
-**Step 3: Make dissent feel like betrayal of the tribe**
+#### Step 3: Make dissent feel like betrayal of the tribe
 
 Once you feel like a stakeholder, criticism of the system feels like criticising yourself. The social mechanism is distributed. Stand up and say "excuse me, this is bullshit" and the community does the work of suppression without any coordination.
 
