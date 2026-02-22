@@ -4,8 +4,9 @@
 
 ---
 
-- Why water usage is not the most important or urgent concern in AI, compared to other impacts (e.g. labor, power concentration, surveillance, safety).
-  - Include concrete numbers where possible, intuitive comparisons, and a section on what is worth focusing on.
+> Include concrete numbers where possible, intuitive comparisons, and a section on what is worth focusing on.
+
+- Why water usage is not the most important or urgent concern in AI, compared to other impacts (e.g. labor, power concentration, surveillance, safety)
 - The actual issue is datacentres at all.
   - Certain types of compute run exponentially more quickly on GPUs.
     - Yes, that's right, graphics cards.
