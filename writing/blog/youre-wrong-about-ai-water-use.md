@@ -6,11 +6,6 @@
 
 - Why water usage is not the most important or urgent concern in AI, compared to other impacts (e.g. labor, power concentration, surveillance, safety).
   - Include concrete numbers where possible, intuitive comparisons, and a section on what is worth focusing on.
-- In Malmo in Sweden, they simply dump heat into the ambient air, combined with closed-loop cooling that doesn't require cycling water or creating wastewater from pure water.
-  - The water's temperature just changes as it circulates around the cooling loop.
-  - When it reaches the outside, heat exchangers dump it in the atmosphere.
-  - When it reaches the inside, it absorbs heat from the datacentre equipment such as servers and routers.
-  - You're not going to make any impact on the atmosphere's temperature by pointing a hot air blower out the window.
 - The actual issue is datacentres at all.
   - Certain types of compute run exponentially more quickly on GPUs.
     - Yes, that's right, graphics cards.
@@ -31,9 +26,20 @@
       - The heat can literally be dumped to the outside air.
       - No evaporation required.
       - Even better thermodynamics can be achieved by dumping the heat into the sea or a glacier.
-    - [Claude: what other options exist?]
+    - In Malmo in Sweden, they simply dump heat into the ambient air.
+      - There's a closed loop of water or some other fluid circulating around the system.
+      - The water's temperature just changes as it circulates around the cooling loop.
+      - When it reaches the outside, heat exchangers dump it in the atmosphere.
+      - When it reaches the inside, it absorbs heat from the datacentre equipment such as servers and routers.
+      - Consider that you're not going to make any impact on the atmosphere's temperature by pointing a hot air blower out the window.
+    - One idea - which is a bit pie in the sky - is datacentres at sea.
+      - These have major power issues.
+        - To be viable they would need onsite nuclear or **massive** solar and/or wind.
+      - However, their heat management strategy is sound.
+        - Just dump it into the ocean.
+    - [Claude: other ideas?]
 - So it really isn't about AI. AI is just the workload right now.
-  - We need to rethink where we build datacentres.
+  - We need to rethink where and how we build datacentres.
   - Maybe don't build something which is like 70% heat management in the desert?
 - Pun: "hot take"
   - What can I say, I couldn’t resist.
