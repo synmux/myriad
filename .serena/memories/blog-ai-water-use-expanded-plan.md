@@ -1,4 +1,6 @@
-Expanded plan for "You're Wrong About AI Water Use" blog post written and appended to writing/blog/youre-wrong-about-ai-water-use.md.
+# Expanded plan for "You're Wrong About AI Water Use" blog post
+
+Written and appended to writing/blog/youre-wrong-about-ai-water-use.md.
 
 Key corrections from fact-checking:
 
