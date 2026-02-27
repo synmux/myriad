@@ -9,16 +9,24 @@ nouns, abbreviations, and obscurities.
 Format:  "<phrase A> / <phrase B> / <two digits>"
 Example: "The underground parade / an undelivered accolade / 38"
 
-NOTE: REQUIRES setuptools<=81.0.0
-
 Install:  pip install pronouncing english-words
 Usage:    python rhyming_passphrase.py [count]
 """
 
 import secrets
 import sys
+import types
 
-import pronouncing
+# The `pronouncing` library has a dead `from pkg_resources import resource_stream`
+# import left over from before it moved to the `cmudict` package. setuptools >=82
+# removed `pkg_resources` entirely, so the import fails. Since the function is never
+# called, we inject a lightweight stub module to satisfy the import.
+if "pkg_resources" not in sys.modules:
+    _stub = types.ModuleType("pkg_resources")
+    _stub.resource_stream = None  # type: ignore[attr-defined]
+    sys.modules["pkg_resources"] = _stub
+
+import pronouncing  # noqa: E402
 from english_words import get_english_words_set
 
 # ---------------------------------------------------------------------------
