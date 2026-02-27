@@ -1,0 +1,14 @@
+[project]
+name = "rp"
+version = "0.1.0"
+description = "Generate rhyming passwords"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+  "english-words>=2.0.2",
+  "pronouncing>=0.2.0",
+  "setuptools<=81.0.0",
+]
+
+[project.scripts]
+rp = "main:main"
