@@ -15,7 +15,7 @@ Install:  pip install pronouncing english-words
 Usage:    python rhyming_passphrase.py [count]
 """
 
-import random
+import secrets
 import sys
 
 import pronouncing
@@ -142,7 +142,7 @@ def _starts_with_vowel_sound(word: str) -> bool:
 
 def _pick_determiner(next_word: str) -> str:
     """Pick a random determiner, respecting a/an agreement."""
-    det = random.choice(DETERMINERS)
+    det = secrets.choice(DETERMINERS)
     if det == "a" and _starts_with_vowel_sound(next_word):
         det = "an"
     return det
@@ -159,11 +159,11 @@ def _build_phrase(anchor: str, num_fillers: int) -> str:
         return anchor
     if num_fillers == 1:
         # 50/50 determiner vs adjective
-        if random.random() < 0.5:
+        if secrets.randbelow(2) == 0:
             return f"{_pick_determiner(anchor)} {anchor}"
-        return f"{random.choice(ADJECTIVES)} {anchor}"
+        return f"{secrets.choice(ADJECTIVES)} {anchor}"
     # 2 fillers → determiner + adjective
-    adj = random.choice(ADJECTIVES)
+    adj = secrets.choice(ADJECTIVES)
     det = _pick_determiner(adj)
     return f"{det} {adj} {anchor}"
 
@@ -182,7 +182,7 @@ def generate(pool: list[str], real_words: set[str], max_attempts: int = 300) -> 
     4. Append two random digits.
     """
     for _ in range(max_attempts):
-        word_a = random.choice(pool)
+        word_a = secrets.choice(pool)
         candidates = [
             r
             for r in pronouncing.rhymes(word_a)
@@ -191,19 +191,18 @@ def generate(pool: list[str], real_words: set[str], max_attempts: int = 300) -> 
         if not candidates:
             continue
 
-        word_b = random.choice(candidates)
+        word_b = secrets.choice(candidates)
 
         # Distribute 2–4 filler words across both halves (each half ≤ 2).
-        total_fillers = random.randint(2, 4)
-        fillers_a = random.randint(
-            max(0, total_fillers - 2),
-            min(2, total_fillers),
-        )
+        total_fillers = secrets.randbelow(3) + 2
+        fillers_a = secrets.randbelow(
+            min(2, total_fillers) - max(0, total_fillers - 2) + 1
+        ) + max(0, total_fillers - 2)
         fillers_b = total_fillers - fillers_a
 
         left = _build_phrase(word_a, fillers_a)
         right = _build_phrase(word_b, fillers_b)
-        digits = f"{random.randint(10, 99)}"
+        digits = f"{secrets.randbelow(90) + 10}"
 
         left = left[0].upper() + left[1:]
         return f"{left} / {right} / {digits}"
