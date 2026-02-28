@@ -10,7 +10,7 @@ Format:  "<phrase A> / <phrase B> / <two digits>"
 Example: "The underground parade / an undelivered accolade / 38"
 
 Install:  pip install pronouncing english-words
-Usage:    python rhyming_passphrase.py [count]
+Usage:    python main.py [count]
 """
 
 import secrets
@@ -281,6 +281,8 @@ def _starts_with_vowel_sound(word: str) -> bool:
     Returns:
         True if the word is judged to start with a vowel sound, otherwise False.
     """
+    if not word:
+        return False
     phones = pronouncing.phones_for_word(word)
     if phones:
         first_phoneme = phones[0].split()[0]
@@ -345,9 +347,19 @@ def generate(pool: list[str], real_words: set[str], max_attempts: int = 300) -> 
 
     1. Pick a random anchor from the pool.
     2. Find its phonetic rhymes (via CMU dict), filtered for quality.
-    3. Wrap each anchor in filler words (total 4–6 words).
+    3. Wrap each anchor in filler words (2–4 fillers total, 4–6 words total).
     4. Append two random digits.
+
+    Returns:
+        A passphrase in the format "<phrase A> / <phrase B> / <two digits>".
+
+    Raises:
+        ValueError: If no anchor words are available in the input pool.
+        RuntimeError: If no valid rhyming pair can be built within max_attempts.
     """
+    if not pool:
+        raise ValueError("Anchor pool is empty; cannot generate passphrases")
+
     for _ in range(max_attempts):
         word_a = secrets.choice(pool)
         candidates = [
@@ -362,13 +374,10 @@ def generate(pool: list[str], real_words: set[str], max_attempts: int = 300) -> 
 
         # Distribute 2–4 filler words across both halves (each half ≤ 2).
         total_fillers = secrets.randbelow(3) + 2
-        fillers_a = secrets.randbelow(
-            min(2, total_fillers) - max(1, total_fillers - 2) + 1
-        ) + max(1, total_fillers - 2)
-        fillers_b = total_fillers - fillers_a if total_fillers - fillers_a > 0 else 1
-
-        if fillers_b == 0:
-            fillers_b += 1
+        min_fillers_a = max(1, total_fillers - 2)
+        max_fillers_a = min(2, total_fillers - 1)
+        fillers_a = secrets.randbelow(max_fillers_a - min_fillers_a + 1) + min_fillers_a
+        fillers_b = total_fillers - fillers_a
 
         left = _build_phrase(word_a, fillers_a)
         right = _build_phrase(word_b, fillers_b)
@@ -383,17 +392,43 @@ def generate(pool: list[str], real_words: set[str], max_attempts: int = 300) -> 
 # CLI
 
 
+def _parse_count(argv: list[str]) -> int:
+    """Parse and validate the optional CLI count argument.
+
+    Args:
+        argv: Raw command-line arguments, typically ``sys.argv``.
+
+    Returns:
+        The number of passphrases to generate.
+
+    Raises:
+        SystemExit: If an invalid or non-positive count is provided.
+    """
+    if len(argv) <= 1:
+        return 5
+
+    try:
+        count = int(argv[1])
+    except ValueError as exc:
+        raise SystemExit("Count must be an integer.") from exc
+
+    if count < 1:
+        raise SystemExit("Count must be at least 1.")
+
+    return count
+
+
 def main() -> None:
     """Run the rhyming passphrase generator as a CLI tool.
 
     Parses an optional count argument, builds the word pool, and prints
     the requested number of generated passphrases to stdout.
     """
-    count = int(sys.argv[1]) if len(sys.argv) > 1 else 5
+    count = _parse_count(sys.argv)
 
     real_words = _load_real_words()
     pool = build_anchor_pool(real_words)
-    print(f"Anchor pool: {len(pool):,} words\n")
+    print(f"Anchwqqqor pool: {len(pool):,} words\n")
 
     for _ in range(count):
         print(generate(pool, real_words))
