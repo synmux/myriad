@@ -1,0 +1,1544 @@
+<!doctype html>
+<html lang="en-GB">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+      GVS Design Document — ESP32-Based Galvanic Vestibular Stimulation System
+    </title>
+    <style>
+      :root {
+        --bg: #0f1117;
+        --surface: #1a1d27;
+        --surface2: #232736;
+        --border: #2e3347;
+        --text: #e1e4ed;
+        --text-dim: #8b90a5;
+        --accent: #6c8cff;
+        --accent2: #4ecdc4;
+        --warn: #ff6b6b;
+        --warn-bg: rgba(255, 107, 107, 0.08);
+        --success: #51cf66;
+        --orange: #ff922b;
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family:
+          "Inter",
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        line-height: 1.7;
+        padding: 0;
+      }
+      .container {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 2rem 2rem 4rem;
+      }
+
+      /* Hero */
+      .hero {
+        background: linear-gradient(135deg, #1a1d27 0%, #1e2440 100%);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 3rem;
+        margin-bottom: 2.5rem;
+        position: relative;
+        overflow: hidden;
+      }
+      .hero::before {
+        content: "";
+        position: absolute;
+        top: -50%;
+        right: -20%;
+        width: 400px;
+        height: 400px;
+        background: radial-gradient(
+          circle,
+          rgba(108, 140, 255, 0.08) 0%,
+          transparent 70%
+        );
+        border-radius: 50%;
+      }
+      .hero h1 {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        background: linear-gradient(135deg, var(--accent), var(--accent2));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+      .hero .subtitle {
+        color: var(--text-dim);
+        font-size: 1.05rem;
+      }
+      .hero .meta {
+        margin-top: 1.2rem;
+        display: flex;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+        font-size: 0.85rem;
+        color: var(--text-dim);
+      }
+      .hero .meta span {
+        background: var(--surface2);
+        padding: 0.3rem 0.8rem;
+        border-radius: 6px;
+        border: 1px solid var(--border);
+      }
+
+      /* Section */
+      .section {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 2rem;
+        margin-bottom: 1.5rem;
+      }
+      .section h2 {
+        font-size: 1.35rem;
+        font-weight: 600;
+        color: var(--accent);
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+      .section h3 {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--text);
+        margin: 1.5rem 0 0.7rem;
+      }
+      .section h3:first-of-type {
+        margin-top: 0.5rem;
+      }
+      p {
+        margin-bottom: 0.8rem;
+      }
+      a {
+        color: var(--accent);
+        text-decoration: none;
+      }
+      a:hover {
+        text-decoration: underline;
+      }
+
+      /* Warning */
+      .warning {
+        background: var(--warn-bg);
+        border: 1px solid rgba(255, 107, 107, 0.25);
+        border-left: 4px solid var(--warn);
+        border-radius: 8px;
+        padding: 1.2rem 1.5rem;
+        margin-bottom: 1.5rem;
+      }
+      .warning strong {
+        color: var(--warn);
+      }
+      .warning p {
+        margin-bottom: 0.4rem;
+      }
+      .warning p:last-child {
+        margin-bottom: 0;
+      }
+
+      /* Info box */
+      .info {
+        background: rgba(108, 140, 255, 0.06);
+        border: 1px solid rgba(108, 140, 255, 0.2);
+        border-left: 4px solid var(--accent);
+        border-radius: 8px;
+        padding: 1.2rem 1.5rem;
+        margin-bottom: 1rem;
+      }
+      .info strong {
+        color: var(--accent);
+      }
+
+      /* Tables */
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 1rem 0;
+        font-size: 0.9rem;
+      }
+      th {
+        background: var(--surface2);
+        color: var(--accent);
+        text-align: left;
+        padding: 0.7rem 1rem;
+        border-bottom: 2px solid var(--border);
+        font-weight: 600;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+      td {
+        padding: 0.6rem 1rem;
+        border-bottom: 1px solid var(--border);
+        vertical-align: top;
+      }
+      tr:hover td {
+        background: rgba(108, 140, 255, 0.03);
+      }
+      .price {
+        color: var(--success);
+        font-weight: 600;
+        font-variant-numeric: tabular-nums;
+      }
+      .supplier-link {
+        font-size: 0.82rem;
+      }
+
+      /* Diagrams */
+      .diagram {
+        background: #141620;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin: 1.2rem 0;
+        overflow-x: auto;
+      }
+      .diagram pre {
+        font-family: "JetBrains Mono", "Fira Code", "Cascadia Code", monospace;
+        font-size: 0.78rem;
+        line-height: 1.45;
+        color: var(--text);
+        white-space: pre;
+        overflow-x: auto;
+      }
+      .diagram-label {
+        font-size: 0.75rem;
+        color: var(--text-dim);
+        text-align: center;
+        margin-top: 0.5rem;
+        font-style: italic;
+      }
+
+      /* Specs grid */
+      .specs-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 1rem;
+        margin: 1rem 0;
+      }
+      .spec-card {
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 1rem 1.2rem;
+      }
+      .spec-card .label {
+        font-size: 0.75rem;
+        color: var(--text-dim);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 0.3rem;
+      }
+      .spec-card .value {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: var(--accent2);
+      }
+      .spec-card .note {
+        font-size: 0.8rem;
+        color: var(--text-dim);
+        margin-top: 0.2rem;
+      }
+
+      /* Code */
+      code {
+        background: var(--surface2);
+        padding: 0.15rem 0.4rem;
+        border-radius: 4px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 0.88em;
+        color: var(--accent2);
+      }
+
+      /* TOC */
+      .toc {
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 1.2rem 1.5rem;
+        margin: 1rem 0 1.5rem;
+      }
+      .toc ol {
+        padding-left: 1.3rem;
+      }
+      .toc li {
+        margin: 0.3rem 0;
+      }
+      .toc a {
+        color: var(--text);
+        font-size: 0.92rem;
+      }
+      .toc a:hover {
+        color: var(--accent);
+      }
+
+      /* Lists */
+      ul,
+      ol {
+        padding-left: 1.3rem;
+        margin-bottom: 0.8rem;
+      }
+      li {
+        margin-bottom: 0.3rem;
+      }
+
+      /* Flow diagram colours */
+      .flow-node {
+        display: inline-block;
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 0.3rem 0.7rem;
+        font-size: 0.85rem;
+        margin: 0.2rem;
+      }
+
+      /* Footer */
+      .footer {
+        text-align: center;
+        color: var(--text-dim);
+        font-size: 0.8rem;
+        margin-top: 2rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid var(--border);
+      }
+
+      /* Responsive */
+      @media (max-width: 700px) {
+        .container {
+          padding: 1rem;
+        }
+        .hero {
+          padding: 2rem 1.5rem;
+        }
+        .hero h1 {
+          font-size: 1.5rem;
+        }
+        .section {
+          padding: 1.5rem;
+        }
+        table {
+          font-size: 0.8rem;
+        }
+        td,
+        th {
+          padding: 0.4rem 0.6rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <!-- HERO -->
+      <div class="hero">
+        <h1>GVS Prototype Design Document</h1>
+        <p class="subtitle">
+          ESP32-Based Galvanic Vestibular Stimulation System for Gaming &amp; VR
+          Immersion
+        </p>
+        <div class="meta">
+          <span>v0.1 — Prototype</span>
+          <span>Date: March 2026</span>
+          <span>Platform: ESP32-WROOM-32</span>
+          <span>Status: Design Phase</span>
+        </div>
+      </div>
+
+      <!-- SAFETY WARNING -->
+      <div class="warning">
+        <strong>⚠ CRITICAL SAFETY NOTICE</strong>
+        <p>
+          This device passes electrical current through the head. Incorrect
+          design, construction, or use can cause serious injury or death. This
+          document is for educational and prototyping purposes only.
+        </p>
+        <p>
+          Do not use this device if you have a cardiac pacemaker, cochlear
+          implant, epilepsy, history of seizures, or any neurological condition.
+          Never exceed 3 mA of current. Always include hardware current-limiting
+          failsafes. Test all circuits with a dummy load (resistor network)
+          before any human use.
+        </p>
+      </div>
+
+      <!-- TABLE OF CONTENTS -->
+      <div class="section">
+        <h2>📑 Contents</h2>
+        <div class="toc">
+          <ol>
+            <li><a href="#overview">System Overview</a></li>
+            <li><a href="#theory">GVS Theory of Operation</a></li>
+            <li><a href="#architecture">System Architecture</a></li>
+            <li><a href="#circuit">Circuit Design</a></li>
+            <li><a href="#firmware">Firmware Architecture</a></li>
+            <li><a href="#safety">Safety Design</a></li>
+            <li><a href="#electrodes">Electrodes &amp; Placement</a></li>
+            <li><a href="#bom">Bill of Materials</a></li>
+            <li><a href="#suppliers">UK Suppliers</a></li>
+            <li><a href="#references">References</a></li>
+          </ol>
+        </div>
+      </div>
+
+      <!-- 1. OVERVIEW -->
+      <div class="section" id="overview">
+        <h2>1. System Overview</h2>
+        <p>
+          This project implements a Galvanic Vestibular Stimulation (GVS) device
+          based on the ESP32 microcontroller. The system delivers a precisely
+          controlled, bidirectional DC current (±3 mA maximum) through
+          electrodes placed on the mastoid processes behind the ears. By
+          modulating the current direction and intensity, the device can induce
+          perceived shifts in balance — creating the sensation of lateral
+          movement, G-forces, or tilting.
+        </p>
+
+        <p>
+          The primary use case is integration with games and simulators. The
+          ESP32 receives telemetry data (e.g., lateral G-force values from a
+          flight simulator or racing game) over USB serial or Wi-Fi, and
+          translates these into corresponding current waveforms that the user
+          feels as balance shifts in real time.
+        </p>
+
+        <div class="specs-grid">
+          <div class="spec-card">
+            <div class="label">Max Current</div>
+            <div class="value">±3 mA</div>
+            <div class="note">Option B (24V boost). Option A: ~1 mA</div>
+          </div>
+          <div class="spec-card">
+            <div class="label">Hard Limit</div>
+            <div class="value">24 mA</div>
+            <div class="note">1kΩ safety resistor (Option B)</div>
+          </div>
+          <div class="spec-card">
+            <div class="label">Control Resolution</div>
+            <div class="value">8-bit DAC</div>
+            <div class="note">ESP32 built-in (GPIO25/26)</div>
+          </div>
+          <div class="spec-card">
+            <div class="label">Communication</div>
+            <div class="value">USB / Wi-Fi</div>
+            <div class="note">Serial or UDP telemetry</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. THEORY -->
+      <div class="section" id="theory">
+        <h2>2. GVS Theory of Operation</h2>
+        <p>
+          Galvanic Vestibular Stimulation works by passing a small DC current
+          through the vestibular system via surface electrodes on the mastoid
+          processes (the bony prominences behind each ear). The current
+          modulates the firing rate of vestibular afferent neurons:
+        </p>
+
+        <ul>
+          <li>
+            <strong>Cathode side (negative):</strong> Increases the firing rate
+            of vestibular neurons — the brain perceives acceleration
+            <em>towards</em> the cathode.
+          </li>
+          <li>
+            <strong>Anode side (positive):</strong> Decreases the firing rate —
+            the brain perceives acceleration <em>away from</em> the anode.
+          </li>
+        </ul>
+
+        <p>
+          With bilateral electrode placement, passing current from left to right
+          causes the user to sway or feel a pull to the right (towards the
+          cathode), and vice versa. The effect is proportional to current
+          magnitude within the safe range of approximately 0.5–3 mA. Research
+          literature typically uses stimulation currents up to 4 mA, though most
+          subjects find 2–3 mA produces strong effects.
+        </p>
+
+        <div class="info">
+          <strong>Key insight from the reference project:</strong> The creator's
+          ESP32 DAC outputs 0–3.3V. At 3.3V, +3 mA flows in one direction; at
+          0V, −3 mA flows in the other. The midpoint (1.65V) corresponds to zero
+          current. This is elegantly achieved using an op-amp configured as a
+          voltage-controlled current source with a 1.65V reference.
+        </div>
+
+        <div class="diagram">
+          <pre>
+    Perceived effect vs. current direction:
+
+    ◄── Current flows Left ←── Right ──►     ◄── Current flows Right ←── Left ──►
+
+    Cathode (−)          Anode (+)            Anode (+)          Cathode (−)
+       ●━━━━━━━━━━━━━━━━━━━●                    ●━━━━━━━━━━━━━━━━━━━●
+      LEFT               RIGHT                 LEFT               RIGHT
+      MASTOID            MASTOID               MASTOID            MASTOID
+
+         ◄◄◄ Body sways LEFT ◄◄◄                 ►►► Body sways RIGHT ►►►
+    </pre
+          >
+          <div class="diagram-label">
+            Fig. 1 — Relationship between current direction and perceived
+            balance shift
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. ARCHITECTURE -->
+      <div class="section" id="architecture">
+        <h2>3. System Architecture</h2>
+
+        <div class="diagram">
+          <pre>
+    ┌─────────────────────────────────────────────────────────────────────────┐
+    │                        SYSTEM BLOCK DIAGRAM                            │
+    └─────────────────────────────────────────────────────────────────────────┘
+
+    ┌──────────┐    USB/Serial    ┌──────────────┐
+    │   PC     │ ──── or ──────► │   ESP32       │
+    │  (Game   │    Wi-Fi/UDP    │  WROOM-32     │
+    │  Teleme- │                 │               │
+    │  try)    │                 │  ┌──────────┐ │     ┌──────────────────┐
+    └──────────┘                 │  │ DAC      │ │     │  CURRENT SOURCE  │
+                                │  │ (GPIO25) ├─┼────►│  (Op-Amp VCCS)   │
+                                │  │ 0–3.3V   │ │     │                  │
+                                │  └──────────┘ │     │  ┌────────────┐  │
+                                │               │     │  │  Op-Amp    │  │
+                                │  ┌──────────┐ │     │  │ A: MCP6002 │  │
+                                │  │ ADC      │◄┼─────│  │ B: LM358N  │  │
+                                │  │ (GPIO34) │ │     │  └─────┬──────┘  │
+                                │  │ Feedback │ │     │        │         │
+                                │  └──────────┘ │     │   R_safety (1kΩ) │
+                                │               │     └────────┼─────────┘
+                                └───────────────┘              │
+                                                               │
+                                                    ┌──────────┴──────────┐
+                                                    │                     │
+                                                ┌───┴───┐           ┌────┴────┐
+                                                │  LEFT │           │  RIGHT  │
+                                                │ ELEC- │           │  ELEC-  │
+                                                │ TRODE │           │  TRODE  │
+                                                │(Mast.)│           │ (Mast.) │
+                                                └───────┘           └─────────┘
+    </pre
+          >
+          <div class="diagram-label">
+            Fig. 2 — High-level system block diagram
+          </div>
+        </div>
+
+        <h3>Data Flow</h3>
+        <p>
+          The PC game or simulator sends lateral G-force telemetry to the ESP32
+          over USB serial (or Wi-Fi UDP for wireless operation). The ESP32's
+          firmware maps the G-force value to a DAC output voltage between 0V and
+          3.3V (where 1.65V = zero current). The analogue voltage drives a
+          voltage-controlled current source (VCCS) built around an op-amp, which
+          outputs a proportional bipolar current through the electrodes.
+        </p>
+
+        <div class="diagram">
+          <pre>
+    ┌──────────────────────────── DATA FLOW ────────────────────────────────┐
+    │                                                                       │
+    │   Game Telemetry     ESP32 Firmware       DAC Output      Current     │
+    │   ┌─────────┐       ┌──────────────┐     ┌─────────┐    ┌────────┐  │
+    │   │ G-force │──────►│ Map to       │────►│ 0–3.3V  │───►│ ±3 mA  │  │
+    │   │ -1 to +1│       │ 0–255 (8-bit)│    │ analog  │    │ through│  │
+    │   └─────────┘       └──────────────┘     └─────────┘    │ head   │  │
+    │                                                          └────────┘  │
+    │                                                                       │
+    │   Example:  G = -0.5  →  DAC = 64  →  V = 0.825V  →  I ≈ -1.5 mA   │
+    │             G =  0.0  →  DAC = 128 →  V = 1.65V   →  I =  0.0 mA   │
+    │             G = +1.0  →  DAC = 255 →  V = 3.30V   →  I = +3.0 mA   │
+    └───────────────────────────────────────────────────────────────────────┘
+    </pre
+          >
+          <div class="diagram-label">
+            Fig. 3 — Data flow from game telemetry to current output
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. CIRCUIT DESIGN -->
+      <div class="section" id="circuit">
+        <h2>4. Circuit Design</h2>
+
+        <p>
+          The core of this design is a
+          <strong>voltage-controlled current source (VCCS)</strong> based on an
+          op-amp. This topology ensures the output current remains proportional
+          to the input voltage regardless of varying head impedance (which can
+          change with skin moisture, electrode contact, and individual
+          physiology).
+        </p>
+
+        <h3>4.1 — The Voltage-Controlled Current Source</h3>
+        <p>
+          The design uses a modified inverting amplifier configuration. One
+          op-amp input receives the DAC voltage from the ESP32; the other input
+          is connected to a 1.65V reference rail (midpoint of the 3.3V supply)
+          via a sense resistor. The op-amp adjusts its output to maintain both
+          inputs at the same voltage, forcing a proportional current through the
+          sense resistor and hence through the load (the user's head).
+        </p>
+
+        <div class="diagram">
+          <pre>
+                          ┌─────────────────────────────────────────┐
+                          │    VOLTAGE-CONTROLLED CURRENT SOURCE    │
+                          └─────────────────────────────────────────┘
+
+                                      V+ (3.3V)
+                                        │
+                                        │
+          ESP32 DAC      R_pulldown     │
+          (GPIO25)       10kΩ           │
+     0–3.3V ─────┬──────┤              │
+                  │      │           ┌──┴──┐
+                  │      ▼           │     │
+                  │     GND          │ U1A │
+                  │                  │Op-  │
+                  └─────────────────►│Amp  ├──────┬──────────────► To Electrodes
+                           (+) V_in │     │      │                (via R_safety)
+                                    │     │      │
+             1.65V Rail ──┤         │     │      │
+                          │    R_s  └──┬──┘      │
+                          ├───[560Ω]───┘         │
+                          │         (−) V_fb     │
+                          │                      │
+                          │              R_safety │
+                          │              [1kΩ]   │
+                          │                      │
+                          │               ┌──────┘
+                          │               │
+                          │           ┌───┴───┐        ┌─────────┐
+                          │           │  LEFT │        │  RIGHT  │
+                          │           │ ELECT.│◄──────►│ ELECT.  │
+                          │           └───┬───┘  HEAD  └────┬────┘
+                          │               │    (load)       │
+                          │               └────────┬────────┘
+                          │                        │
+                          └────────────────────────┘
+                                             (Return path)
+
+
+    ─── Operating Principle ─────────────────────────────────────────────────
+
+    The op-amp forces V(+) = V(−)
+
+    • V(+) = V_DAC  (from ESP32, 0 to 3.3V)
+    • V(−) = 1.65V + (I_out × R_s)
+
+    Therefore:  I_out = (V_DAC − 1.65V) / R_s
+
+    With R_s = 560Ω (closest E24 value to 550Ω):
+    • V_DAC = 3.3V  →  I = (3.3 − 1.65) / 560  ≈  +2.95 mA
+    • V_DAC = 1.65V →  I = (1.65 − 1.65) / 560  =   0.00 mA
+    • V_DAC = 0.0V  →  I = (0.0 − 1.65) / 560   ≈  −2.95 mA
+    </pre
+          >
+          <div class="diagram-label">
+            Fig. 4 — Voltage-controlled current source schematic (U1A = MCP6002
+            channel A in Option A, or LM358N in Option B — see §4.3)
+          </div>
+        </div>
+
+        <h3>4.2 — 1.65V Reference Rail</h3>
+        <p>
+          The 1.65V reference is created using a simple resistor divider from
+          the 3.3V supply, buffered by the second channel of the dual MCP6002
+          op-amp. This ensures a stable, low-impedance midpoint reference.
+        </p>
+
+        <div class="diagram">
+          <pre>
+              3.3V
+               │
+              [10kΩ]  R1
+               │
+               ├──────────────────► (+) U1B/U2B (MCP6002)
+               │                         │
+              [10kΩ]  R2                  ├──► 1.65V Rail (buffered)
+               │                         │
+              GND                   (−)◄─┘
+                                   (unity-gain follower)
+    </pre
+          >
+          <div class="diagram-label">
+            Fig. 5 — 1.65V reference rail using voltage divider + buffer
+          </div>
+        </div>
+
+        <h3>4.3 — Compliance Voltage &amp; Supply Options</h3>
+
+        <div class="warning">
+          <strong>⚠ Critical Design Note — Compliance Voltage</strong>
+          <p>
+            The op-amp must swing its output high enough to push the desired
+            current through <em>all</em> series resistances: R_sense (560Ω) +
+            R_safety (1kΩ) + R_head (typically 1–5 kΩ with TENS pads). For ±3 mA
+            with a 2 kΩ head impedance, the op-amp output needs to reach ≈12.3V
+            — far beyond a 3.3V supply rail.
+          </p>
+          <p>
+            The reference project's "24 mA worst-case at 1kΩ" implies a ~24V
+            op-amp supply, confirming the original design uses voltage boosting.
+            Below, two prototype approaches are presented.
+          </p>
+        </div>
+
+        <h3>Option A — 3.3V Supply (Simple Prototype, Reduced Current)</h3>
+        <p>
+          If you want the simplest possible first build, power the op-amp from
+          the ESP32's 3.3V rail and
+          <strong>reduce R_safety to 220Ω</strong>. The achievable current will
+          be lower, but the circuit is inherently very safe:
+        </p>
+        <ul>
+          <li>
+            With R_head = 500Ω (good electrode contact + gel): I_max ≈ 1.65 /
+            (560 + 220 + 500) ≈
+            <strong>1.3 mA</strong>
+          </li>
+          <li>
+            With R_head = 2 kΩ (typical dry contact): I_max ≈ 1.65 / (560 + 220
+            + 2000) ≈ <strong>0.6 mA</strong>
+          </li>
+          <li>
+            Absolute worst case (electrodes shorted): 3.3V / (560 + 220) ≈
+            <strong>4.2 mA</strong> — within safe range
+          </li>
+        </ul>
+        <p>
+          This is enough to perceive the GVS effect (literature reports
+          thresholds around 0.5 mA), but the sensation will be subtle. Use
+          conductive electrode gel to minimise skin impedance and maximise the
+          available current. Use the MCP6002 for both the VCCS and reference
+          buffer.
+        </p>
+
+        <h3>Option B — Boosted Supply (Full Performance, Recommended)</h3>
+        <p>
+          For the full ±3 mA capability matching the reference project, add a
+          <strong>boost converter module</strong> to step up the 5V USB input to
+          24V. This powers the VCCS op-amp, giving it enough output swing to
+          drive current through the full load impedance.
+        </p>
+        <ul>
+          <li>
+            <strong>Boost converter:</strong> XL6009 or MT3608 module (5V → 24V,
+            adjustable output via trimpot). These cost ~£2 and require no
+            external components.
+          </li>
+          <li>
+            <strong>VCCS op-amp:</strong> Replace MCP6002 with
+            <strong>LM358N</strong> (DIP-8, operates up to 32V, ~£0.30). Not
+            rail-to-rail, but with 24V supply and 1.65V reference, there is
+            ample headroom.
+          </li>
+          <li>
+            <strong>Reference buffer:</strong> Keep the MCP6002 on the ESP32's
+            3.3V rail to buffer the 1.65V reference. The MCP6002's output feeds
+            the sense resistor just as before.
+          </li>
+          <li>
+            <strong>Safety resistor:</strong> Keep R_safety at 1kΩ. Worst case:
+            24V / 1kΩ = 24 mA — matching the original design.
+          </li>
+        </ul>
+        <p>With 24V supply, R_safety = 1kΩ, and R_head = 2 kΩ:</p>
+        <p>
+          <code>V_out = 1.65 + 0.003 × (560 + 1000 + 2000) = 12.3V</code> — well
+          within the LM358's output range on a 24V rail.
+        </p>
+
+        <div class="info">
+          <strong>Why two op-amps?</strong> The LM358 runs on the 24V boost rail
+          (for output swing), while the MCP6002 runs on 3.3V (for accurate 1.65V
+          reference buffering). The ESP32 DAC input (0–3.3V) connects directly
+          to the LM358's non-inverting input — this is safe because the LM358
+          accepts any input voltage within its supply range, and 0–3.3V is well
+          within 0–24V. The 1.65V reference from the MCP6002 connects through
+          R_sense to the LM358's inverting input.
+        </div>
+
+        <h3>4.4 — Pull-Down Resistor</h3>
+        <p>
+          A 10kΩ pull-down resistor between the DAC output and the 1.65V
+          reference ensures that if the ESP32 loses power, resets, or the DAC
+          pin floats, the voltage defaults to 1.65V (zero current) rather than
+          an indeterminate value.
+        </p>
+
+        <h3>4.5 — Complete Schematic (Option B — Recommended)</h3>
+        <div class="diagram">
+          <pre>
+    ┌──────────────────────── COMPLETE SCHEMATIC (OPTION B) ────────────────────────┐
+    │                                                                                │
+    │   USB 5V ──► [XL6009 Boost Module] ──► 24V Rail                               │
+    │                    (adjust trimpot)     │                                      │
+    │                                      [100nF]                                   │
+    │                                         │                                      │
+    │                                         ├──────── VDD (pin 8) LM358N          │
+    │                                         │                                      │
+    │                                        GND ────── VSS (pin 4) LM358N          │
+    │                                                                                │
+    │                                                                                │
+    │   ─── 1.65V Reference (3.3V domain — MCP6002) ───                             │
+    │                                                                                │
+    │           3.3V ──────────┬────────────────────────┬───────── VDD (pin 8)       │
+    │                          │                        │         MCP6002            │
+    │                        [10kΩ]                  [100nF]                         │
+    │                          │                        │                            │
+    │                          ├─── (+) U2B ──┬── 1.65V Rail (buffered)             │
+    │                          │         (buf) │                                     │
+    │                        [10kΩ]       (−)◄─┘                                     │
+    │                          │                                                     │
+    │                         GND ──────────────────────┴───────── VSS (pin 4)       │
+    │                                                              MCP6002           │
+    │                                                                                │
+    │   ─── VCCS (24V domain — LM358N) ───                                          │
+    │                                                                                │
+    │   ESP32                                                                        │
+    │   GPIO25 (DAC1) ──────┬──────────────────────────► (+) U1A (LM358N)           │
+    │   (0–3.3V)            │                                  │                     │
+    │                    [10kΩ]                                 │                     │
+    │                    pull to                                │                     │
+    │                    1.65V rail                        OUT U1A ──[1kΩ]──┐         │
+    │                                                          │           │         │
+    │              1.65V (from MCP6002) ──[560Ω]──► (−) U1A   │      LEFT ELECTRODE  │
+    │                                                   │      │           │         │
+    │                                                   └──────┘      ┌────┘         │
+    │                                                              [HEAD]            │
+    │                                                              (load)            │
+    │   ESP32                                                      ┌────┘            │
+    │   GPIO34 (ADC) ◄──── voltage sense point ◄──────────── RIGHT ELECTRODE        │
+    │                       (optional feedback)           (tied to 1.65V rail)       │
+    │                                                                                │
+    │                                                                                │
+    │   Decoupling: 100nF ceramic across LM358N VDD-VSS                             │
+    │               100nF ceramic across MCP6002 VDD-VSS                             │
+    │               100nF ceramic across ESP32 3.3V-GND                              │
+    │               10µF electrolytic on 24V rail                                    │
+    │               10µF electrolytic on 3.3V rail                                   │
+    │                                                                                │
+    │   ⚠ The LM358N ground and ESP32/MCP6002 ground MUST be common.                │
+    │                                                                                │
+    └────────────────────────────────────────────────────────────────────────────────┘
+    </pre
+          >
+          <div class="diagram-label">
+            Fig. 6 — Complete prototype schematic (Option B with 24V boost)
+          </div>
+        </div>
+
+        <div class="info">
+          <strong>Option A simplification:</strong> For the 3.3V-only build,
+          remove the XL6009 module and LM358N entirely. Use the MCP6002 for both
+          the VCCS (channel A) and reference buffer (channel B), both powered
+          from 3.3V. Replace R_safety with 220Ω. Expect ≈0.5–1.5 mA maximum
+          output depending on electrode impedance.
+        </div>
+      </div>
+
+      <!-- 5. FIRMWARE -->
+      <div class="section" id="firmware">
+        <h2>5. Firmware Architecture</h2>
+
+        <p>
+          The ESP32 firmware handles three core responsibilities: receiving
+          telemetry data, mapping it to a safe DAC value, and providing
+          monitoring/safety checks.
+        </p>
+
+        <div class="diagram">
+          <pre>
+    ┌──────────────────── FIRMWARE MODULE DIAGRAM ────────────────────────┐
+    │                                                                     │
+    │   ┌─────────────┐     ┌───────────────┐     ┌──────────────────┐  │
+    │   │ COMMS       │     │ PROCESSING    │     │ OUTPUT           │  │
+    │   │             │     │               │     │                  │  │
+    │   │ USB Serial  │────►│ G-force to    │────►│ DAC Write        │  │
+    │   │ or          │     │ DAC mapping   │     │ (GPIO25)         │  │
+    │   │ Wi-Fi UDP   │     │               │     │                  │  │
+    │   └─────────────┘     │ Slew rate     │     │ ADC Read         │  │
+    │                       │ limiting      │     │ (GPIO34)         │  │
+    │                       │               │     │ for feedback     │  │
+    │   ┌─────────────┐     │ Safety        │     │                  │  │
+    │   │ CONFIG      │     │ bounds check  │     │ Status LED       │  │
+    │   │             │     │               │     │                  │  │
+    │   │ Max current  │────►│ Watchdog:     │     └──────────────────┘  │
+    │   │ Ramp rate   │     │ if no data    │                           │
+    │   │ Dead zone   │     │ for 500ms,    │                           │
+    │   │ Calibration │     │ output 1.65V  │                           │
+    │   └─────────────┘     │ (zero current)│                           │
+    │                       └───────────────┘                           │
+    └───────────────────────────────────────────────────────────────────┘
+    </pre
+          >
+          <div class="diagram-label">Fig. 7 — Firmware module structure</div>
+        </div>
+
+        <h3>Key Firmware Features</h3>
+        <ul>
+          <li>
+            <strong>Slew rate limiting:</strong> Gradual ramp between current
+            levels to prevent jarring sensations and reduce skin irritation.
+            Target transition time of ~50 ms between extremes.
+          </li>
+          <li>
+            <strong>Watchdog timeout:</strong> If no valid telemetry data is
+            received for 500 ms, the output ramps to midpoint (zero current).
+            This prevents sustained stimulation if the game crashes or
+            disconnects.
+          </li>
+          <li>
+            <strong>Configurable parameters:</strong> Maximum current limit,
+            dead zone around zero (to avoid tingling at near-zero currents),
+            slew rate, and input mapping curve — all adjustable via serial
+            commands.
+          </li>
+          <li>
+            <strong>ADC feedback (optional):</strong> GPIO34 can monitor the
+            voltage across the electrode return path to verify actual current
+            delivery and detect electrode disconnection.
+          </li>
+        </ul>
+
+        <h3>Serial Protocol (Simple)</h3>
+        <p>
+          The PC sends a single float value per line representing normalised
+          lateral G-force:
+        </p>
+        <ul>
+          <li>
+            <code>-1.0</code> = maximum left G-force (full current
+            right-to-left)
+          </li>
+          <li><code>0.0</code> = no lateral force (zero current)</li>
+          <li>
+            <code>+1.0</code> = maximum right G-force (full current
+            left-to-right)
+          </li>
+        </ul>
+      </div>
+
+      <!-- 6. SAFETY -->
+      <div class="section" id="safety">
+        <h2>6. Safety Design</h2>
+
+        <div class="warning">
+          <strong>⚠ Defence in Depth</strong>
+          <p>
+            Multiple independent safety layers ensure no single failure can
+            deliver dangerous current.
+          </p>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Layer</th>
+              <th>Mechanism</th>
+              <th>Failure Mode Protected</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>1. Hardware current limit</strong></td>
+              <td>1kΩ series resistor on output</td>
+              <td>Op-amp latch-up, software failure, DAC malfunction</td>
+            </tr>
+            <tr>
+              <td><strong>2. Supply voltage limit</strong></td>
+              <td>
+                Option A: Op-amp on 3.3V (output capped at rail). Option B: 1kΩ
+                safety resistor limits worst-case to 24 mA.
+              </td>
+              <td>
+                Op-amp latch-up or runaway output. Option A inherently limits
+                voltage; Option B relies on R_safety.
+              </td>
+            </tr>
+            <tr>
+              <td><strong>3. Pull-down to midpoint</strong></td>
+              <td>10kΩ from DAC to 1.65V rail</td>
+              <td>ESP32 reset, power loss, floating DAC pin</td>
+            </tr>
+            <tr>
+              <td><strong>4. Firmware watchdog</strong></td>
+              <td>Ramp to zero if no data for 500 ms</td>
+              <td>Game crash, USB disconnect, Wi-Fi dropout</td>
+            </tr>
+            <tr>
+              <td><strong>5. Firmware bounds check</strong></td>
+              <td>DAC clamped to configurable max range</td>
+              <td>Erroneous telemetry values, buffer overflow</td>
+            </tr>
+            <tr>
+              <td><strong>6. Slew rate limiting</strong></td>
+              <td>Max transition rate capped in firmware</td>
+              <td>Sudden current spikes, nausea reduction</td>
+            </tr>
+            <tr>
+              <td><strong>7. Physical kill switch</strong></td>
+              <td>Momentary button to force DAC to midpoint</td>
+              <td>User override for any uncomfortable situation</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- 7. ELECTRODES -->
+      <div class="section" id="electrodes">
+        <h2>7. Electrodes &amp; Placement</h2>
+
+        <p>
+          Self-adhesive TENS/EMS electrode pads are the simplest and safest
+          option for a prototype. They provide consistent skin contact, are
+          designed for electrical stimulation, and are widely available. Use
+          small electrodes (~2×2 cm or circular ~3 cm²) for better current
+          density and stronger vestibular effect. Research suggests smaller
+          electrode areas produce more focused stimulation.
+        </p>
+
+        <div class="diagram">
+          <pre>
+                          ELECTRODE PLACEMENT (rear view of head)
+
+                                   ┌───────┐
+                                   │       │
+                                  ╱         ╲
+                                 │           │
+                                 │   HEAD    │
+                                 │  (rear)   │
+                                 │           │
+                        ┌───┐    │           │    ┌───┐
+                        │ L │◄───┤           ├───►│ R │
+                        │PAD│    │           │    │PAD│
+                        └───┘    │           │    └───┘
+                       Left       ╲         ╱      Right
+                       Mastoid     └───┬───┘       Mastoid
+                       Process         │           Process
+                                      NECK
+
+                       Electrodes placed on the flat bony area
+                       directly behind each earlobe (mastoid process).
+
+                       Clean skin with alcohol wipe before application.
+                       Ensure firm, even contact.
+    </pre
+          >
+          <div class="diagram-label">
+            Fig. 8 — Electrode placement on mastoid processes
+          </div>
+        </div>
+
+        <h3>Connection</h3>
+        <p>
+          Use standard 2mm pin or 3.5mm snap connectors (matching the electrode
+          pads) with lead wires running to the circuit board. Keep leads
+          reasonably short to minimise noise pickup. For a wearable version, the
+          entire circuit could be mounted on a headband or behind-the-ear
+          housing.
+        </p>
+      </div>
+
+      <!-- 8. BOM -->
+      <div class="section" id="bom">
+        <h2>8. Bill of Materials</h2>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Ref</th>
+              <th>Component</th>
+              <th>Value / Part</th>
+              <th>Qty</th>
+              <th>Notes</th>
+              <th>Est. Price</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>U1</td>
+              <td>Op-Amp (VCCS)</td>
+              <td>LM358N (DIP-8)</td>
+              <td>1</td>
+              <td>
+                <strong>Option B only.</strong> Runs on 24V boost rail. Up to
+                32V supply, DIP-8. For Option A, skip this — use MCP6002 channel
+                A instead.
+              </td>
+              <td class="price">~£0.30</td>
+            </tr>
+            <tr>
+              <td>U2</td>
+              <td>Dual Op-Amp (Ref Buffer)</td>
+              <td>MCP6002-E/P (DIP-8)</td>
+              <td>1</td>
+              <td>
+                Rail-to-rail I/O, 1.8–6V supply, 3.3V rail. Buffers 1.65V
+                reference. Option A: also serves as VCCS.
+              </td>
+              <td class="price">~£0.70</td>
+            </tr>
+            <tr>
+              <td>—</td>
+              <td>Boost Converter Module</td>
+              <td>XL6009 or MT3608 (adjustable)</td>
+              <td>1</td>
+              <td>
+                <strong>Option B only.</strong> 5V USB → 24V via trimpot.
+                Pre-assembled module, no soldering needed.
+              </td>
+              <td class="price">~£1.50–3.00</td>
+            </tr>
+            <tr>
+              <td>MCU</td>
+              <td>Microcontroller</td>
+              <td>ESP32-WROOM-32 Dev Board</td>
+              <td>1</td>
+              <td>
+                Built-in DAC (8-bit), Wi-Fi, USB. Any ESP32 dev board with DAC
+                pins exposed will work.
+              </td>
+              <td class="price">~£8–15</td>
+            </tr>
+            <tr>
+              <td>R_s</td>
+              <td>Sense Resistor</td>
+              <td>560Ω, 1% metal film</td>
+              <td>1</td>
+              <td>
+                Current sense (closest E24 to 550Ω). 1% tolerance critical for
+                accuracy.
+              </td>
+              <td class="price">~£0.10</td>
+            </tr>
+            <tr>
+              <td>R_safety</td>
+              <td>Safety Resistor</td>
+              <td>1kΩ, 1% metal film</td>
+              <td>1</td>
+              <td>Series output limiter. Hardware failsafe.</td>
+              <td class="price">~£0.10</td>
+            </tr>
+            <tr>
+              <td>R1, R2</td>
+              <td>Divider Resistors</td>
+              <td>10kΩ, 1% metal film</td>
+              <td>2</td>
+              <td>For 1.65V reference. Use matched pair for accuracy.</td>
+              <td class="price">~£0.20</td>
+            </tr>
+            <tr>
+              <td>R_pd</td>
+              <td>Pull-Down Resistor</td>
+              <td>10kΩ, 5% carbon film</td>
+              <td>1</td>
+              <td>DAC failsafe pull to 1.65V rail. Tolerance not critical.</td>
+              <td class="price">~£0.05</td>
+            </tr>
+            <tr>
+              <td>C1–C3</td>
+              <td>Decoupling Caps</td>
+              <td>100nF ceramic (MLCC)</td>
+              <td>3</td>
+              <td>
+                One across each IC supply pins (LM358N, MCP6002) and one on
+                ESP32 3.3V rail. Option A: only 2 needed.
+              </td>
+              <td class="price">~£0.30</td>
+            </tr>
+            <tr>
+              <td>C4, C5</td>
+              <td>Bulk Capacitors</td>
+              <td>10µF electrolytic, 25V</td>
+              <td>2</td>
+              <td>
+                One on 3.3V rail, one on 24V rail (Option B). Use 25V-rated for
+                the 24V rail. Option A: only 1 needed (16V OK).
+              </td>
+              <td class="price">~£0.30</td>
+            </tr>
+            <tr>
+              <td>SW1</td>
+              <td>Kill Switch</td>
+              <td>Momentary push button (NO)</td>
+              <td>1</td>
+              <td>Emergency stop — shorts DAC to 1.65V rail when pressed.</td>
+              <td class="price">~£0.30</td>
+            </tr>
+            <tr>
+              <td>—</td>
+              <td>Breadboard</td>
+              <td>Half-size (400 tie points)</td>
+              <td>1</td>
+              <td>
+                For prototyping. Move to stripboard/PCB for final version.
+              </td>
+              <td class="price">~£3.00</td>
+            </tr>
+            <tr>
+              <td>—</td>
+              <td>Jumper Wires</td>
+              <td>M-M assorted pack</td>
+              <td>1 pack</td>
+              <td>For breadboard connections.</td>
+              <td class="price">~£2.50</td>
+            </tr>
+            <tr>
+              <td>—</td>
+              <td>Electrode Pads</td>
+              <td>TENS pads, self-adhesive, ~3cm²</td>
+              <td>1 pack</td>
+              <td>Small size preferred. 2mm pin or 3.5mm snap connector.</td>
+              <td class="price">~£5–8</td>
+            </tr>
+            <tr>
+              <td>—</td>
+              <td>Electrode Lead Wires</td>
+              <td>TENS lead cable (2mm pin)</td>
+              <td>1 pair</td>
+              <td>
+                Connect pads to circuit. Match connector type to your electrode
+                pads.
+              </td>
+              <td class="price">~£3–5</td>
+            </tr>
+            <tr>
+              <td>—</td>
+              <td>USB Cable</td>
+              <td>Micro-USB or USB-C (match ESP32)</td>
+              <td>1</td>
+              <td>Powers ESP32 and provides serial data link to PC.</td>
+              <td class="price">~£2.00</td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="5" style="text-align: right; font-weight: 600">
+                Estimated Total
+              </td>
+              <td class="price" style="font-size: 1.05rem">~£25–40</td>
+            </tr>
+          </tfoot>
+        </table>
+
+        <div class="info">
+          <strong>Note on op-amp selection:</strong>
+          <strong>Option A</strong> uses the MCP6002 (dual, DIP-8, 1.8–6V,
+          rail-to-rail I/O) for both the VCCS (channel A) and 1.65V reference
+          buffer (channel B) — one chip does everything.
+          <strong>Option B</strong> uses two chips: the LM358N (DIP-8, up to
+          32V) on the 24V rail for the VCCS, and the MCP6002 on 3.3V for the
+          reference buffer. Both are breadboard-friendly DIP-8 packages.
+        </div>
+      </div>
+
+      <!-- 9. SUPPLIERS -->
+      <div class="section" id="suppliers">
+        <h2>9. UK Suppliers</h2>
+
+        <p>
+          Below are specific links to UK-based suppliers for the key components.
+          All prices are approximate and exclude VAT/shipping.
+        </p>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Component</th>
+              <th>Supplier</th>
+              <th>Est. Price</th>
+              <th>Link</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>MCP6002-E/P</strong> (DIP-8 dual op-amp)</td>
+              <td>Farnell UK</td>
+              <td class="price">~£0.70</td>
+              <td class="supplier-link">
+                <a
+                  href="https://uk.farnell.com/microchip/mcp6002-e-p/op-amp-dual-pdip-8-40-to-125deg/dp/1332117"
+                  target="_blank"
+                  >uk.farnell.com — MCP6002-E/P</a
+                >
+              </td>
+            </tr>
+            <tr>
+              <td><strong>MCP6002-I/P</strong> (DIP-8, alt. temp range)</td>
+              <td>Farnell UK</td>
+              <td class="price">~£0.65</td>
+              <td class="supplier-link">
+                <a
+                  href="https://uk.farnell.com/microchip/mcp6002-i-p/ic-op-amp-1-8v-1mhz-dual-pdip8/dp/1292245"
+                  target="_blank"
+                  >uk.farnell.com — MCP6002-I/P</a
+                >
+              </td>
+            </tr>
+            <tr>
+              <td><strong>LM358N</strong> (DIP-8, Option B VCCS)</td>
+              <td>Farnell UK</td>
+              <td class="price">~£0.30</td>
+              <td class="supplier-link">
+                <a
+                  href="https://uk.farnell.com/texas-instruments/lm358n-nopb/op-amp-dual-low-power-dip8/dp/3005879"
+                  target="_blank"
+                  >uk.farnell.com — LM358N</a
+                >
+              </td>
+            </tr>
+            <tr>
+              <td><strong>LM358N</strong> (alternative)</td>
+              <td>RS Components</td>
+              <td class="price">~£0.35</td>
+              <td class="supplier-link">
+                <a
+                  href="https://uk.rs-online.com/web/p/operational-amplifiers/0406844"
+                  target="_blank"
+                  >uk.rs-online.com — LM358N</a
+                >
+              </td>
+            </tr>
+            <tr>
+              <td><strong>XL6009 Boost Module</strong> (5V→24V, Option B)</td>
+              <td>Amazon UK</td>
+              <td class="price">~£2–5 (pack of 2–5)</td>
+              <td class="supplier-link">
+                <a
+                  href="https://www.amazon.co.uk/s?k=XL6009+boost+converter+module"
+                  target="_blank"
+                  >amazon.co.uk — XL6009 Boost Modules</a
+                >
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <strong>MT3608 Boost Module</strong> (alternative, smaller)
+              </td>
+              <td>Amazon UK</td>
+              <td class="price">~£1.50–3 (pack of 5)</td>
+              <td class="supplier-link">
+                <a
+                  href="https://www.amazon.co.uk/s?k=MT3608+boost+converter+module"
+                  target="_blank"
+                  >amazon.co.uk — MT3608 Boost Modules</a
+                >
+              </td>
+            </tr>
+            <tr>
+              <td><strong>ESP32 Dev Board</strong> (various)</td>
+              <td>Farnell UK / CPC</td>
+              <td class="price">~£8–20</td>
+              <td class="supplier-link">
+                <a
+                  href="https://uk.farnell.com/c/embedded-computers-education-maker-boards/iot-solutions-kits/embedded-development-kits-iot-solution-kits?silicon-family-name=esp32"
+                  target="_blank"
+                  >uk.farnell.com — ESP32 Dev Boards</a
+                >
+              </td>
+            </tr>
+            <tr>
+              <td><strong>ESP32 Dev Board</strong> (SparkFun / TinyPICO)</td>
+              <td>Pimoroni</td>
+              <td class="price">~£12–25</td>
+              <td class="supplier-link">
+                <a
+                  href="https://shop.pimoroni.com/en-us/products/tinypico-esp32"
+                  target="_blank"
+                  >pimoroni.com — TinyPICO V3</a
+                >
+              </td>
+            </tr>
+            <tr>
+              <td><strong>ESP32 Dev Boards</strong></td>
+              <td>CPC (Farnell)</td>
+              <td class="price">~£8–15</td>
+              <td class="supplier-link">
+                <a
+                  href="https://cpc.farnell.com/c/maker-circuit-development/iot-solutions-kits/embedded-development-kits-iot-solution-kits?silicon-family-name=esp32"
+                  target="_blank"
+                  >cpc.farnell.com — ESP32 Boards</a
+                >
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <strong>Resistors</strong> (560Ω, 1kΩ, 10kΩ — 1% metal film)
+              </td>
+              <td>Farnell UK / CPC / RS</td>
+              <td class="price">~£0.05–0.20 each</td>
+              <td class="supplier-link">
+                <a
+                  href="https://uk.farnell.com/c/passive-components/resistors/through-hole-resistors/through-hole-fixed-resistors?resistance=560ohm"
+                  target="_blank"
+                  >uk.farnell.com — Resistors</a
+                >
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <strong>Capacitors</strong> (100nF ceramic, 10µF electrolytic)
+              </td>
+              <td>Farnell UK / CPC / RS</td>
+              <td class="price">~£0.10–0.30 each</td>
+              <td class="supplier-link">
+                <a
+                  href="https://uk.farnell.com/c/passive-components/capacitors"
+                  target="_blank"
+                  >uk.farnell.com — Capacitors</a
+                >
+              </td>
+            </tr>
+            <tr>
+              <td><strong>Breadboard + Jumper Wires</strong></td>
+              <td>Pimoroni / The Pi Hut</td>
+              <td class="price">~£5–8 kit</td>
+              <td class="supplier-link">
+                <a href="https://shop.pimoroni.com" target="_blank"
+                  >pimoroni.com</a
+                >
+              </td>
+            </tr>
+            <tr>
+              <td><strong>TENS Electrode Pads</strong> (self-adhesive)</td>
+              <td>Amazon UK</td>
+              <td class="price">~£5–10 (pack of 8–20)</td>
+              <td class="supplier-link">
+                <a
+                  href="https://www.amazon.co.uk/tens-pads/s?k=tens+pads"
+                  target="_blank"
+                  >amazon.co.uk — TENS Pads</a
+                >
+              </td>
+            </tr>
+            <tr>
+              <td><strong>TENS Lead Wires</strong> (2mm pin connectors)</td>
+              <td>Amazon UK</td>
+              <td class="price">~£3–6</td>
+              <td class="supplier-link">
+                <a
+                  href="https://www.amazon.co.uk/s?k=tens+lead+wires+2mm"
+                  target="_blank"
+                  >amazon.co.uk — TENS Leads</a
+                >
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="info">
+          <strong>Ordering tip:</strong> Farnell and RS both offer free next-day
+          delivery on orders over certain thresholds. For small hobby orders,
+          CPC (Farnell's consumer arm) often has lower minimum order
+          requirements. Pimoroni and The Pi Hut are excellent for maker-friendly
+          boards and accessories. TENS electrodes and lead wires are cheapest on
+          Amazon UK.
+        </div>
+      </div>
+
+      <!-- 10. REFERENCES -->
+      <div class="section" id="references">
+        <h2>10. References</h2>
+        <ul>
+          <li>
+            <a
+              href="https://www.hardware-x.com/article/S2468-0672(25)00025-2/fulltext"
+              target="_blank"
+              >Liu et al. — "Design and evaluation of a voltage-controlled
+              current source for galvanic vestibular stimulation research"
+              (HardwareX, 2025)</a
+            >
+            — Open-source GVS device using Enhanced Howland Current Source.
+          </li>
+          <li>
+            <a
+              href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=5101503"
+              target="_blank"
+              >Liu et al. — "Voltage Controlled Howland Current Source for GVS"
+              (SSRN preprint)</a
+            >
+          </li>
+          <li>
+            <a
+              href="https://www.frontiersin.org/journals/human-neuroscience/articles/10.3389/fnhum.2025.1518727/full"
+              target="_blank"
+              >Frontiers — "A review of parameter settings for galvanic
+              vestibular stimulation in clinical applications" (2025)</a
+            >
+          </li>
+          <li>
+            <a
+              href="https://journals.physiology.org/doi/full/10.1152/jn.00035.2019"
+              target="_blank"
+              >Fitzpatrick &amp; Day — "Galvanic vestibular stimulation: from
+              basic concepts to clinical applications" (J. Neurophysiology)</a
+            >
+          </li>
+          <li>
+            <a
+              href="https://pmc.ncbi.nlm.nih.gov/articles/PMC11346646/"
+              target="_blank"
+              >PMC — "Unpacking GVS using simulations: comparison across
+              electrode placements"</a
+            >
+          </li>
+          <li>
+            <a href="https://www.ti.com/lit/pdf/snoa474" target="_blank"
+              >Texas Instruments AN-1515 — "A Comprehensive Study of the Howland
+              Current Pump"</a
+            >
+          </li>
+          <li>
+            <a
+              href="https://www.allaboutcircuits.com/technical-articles/the-howland-current-pump/"
+              target="_blank"
+              >All About Circuits — "The Howland Current Pump"</a
+            >
+          </li>
+          <li>
+            <a
+              href="https://en.wikipedia.org/wiki/Galvanic_vestibular_stimulation"
+              target="_blank"
+              >Wikipedia — Galvanic vestibular stimulation</a
+            >
+          </li>
+          <li>
+            Perrikaryal (YouTube) — Original GVS project videos (transcript
+            source)
+          </li>
+        </ul>
+      </div>
+
+      <!-- FOOTER -->
+      <div class="footer">
+        <p>GVS Prototype Design Document v0.1 — March 2026</p>
+        <p>
+          This document is for educational and prototyping purposes only. Build
+          and use at your own risk.
+        </p>
+      </div>
+    </div>
+  </body>
+</html>

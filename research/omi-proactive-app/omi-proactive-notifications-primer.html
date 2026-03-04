@@ -1,0 +1,1864 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Omi Proactive Notifications — Architecture Primer</title>
+    <style>
+      :root {
+        --bg: #0e1117;
+        --surface: #161b22;
+        --surface2: #1c2333;
+        --border: #2d3548;
+        --text: #c9d1d9;
+        --text-muted: #8b949e;
+        --accent: #58a6ff;
+        --accent2: #a371f7;
+        --green: #3fb950;
+        --orange: #d29922;
+        --red: #f85149;
+        --teal: #39d353;
+        --pink: #f778ba;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial,
+          sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        line-height: 1.65;
+        padding: 2rem;
+        max-width: 1100px;
+        margin: 0 auto;
+      }
+
+      h1 {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.25rem;
+        background: linear-gradient(135deg, var(--accent), var(--accent2));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      .subtitle {
+        color: var(--text-muted);
+        font-size: 1.05rem;
+        margin-bottom: 2.5rem;
+      }
+
+      h2 {
+        font-size: 1.35rem;
+        font-weight: 600;
+        color: var(--text);
+        margin: 2.5rem 0 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+      h2 .num {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+        background: linear-gradient(135deg, var(--accent), var(--accent2));
+        color: #fff;
+        font-size: 0.8rem;
+        font-weight: 700;
+        flex-shrink: 0;
+      }
+
+      h3 {
+        font-size: 1.05rem;
+        font-weight: 600;
+        color: var(--accent);
+        margin: 1.5rem 0 0.5rem;
+      }
+
+      p {
+        margin-bottom: 0.85rem;
+        color: var(--text);
+      }
+
+      .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin: 1rem 0;
+      }
+
+      .diagram {
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 1.75rem;
+        margin: 1.25rem 0;
+        overflow-x: auto;
+      }
+
+      .diagram-title {
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--accent);
+        margin-bottom: 1rem;
+      }
+
+      /* SVG diagrams */
+      svg text {
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial,
+          sans-serif;
+      }
+
+      code,
+      .code {
+        font-family: "SF Mono", "Fira Code", "Cascadia Code", monospace;
+        font-size: 0.85rem;
+      }
+
+      code {
+        background: var(--surface2);
+        padding: 0.15em 0.4em;
+        border-radius: 5px;
+        color: var(--accent);
+      }
+
+      pre {
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 1.25rem;
+        margin: 1rem 0;
+        overflow-x: auto;
+        font-family: "SF Mono", "Fira Code", monospace;
+        font-size: 0.82rem;
+        line-height: 1.55;
+        color: var(--text);
+      }
+      pre .kw {
+        color: var(--accent2);
+      }
+      pre .str {
+        color: var(--green);
+      }
+      pre .cmt {
+        color: var(--text-muted);
+        font-style: italic;
+      }
+      pre .fn {
+        color: var(--accent);
+      }
+      pre .type {
+        color: var(--orange);
+      }
+
+      .callout {
+        border-left: 3px solid var(--orange);
+        background: rgba(210, 153, 34, 0.08);
+        padding: 1rem 1.25rem;
+        border-radius: 0 8px 8px 0;
+        margin: 1rem 0;
+        font-size: 0.92rem;
+      }
+      .callout.info {
+        border-left-color: var(--accent);
+        background: rgba(88, 166, 255, 0.08);
+      }
+      .callout.good {
+        border-left-color: var(--green);
+        background: rgba(63, 185, 80, 0.08);
+      }
+
+      .callout strong {
+        color: var(--text);
+      }
+
+      .grid-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+      }
+      @media (max-width: 700px) {
+        .grid-2 {
+          grid-template-columns: 1fr;
+        }
+        body {
+          padding: 1rem;
+        }
+      }
+
+      .pill {
+        display: inline-block;
+        padding: 0.2em 0.6em;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 0.03em;
+      }
+      .pill.omi {
+        background: rgba(163, 113, 247, 0.2);
+        color: var(--accent2);
+      }
+      .pill.cf {
+        background: rgba(247, 120, 186, 0.2);
+        color: var(--pink);
+      }
+      .pill.nuxt {
+        background: rgba(63, 185, 80, 0.2);
+        color: var(--green);
+      }
+      .pill.api {
+        background: rgba(88, 166, 255, 0.2);
+        color: var(--accent);
+      }
+
+      .endpoint {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin: 0.5rem 0;
+      }
+      .endpoint .method {
+        font-family: "SF Mono", monospace;
+        font-size: 0.72rem;
+        font-weight: 700;
+        padding: 0.2em 0.5em;
+        border-radius: 4px;
+        color: #fff;
+      }
+      .method.post {
+        background: var(--green);
+      }
+      .method.get {
+        background: var(--accent);
+      }
+      .endpoint .path {
+        font-family: "SF Mono", monospace;
+        font-size: 0.82rem;
+        color: var(--text);
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 1rem 0;
+        font-size: 0.88rem;
+      }
+      th {
+        text-align: left;
+        color: var(--text-muted);
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        padding: 0.6rem 0.75rem;
+        border-bottom: 1px solid var(--border);
+      }
+      td {
+        padding: 0.6rem 0.75rem;
+        border-bottom: 1px solid rgba(45, 53, 72, 0.5);
+        vertical-align: top;
+      }
+
+      hr {
+        border: none;
+        border-top: 1px solid var(--border);
+        margin: 2rem 0;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Omi Proactive Notifications</h1>
+    <p class="subtitle">
+      Architecture primer for building a scheduled notification system on Nuxt 4
+      + Cloudflare Workers
+    </p>
+
+    <!-- ============================================================ -->
+    <h2><span class="num">1</span> How Omi Apps Work</h2>
+
+    <p>
+      Omi apps are modular extensions that connect to the platform via
+      <strong>webhooks</strong>. Your app registers capabilities (what it can
+      do) and endpoints (where Omi should send data). There are two key app
+      types relevant here: <strong>Integration Apps</strong> that receive
+      webhooks when things happen, and
+      <strong>Proactive Notification</strong> apps that push messages back to
+      users.
+    </p>
+
+    <div class="diagram">
+      <div class="diagram-title">Omi App Lifecycle</div>
+      <svg viewBox="0 0 900 200" width="100%" height="200">
+        <!-- Omi device -->
+        <rect
+          x="20"
+          y="60"
+          width="140"
+          height="70"
+          rx="10"
+          fill="#1c2333"
+          stroke="#a371f7"
+          stroke-width="1.5"
+        />
+        <text
+          x="90"
+          y="90"
+          text-anchor="middle"
+          fill="#a371f7"
+          font-size="11"
+          font-weight="600"
+        >
+          Omi Device
+        </text>
+        <text x="90" y="108" text-anchor="middle" fill="#8b949e" font-size="10">
+          Audio → Transcript
+        </text>
+
+        <!-- Arrow -->
+        <line
+          x1="160"
+          y1="95"
+          x2="230"
+          y2="95"
+          stroke="#8b949e"
+          stroke-width="1.2"
+          stroke-dasharray="5,3"
+        />
+        <polygon points="230,90 240,95 230,100" fill="#8b949e" />
+        <text x="195" y="85" text-anchor="middle" fill="#8b949e" font-size="9">
+          BLE / WiFi
+        </text>
+
+        <!-- Omi Cloud -->
+        <rect
+          x="240"
+          y="40"
+          width="160"
+          height="110"
+          rx="10"
+          fill="#1c2333"
+          stroke="#58a6ff"
+          stroke-width="1.5"
+        />
+        <text
+          x="320"
+          y="68"
+          text-anchor="middle"
+          fill="#58a6ff"
+          font-size="11"
+          font-weight="600"
+        >
+          Omi Cloud
+        </text>
+        <text
+          x="320"
+          y="88"
+          text-anchor="middle"
+          fill="#8b949e"
+          font-size="9.5"
+        >
+          Transcription
+        </text>
+        <text
+          x="320"
+          y="103"
+          text-anchor="middle"
+          fill="#8b949e"
+          font-size="9.5"
+        >
+          Memory creation
+        </text>
+        <text
+          x="320"
+          y="118"
+          text-anchor="middle"
+          fill="#8b949e"
+          font-size="9.5"
+        >
+          Webhook dispatch
+        </text>
+        <text
+          x="320"
+          y="133"
+          text-anchor="middle"
+          fill="#8b949e"
+          font-size="9.5"
+        >
+          Notification relay
+        </text>
+
+        <!-- Webhook arrow -->
+        <line
+          x1="400"
+          y1="75"
+          x2="490"
+          y2="75"
+          stroke="#3fb950"
+          stroke-width="1.5"
+        />
+        <polygon points="490,70 502,75 490,80" fill="#3fb950" />
+        <text
+          x="445"
+          y="66"
+          text-anchor="middle"
+          fill="#3fb950"
+          font-size="9"
+          font-weight="600"
+        >
+          Webhooks
+        </text>
+
+        <!-- Your backend -->
+        <rect
+          x="502"
+          y="35"
+          width="180"
+          height="120"
+          rx="10"
+          fill="#1c2333"
+          stroke="#3fb950"
+          stroke-width="1.5"
+        />
+        <text
+          x="592"
+          y="63"
+          text-anchor="middle"
+          fill="#3fb950"
+          font-size="11"
+          font-weight="600"
+        >
+          Your Backend
+        </text>
+        <text
+          x="592"
+          y="81"
+          text-anchor="middle"
+          fill="#8b949e"
+          font-size="9.5"
+        >
+          Nuxt 4 + CF Workers
+        </text>
+        <text
+          x="592"
+          y="96"
+          text-anchor="middle"
+          fill="#8b949e"
+          font-size="9.5"
+        >
+          Process transcripts
+        </text>
+        <text
+          x="592"
+          y="111"
+          text-anchor="middle"
+          fill="#8b949e"
+          font-size="9.5"
+        >
+          Extract intents / reminders
+        </text>
+        <text
+          x="592"
+          y="126"
+          text-anchor="middle"
+          fill="#8b949e"
+          font-size="9.5"
+        >
+          Schedule notifications
+        </text>
+        <text
+          x="592"
+          y="141"
+          text-anchor="middle"
+          fill="#8b949e"
+          font-size="9.5"
+        >
+          AI processing
+        </text>
+
+        <!-- Notification arrow back -->
+        <path
+          d="M 502,140 L 400,140"
+          stroke="#d29922"
+          stroke-width="1.5"
+          fill="none"
+        />
+        <polygon points="400,135 388,140 400,145" fill="#d29922" />
+        <text
+          x="445"
+          y="158"
+          text-anchor="middle"
+          fill="#d29922"
+          font-size="9"
+          font-weight="600"
+        >
+          Push Notification API
+        </text>
+
+        <!-- Phone -->
+        <rect
+          x="740"
+          y="55"
+          width="120"
+          height="80"
+          rx="10"
+          fill="#1c2333"
+          stroke="#f778ba"
+          stroke-width="1.5"
+        />
+        <text
+          x="800"
+          y="85"
+          text-anchor="middle"
+          fill="#f778ba"
+          font-size="11"
+          font-weight="600"
+        >
+          User's Phone
+        </text>
+        <text
+          x="800"
+          y="103"
+          text-anchor="middle"
+          fill="#8b949e"
+          font-size="9.5"
+        >
+          Omi App (FCM)
+        </text>
+
+        <!-- Notification to phone -->
+        <line
+          x1="320"
+          y1="150"
+          x2="320"
+          y2="175"
+          stroke="#d29922"
+          stroke-width="1"
+          stroke-dasharray="4,3"
+        />
+        <line
+          x1="320"
+          y1="175"
+          x2="740"
+          y2="175"
+          stroke="#d29922"
+          stroke-width="1"
+          stroke-dasharray="4,3"
+        />
+        <line
+          x1="740"
+          y1="175"
+          x2="740"
+          y2="135"
+          stroke="#d29922"
+          stroke-width="1"
+          stroke-dasharray="4,3"
+        />
+        <polygon points="736,135 740,123 744,135" fill="#d29922" />
+        <text x="530" y="188" text-anchor="middle" fill="#d29922" font-size="9">
+          Push notification delivered via Omi Cloud → FCM
+        </text>
+      </svg>
+    </div>
+
+    <p>
+      The crucial thing: <strong>you never push directly to the phone</strong>.
+      You call Omi's notification API, and Omi relays it to the user's device
+      via FCM. This keeps things simple — you just need an HTTP POST.
+    </p>
+
+    <!-- ============================================================ -->
+    <h2><span class="num">2</span> The Omi Notification API</h2>
+
+    <p>There are two types of notification you can send.</p>
+
+    <div class="grid-2">
+      <div class="card">
+        <h3>Direct Notifications</h3>
+        <p>
+          Send an exact text message to a specific user. Good for alerts,
+          reminders, and responses to user actions.
+        </p>
+        <div class="endpoint">
+          <span class="method post">POST</span>
+          <span class="path">/v2/integrations/{app_id}/notification</span>
+        </div>
+        <p
+          style="
+            margin-top: 0.5rem;
+            font-size: 0.88rem;
+            color: var(--text-muted);
+          "
+        >
+          Params: <code>uid</code> (user ID), <code>message</code> (text)<br />
+          Auth: <code>Bearer {app_secret}</code>
+        </p>
+      </div>
+      <div class="card">
+        <h3>Proactive Notifications</h3>
+        <p>
+          AI-generated contextual messages based on real-time conversations. You
+          provide a prompt template; Omi generates the personalised message.
+        </p>
+        <p style="font-size: 0.88rem; color: var(--text-muted)">
+          Requires capabilities: <code>external_integration</code> +
+          <code>proactive_notification</code>
+        </p>
+      </div>
+    </div>
+
+    <div class="callout">
+      <strong>Rate limit:</strong> 1 proactive notification per user per app
+      every 30 seconds. Direct notifications are more flexible but still
+      rate-limited.
+    </div>
+
+    <pre><span class="cmt">// Sending a direct notification from your Nuxt server route</span>
+<span class="kw">const</span> response = <span class="kw">await</span> <span class="fn">fetch</span>(
+  <span class="str">`https://api.omi.me/v2/integrations/${</span>OMI_APP_ID<span class="str">}/notification`</span> +
+  <span class="str">`?uid=${</span>userId<span class="str">}&message=${</span><span class="fn">encodeURIComponent</span>(message)<span class="str">}`</span>,
+  {
+    <span class="type">method</span>: <span class="str">'POST'</span>,
+    <span class="type">headers</span>: { <span class="str">'Authorization'</span>: <span class="str">`Bearer ${</span>OMI_APP_SECRET<span class="str">}`</span> }
+  }
+);</pre>
+
+    <!-- ============================================================ -->
+    <h2><span class="num">3</span> App Registration</h2>
+
+    <p>
+      When you create your app in the Omi developer portal (Explore → Create an
+      App), you'll configure it with these capabilities:
+    </p>
+
+    <pre>{
+  <span class="str">"name"</span>: <span class="str">"My Proactive Reminders"</span>,
+  <span class="str">"capabilities"</span>: [<span class="str">"external_integration"</span>, <span class="str">"proactive_notification"</span>],
+  <span class="str">"external_integration"</span>: {
+    <span class="str">"triggers_on"</span>: <span class="str">"transcript_processed"</span>,
+    <span class="str">"webhook_url"</span>: <span class="str">"https://yourapp.example.com/api/omi/webhook"</span>
+  },
+  <span class="str">"proactive_notification"</span>: {
+    <span class="str">"scopes"</span>: [<span class="str">"user_context"</span>]
+  }
+}</pre>
+
+    <p>
+      The <code>triggers_on: "transcript_processed"</code> setting means Omi
+      will POST to your webhook every time a chunk of real-time transcript is
+      processed. You'll get the transcript segments, a <code>session_id</code>,
+      and the <code>uid</code> of the user. You can also trigger on
+      <code>memory_created</code> for post-conversation summaries.
+    </p>
+
+    <!-- ============================================================ -->
+    <h2><span class="num">4</span> Scheduling Architecture</h2>
+
+    <p>
+      The core challenge: a user says "remind me to call the dentist in 4 hours"
+      and your system needs to (a) parse that intent, (b) schedule a future
+      action, and (c) fire the notification at the right time. Here's how to
+      architect this on Cloudflare.
+    </p>
+
+    <div class="diagram">
+      <div class="diagram-title">Scheduling Options on Cloudflare</div>
+      <svg viewBox="0 0 900 350" width="100%" height="350">
+        <!-- Title row -->
+        <text
+          x="150"
+          y="30"
+          text-anchor="middle"
+          fill="#58a6ff"
+          font-size="12"
+          font-weight="600"
+        >
+          Cron Triggers
+        </text>
+        <text
+          x="450"
+          y="30"
+          text-anchor="middle"
+          fill="#a371f7"
+          font-size="12"
+          font-weight="600"
+        >
+          Workflows + step.sleep
+        </text>
+        <text
+          x="750"
+          y="30"
+          text-anchor="middle"
+          fill="#f778ba"
+          font-size="12"
+          font-weight="600"
+        >
+          Durable Object Alarms
+        </text>
+
+        <!-- Cron -->
+        <rect
+          x="30"
+          y="45"
+          width="240"
+          height="280"
+          rx="10"
+          fill="#161b22"
+          stroke="#2d3548"
+          stroke-width="1"
+        />
+        <text x="150" y="75" text-anchor="middle" fill="#8b949e" font-size="10">
+          Fixed intervals (e.g. every 1 min)
+        </text>
+        <text x="150" y="95" text-anchor="middle" fill="#8b949e" font-size="10">
+          Poll a "due reminders" table
+        </text>
+
+        <rect
+          x="55"
+          y="115"
+          width="190"
+          height="50"
+          rx="6"
+          fill="#1c2333"
+          stroke="#3fb950"
+          stroke-width="1"
+        />
+        <text
+          x="150"
+          y="137"
+          text-anchor="middle"
+          fill="#3fb950"
+          font-size="10"
+          font-weight="600"
+        >
+          Pro: Simple to implement
+        </text>
+        <text x="150" y="153" text-anchor="middle" fill="#8b949e" font-size="9">
+          Just a DB query each tick
+        </text>
+
+        <rect
+          x="55"
+          y="175"
+          width="190"
+          height="50"
+          rx="6"
+          fill="#1c2333"
+          stroke="#f85149"
+          stroke-width="1"
+        />
+        <text
+          x="150"
+          y="197"
+          text-anchor="middle"
+          fill="#f85149"
+          font-size="10"
+          font-weight="600"
+        >
+          Con: Polling overhead
+        </text>
+        <text x="150" y="213" text-anchor="middle" fill="#8b949e" font-size="9">
+          Max 3 crons/worker, ±30s jitter
+        </text>
+
+        <text
+          x="150"
+          y="248"
+          text-anchor="middle"
+          fill="#d29922"
+          font-size="10"
+          font-weight="600"
+        >
+          Best for:
+        </text>
+        <text
+          x="150"
+          y="265"
+          text-anchor="middle"
+          fill="#8b949e"
+          font-size="9.5"
+        >
+          Batch processing due reminders
+        </text>
+        <text
+          x="150"
+          y="280"
+          text-anchor="middle"
+          fill="#8b949e"
+          font-size="9.5"
+        >
+          Cleanup jobs, aggregation
+        </text>
+        <text
+          x="150"
+          y="295"
+          text-anchor="middle"
+          fill="#8b949e"
+          font-size="9.5"
+        >
+          Not ideal for precise timing
+        </text>
+
+        <!-- Workflows -->
+        <rect
+          x="330"
+          y="45"
+          width="240"
+          height="280"
+          rx="10"
+          fill="#161b22"
+          stroke="#2d3548"
+          stroke-width="1"
+        />
+        <text x="450" y="75" text-anchor="middle" fill="#8b949e" font-size="10">
+          step.sleep('wait', '4 hours')
+        </text>
+        <text x="450" y="95" text-anchor="middle" fill="#8b949e" font-size="10">
+          Durable — survives restarts
+        </text>
+
+        <rect
+          x="355"
+          y="115"
+          width="190"
+          height="50"
+          rx="6"
+          fill="#1c2333"
+          stroke="#3fb950"
+          stroke-width="1"
+        />
+        <text
+          x="450"
+          y="137"
+          text-anchor="middle"
+          fill="#3fb950"
+          font-size="10"
+          font-weight="600"
+        >
+          Pro: Perfect fit
+        </text>
+        <text x="450" y="153" text-anchor="middle" fill="#8b949e" font-size="9">
+          Multi-step, auto-retry, state persists
+        </text>
+
+        <rect
+          x="355"
+          y="175"
+          width="190"
+          height="50"
+          rx="6"
+          fill="#1c2333"
+          stroke="#f85149"
+          stroke-width="1"
+        />
+        <text
+          x="450"
+          y="197"
+          text-anchor="middle"
+          fill="#f85149"
+          font-size="10"
+          font-weight="600"
+        >
+          Con: Storage costs
+        </text>
+        <text x="450" y="213" text-anchor="middle" fill="#8b949e" font-size="9">
+          State stored per instance (~30d paid)
+        </text>
+
+        <text
+          x="450"
+          y="248"
+          text-anchor="middle"
+          fill="#3fb950"
+          font-size="11"
+          font-weight="700"
+        >
+          ★ RECOMMENDED ★
+        </text>
+        <text
+          x="450"
+          y="268"
+          text-anchor="middle"
+          fill="#8b949e"
+          font-size="9.5"
+        >
+          "Remind me in X" → spawn workflow
+        </text>
+        <text
+          x="450"
+          y="283"
+          text-anchor="middle"
+          fill="#8b949e"
+          font-size="9.5"
+        >
+          Sleep → wake → send notification
+        </text>
+        <text
+          x="450"
+          y="298"
+          text-anchor="middle"
+          fill="#8b949e"
+          font-size="9.5"
+        >
+          waitForEvent for cancellation
+        </text>
+
+        <!-- Durable Objects -->
+        <rect
+          x="630"
+          y="45"
+          width="240"
+          height="280"
+          rx="10"
+          fill="#161b22"
+          stroke="#2d3548"
+          stroke-width="1"
+        />
+        <text x="750" y="75" text-anchor="middle" fill="#8b949e" font-size="10">
+          setAlarm(Date.now() + ms)
+        </text>
+        <text x="750" y="95" text-anchor="middle" fill="#8b949e" font-size="10">
+          At-least-once, per-object timer
+        </text>
+
+        <rect
+          x="655"
+          y="115"
+          width="190"
+          height="50"
+          rx="6"
+          fill="#1c2333"
+          stroke="#3fb950"
+          stroke-width="1"
+        />
+        <text
+          x="750"
+          y="137"
+          text-anchor="middle"
+          fill="#3fb950"
+          font-size="10"
+          font-weight="600"
+        >
+          Pro: Precise, unlimited alarms
+        </text>
+        <text x="750" y="153" text-anchor="middle" fill="#8b949e" font-size="9">
+          1 alarm/object, but ∞ objects
+        </text>
+
+        <rect
+          x="655"
+          y="175"
+          width="190"
+          height="50"
+          rx="6"
+          fill="#1c2333"
+          stroke="#f85149"
+          stroke-width="1"
+        />
+        <text
+          x="750"
+          y="197"
+          text-anchor="middle"
+          fill="#f85149"
+          font-size="10"
+          font-weight="600"
+        >
+          Con: More boilerplate
+        </text>
+        <text x="750" y="213" text-anchor="middle" fill="#8b949e" font-size="9">
+          Must manage DO lifecycle yourself
+        </text>
+
+        <text
+          x="750"
+          y="248"
+          text-anchor="middle"
+          fill="#d29922"
+          font-size="10"
+          font-weight="600"
+        >
+          Best for:
+        </text>
+        <text
+          x="750"
+          y="265"
+          text-anchor="middle"
+          fill="#8b949e"
+          font-size="9.5"
+        >
+          High-volume, sub-second precision
+        </text>
+        <text
+          x="750"
+          y="280"
+          text-anchor="middle"
+          fill="#8b949e"
+          font-size="9.5"
+        >
+          Complex per-user state machines
+        </text>
+        <text
+          x="750"
+          y="295"
+          text-anchor="middle"
+          fill="#8b949e"
+          font-size="9.5"
+        >
+          Workflows uses these under the hood
+        </text>
+      </svg>
+    </div>
+
+    <div class="callout good">
+      <strong>Recommendation: Cloudflare Workflows.</strong> They're
+      purpose-built for this. <code>step.sleep('4 hours')</code> literally just
+      works — it durably persists, costs nothing while sleeping, and
+      auto-retries on failure. For a "remind me in X" use-case, this is the
+      cleanest approach by far.
+    </div>
+
+    <!-- ============================================================ -->
+    <h2><span class="num">5</span> Full System Architecture</h2>
+
+    <div class="diagram">
+      <div class="diagram-title">
+        End-to-End Flow: User Request → Scheduled Notification
+      </div>
+      <svg viewBox="0 0 900 520" width="100%" height="520">
+        <!-- Step labels on left -->
+        <text
+          x="12"
+          y="78"
+          fill="#8b949e"
+          font-size="9"
+          font-weight="600"
+          transform="rotate(-90, 12, 78)"
+        >
+          INGEST
+        </text>
+        <text
+          x="12"
+          y="250"
+          fill="#8b949e"
+          font-size="9"
+          font-weight="600"
+          transform="rotate(-90, 12, 250)"
+        >
+          PROCESS
+        </text>
+        <text
+          x="12"
+          y="420"
+          fill="#8b949e"
+          font-size="9"
+          font-weight="600"
+          transform="rotate(-90, 12, 420)"
+        >
+          DELIVER
+        </text>
+
+        <!-- Horizontal separators -->
+        <line
+          x1="30"
+          y1="150"
+          x2="880"
+          y2="150"
+          stroke="#2d3548"
+          stroke-width="0.5"
+          stroke-dasharray="6,4"
+        />
+        <line
+          x1="30"
+          y1="350"
+          x2="880"
+          y2="350"
+          stroke="#2d3548"
+          stroke-width="0.5"
+          stroke-dasharray="6,4"
+        />
+
+        <!-- ===== INGEST ROW ===== -->
+        <!-- Omi Device -->
+        <rect
+          x="40"
+          y="45"
+          width="130"
+          height="55"
+          rx="8"
+          fill="#1c2333"
+          stroke="#a371f7"
+          stroke-width="1.5"
+        />
+        <text
+          x="105"
+          y="68"
+          text-anchor="middle"
+          fill="#a371f7"
+          font-size="10"
+          font-weight="600"
+        >
+          Omi Device
+        </text>
+        <text x="105" y="85" text-anchor="middle" fill="#8b949e" font-size="9">
+          "Remind me to call
+        </text>
+        <text x="105" y="96" text-anchor="middle" fill="#8b949e" font-size="9">
+          the dentist at 3pm"
+        </text>
+
+        <line
+          x1="170"
+          y1="72"
+          x2="225"
+          y2="72"
+          stroke="#8b949e"
+          stroke-width="1"
+        />
+        <polygon points="225,68 235,72 225,76" fill="#8b949e" />
+
+        <!-- Omi Cloud -->
+        <rect
+          x="235"
+          y="50"
+          width="120"
+          height="45"
+          rx="8"
+          fill="#1c2333"
+          stroke="#58a6ff"
+          stroke-width="1.5"
+        />
+        <text
+          x="295"
+          y="70"
+          text-anchor="middle"
+          fill="#58a6ff"
+          font-size="10"
+          font-weight="600"
+        >
+          Omi Cloud
+        </text>
+        <text x="295" y="85" text-anchor="middle" fill="#8b949e" font-size="9">
+          Transcribe + dispatch
+        </text>
+
+        <line
+          x1="355"
+          y1="72"
+          x2="410"
+          y2="72"
+          stroke="#3fb950"
+          stroke-width="1.5"
+        />
+        <polygon points="410,68 420,72 410,76" fill="#3fb950" />
+        <text
+          x="387"
+          y="63"
+          text-anchor="middle"
+          fill="#3fb950"
+          font-size="8"
+          font-weight="600"
+        >
+          webhook
+        </text>
+
+        <!-- Nuxt webhook endpoint -->
+        <rect
+          x="420"
+          y="40"
+          width="210"
+          height="65"
+          rx="8"
+          fill="#1c2333"
+          stroke="#3fb950"
+          stroke-width="1.5"
+        />
+        <text
+          x="525"
+          y="60"
+          text-anchor="middle"
+          fill="#3fb950"
+          font-size="10"
+          font-weight="600"
+        >
+          Nuxt API Route
+        </text>
+        <text x="525" y="75" text-anchor="middle" fill="#8b949e" font-size="9">
+          /api/omi/webhook
+        </text>
+        <text x="525" y="90" text-anchor="middle" fill="#8b949e" font-size="9">
+          Validates + dispatches to handler
+        </text>
+
+        <!-- KV for user session -->
+        <rect
+          x="690"
+          y="50"
+          width="140"
+          height="45"
+          rx="8"
+          fill="#1c2333"
+          stroke="#d29922"
+          stroke-width="1.5"
+        />
+        <text
+          x="760"
+          y="70"
+          text-anchor="middle"
+          fill="#d29922"
+          font-size="10"
+          font-weight="600"
+        >
+          KV / Cache
+        </text>
+        <text x="760" y="85" text-anchor="middle" fill="#8b949e" font-size="9">
+          Session + user context
+        </text>
+
+        <line
+          x1="630"
+          y1="72"
+          x2="690"
+          y2="72"
+          stroke="#d29922"
+          stroke-width="1"
+          stroke-dasharray="4,3"
+        />
+        <polygon points="685,68 695,72 685,76" fill="#d29922" />
+
+        <!-- ===== PROCESS ROW ===== -->
+        <!-- AI Intent Extraction -->
+        <rect
+          x="80"
+          y="175"
+          width="180"
+          height="70"
+          rx="8"
+          fill="#1c2333"
+          stroke="#58a6ff"
+          stroke-width="1.5"
+        />
+        <text
+          x="170"
+          y="198"
+          text-anchor="middle"
+          fill="#58a6ff"
+          font-size="10"
+          font-weight="600"
+        >
+          AI Intent Extraction
+        </text>
+        <text x="170" y="215" text-anchor="middle" fill="#8b949e" font-size="9">
+          Workers AI / OpenAI / Claude
+        </text>
+        <text x="170" y="230" text-anchor="middle" fill="#8b949e" font-size="9">
+          → {type: "reminder", time: "15:00",
+        </text>
+        <text x="170" y="242" text-anchor="middle" fill="#8b949e" font-size="9">
+          message: "Call dentist"}
+        </text>
+
+        <line
+          x1="525"
+          y1="105"
+          x2="525"
+          y2="135"
+          stroke="#8b949e"
+          stroke-width="1"
+        />
+        <line
+          x1="525"
+          y1="135"
+          x2="170"
+          y2="135"
+          stroke="#8b949e"
+          stroke-width="1"
+        />
+        <line
+          x1="170"
+          y1="135"
+          x2="170"
+          y2="175"
+          stroke="#8b949e"
+          stroke-width="1"
+        />
+        <polygon points="166,170 170,180 174,170" fill="#8b949e" />
+
+        <!-- D1 database -->
+        <rect
+          x="340"
+          y="185"
+          width="160"
+          height="50"
+          rx="8"
+          fill="#1c2333"
+          stroke="#d29922"
+          stroke-width="1.5"
+        />
+        <text
+          x="420"
+          y="208"
+          text-anchor="middle"
+          fill="#d29922"
+          font-size="10"
+          font-weight="600"
+        >
+          D1 Database
+        </text>
+        <text x="420" y="224" text-anchor="middle" fill="#8b949e" font-size="9">
+          reminders table (persist)
+        </text>
+
+        <line
+          x1="260"
+          y1="210"
+          x2="340"
+          y2="210"
+          stroke="#d29922"
+          stroke-width="1"
+        />
+        <polygon points="335,206 345,210 335,214" fill="#d29922" />
+        <text x="300" y="202" text-anchor="middle" fill="#d29922" font-size="8">
+          store
+        </text>
+
+        <!-- CF Workflow -->
+        <rect
+          x="580"
+          y="170"
+          width="220"
+          height="80"
+          rx="8"
+          fill="#1c2333"
+          stroke="#a371f7"
+          stroke-width="1.5"
+        />
+        <text
+          x="690"
+          y="195"
+          text-anchor="middle"
+          fill="#a371f7"
+          font-size="10"
+          font-weight="600"
+        >
+          CF Workflow Instance
+        </text>
+        <text x="690" y="212" text-anchor="middle" fill="#8b949e" font-size="9">
+          step.do('parse') → step.sleep('4h')
+        </text>
+        <text x="690" y="227" text-anchor="middle" fill="#8b949e" font-size="9">
+          → step.do('send notification')
+        </text>
+        <text x="690" y="242" text-anchor="middle" fill="#8b949e" font-size="9">
+          waitForEvent('cancel') for opt-out
+        </text>
+
+        <line
+          x1="500"
+          y1="210"
+          x2="580"
+          y2="210"
+          stroke="#a371f7"
+          stroke-width="1.5"
+        />
+        <polygon points="575,206 585,210 575,214" fill="#a371f7" />
+        <text
+          x="540"
+          y="202"
+          text-anchor="middle"
+          fill="#a371f7"
+          font-size="8"
+          font-weight="600"
+        >
+          spawn
+        </text>
+
+        <!-- Sleeping indicator -->
+        <rect
+          x="620"
+          y="270"
+          width="150"
+          height="40"
+          rx="20"
+          fill="rgba(163, 113, 247, 0.12)"
+          stroke="#a371f7"
+          stroke-width="1"
+          stroke-dasharray="4,3"
+        />
+        <text
+          x="695"
+          y="287"
+          text-anchor="middle"
+          fill="#a371f7"
+          font-size="10"
+        >
+          💤 sleeping… $0
+        </text>
+        <text x="695" y="302" text-anchor="middle" fill="#8b949e" font-size="8">
+          Costs nothing while idle
+        </text>
+
+        <!-- ===== DELIVER ROW ===== -->
+        <!-- Workflow wakes -->
+        <rect
+          x="80"
+          y="375"
+          width="200"
+          height="55"
+          rx="8"
+          fill="#1c2333"
+          stroke="#a371f7"
+          stroke-width="1.5"
+        />
+        <text
+          x="180"
+          y="398"
+          text-anchor="middle"
+          fill="#a371f7"
+          font-size="10"
+          font-weight="600"
+        >
+          Workflow Wakes Up
+        </text>
+        <text x="180" y="415" text-anchor="middle" fill="#8b949e" font-size="9">
+          Reads reminder data from step state
+        </text>
+
+        <line
+          x1="690"
+          y1="310"
+          x2="690"
+          y2="340"
+          stroke="#a371f7"
+          stroke-width="1"
+          stroke-dasharray="4,3"
+        />
+        <line
+          x1="690"
+          y1="340"
+          x2="180"
+          y2="340"
+          stroke="#a371f7"
+          stroke-width="1"
+          stroke-dasharray="4,3"
+        />
+        <line
+          x1="180"
+          y1="340"
+          x2="180"
+          y2="375"
+          stroke="#a371f7"
+          stroke-width="1"
+          stroke-dasharray="4,3"
+        />
+        <polygon points="176,370 180,380 184,370" fill="#a371f7" />
+
+        <line
+          x1="280"
+          y1="400"
+          x2="355"
+          y2="400"
+          stroke="#3fb950"
+          stroke-width="1.5"
+        />
+        <polygon points="355,396 365,400 355,404" fill="#3fb950" />
+
+        <!-- Omi API call -->
+        <rect
+          x="365"
+          y="375"
+          width="210"
+          height="55"
+          rx="8"
+          fill="#1c2333"
+          stroke="#3fb950"
+          stroke-width="1.5"
+        />
+        <text
+          x="470"
+          y="398"
+          text-anchor="middle"
+          fill="#3fb950"
+          font-size="10"
+          font-weight="600"
+        >
+          POST Omi Notification API
+        </text>
+        <text x="470" y="415" text-anchor="middle" fill="#8b949e" font-size="9">
+          /v2/integrations/{id}/notification
+        </text>
+
+        <line
+          x1="575"
+          y1="400"
+          x2="640"
+          y2="400"
+          stroke="#d29922"
+          stroke-width="1.5"
+        />
+        <polygon points="640,396 650,400 640,404" fill="#d29922" />
+
+        <!-- Phone -->
+        <rect
+          x="650"
+          y="375"
+          width="150"
+          height="55"
+          rx="8"
+          fill="#1c2333"
+          stroke="#f778ba"
+          stroke-width="1.5"
+        />
+        <text
+          x="725"
+          y="398"
+          text-anchor="middle"
+          fill="#f778ba"
+          font-size="10"
+          font-weight="600"
+        >
+          📱 User's Phone
+        </text>
+        <text x="725" y="415" text-anchor="middle" fill="#8b949e" font-size="9">
+          "Call the dentist!"
+        </text>
+
+        <!-- D1 update -->
+        <rect
+          x="365"
+          y="450"
+          width="210"
+          height="35"
+          rx="8"
+          fill="#1c2333"
+          stroke="#d29922"
+          stroke-width="1"
+        />
+        <text x="470" y="472" text-anchor="middle" fill="#8b949e" font-size="9">
+          Mark reminder as delivered in D1
+        </text>
+
+        <line
+          x1="470"
+          y1="430"
+          x2="470"
+          y2="450"
+          stroke="#d29922"
+          stroke-width="1"
+          stroke-dasharray="3,3"
+        />
+      </svg>
+    </div>
+
+    <!-- ============================================================ -->
+    <h2><span class="num">6</span> Recommended Stack Mapping</h2>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Concern</th>
+          <th>Technology</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Web app framework</td>
+          <td><span class="pill nuxt">Nuxt 4</span></td>
+          <td>
+            Server routes handle webhooks; SSR for any management dashboard
+          </td>
+        </tr>
+        <tr>
+          <td>Runtime</td>
+          <td><span class="pill cf">CF Workers</span></td>
+          <td>Nuxt 4's Cloudflare preset deploys to Workers natively</td>
+        </tr>
+        <tr>
+          <td>Webhook handler</td>
+          <td><span class="pill nuxt">Nuxt server route</span></td>
+          <td><code>/server/api/omi/webhook.post.ts</code></td>
+        </tr>
+        <tr>
+          <td>Intent parsing</td>
+          <td><span class="pill api">Workers AI / OpenAI</span></td>
+          <td>
+            Extract reminder time, message, and intent type from transcript
+          </td>
+        </tr>
+        <tr>
+          <td>Scheduling</td>
+          <td><span class="pill cf">CF Workflows</span></td>
+          <td>
+            <code>step.sleep()</code> / <code>step.sleepUntil()</code> for timed
+            delivery
+          </td>
+        </tr>
+        <tr>
+          <td>Cancellation</td>
+          <td><span class="pill cf">CF Workflows</span></td>
+          <td>
+            <code>step.waitForEvent('cancel')</code> — user says "cancel my
+            reminder"
+          </td>
+        </tr>
+        <tr>
+          <td>Persistent storage</td>
+          <td><span class="pill cf">D1 (SQLite)</span></td>
+          <td>Reminders table, user preferences, delivery log</td>
+        </tr>
+        <tr>
+          <td>Fast cache</td>
+          <td><span class="pill cf">Workers KV</span></td>
+          <td>User session context, recent transcripts, deduplication</td>
+        </tr>
+        <tr>
+          <td>Notification delivery</td>
+          <td><span class="pill omi">Omi API</span></td>
+          <td>Simple HTTP POST — Omi handles FCM routing</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- ============================================================ -->
+    <h2><span class="num">7</span> Workflow Implementation Sketch</h2>
+
+    <pre><span class="cmt">// server/workflows/reminder.ts</span>
+<span class="kw">import</span> { WorkflowEntrypoint, WorkflowStep, WorkflowEvent } <span class="kw">from</span> <span class="str">'cloudflare:workers'</span>;
+
+<span class="kw">interface</span> <span class="type">ReminderParams</span> {
+  userId: <span class="type">string</span>;
+  message: <span class="type">string</span>;
+  deliverAt: <span class="type">string</span>;  <span class="cmt">// ISO 8601</span>
+  reminderId: <span class="type">string</span>;
+}
+
+<span class="kw">export class</span> <span class="type">ReminderWorkflow</span> <span class="kw">extends</span> WorkflowEntrypoint {
+  <span class="kw">async</span> <span class="fn">run</span>(event: WorkflowEvent&lt;<span class="type">ReminderParams</span>&gt;, step: WorkflowStep) {
+    <span class="kw">const</span> { userId, message, deliverAt, reminderId } = event.params;
+
+    <span class="cmt">// Step 1: Validate and persist to D1</span>
+    <span class="kw">await</span> step.<span class="fn">do</span>(<span class="str">'persist reminder'</span>, <span class="kw">async</span> () =&gt; {
+      <span class="kw">await</span> <span class="kw">this</span>.env.DB.<span class="fn">prepare</span>(
+        <span class="str">`INSERT INTO reminders (id, user_id, message, deliver_at, status)
+         VALUES (?, ?, ?, ?, 'scheduled')`</span>
+      ).<span class="fn">bind</span>(reminderId, userId, message, deliverAt).<span class="fn">run</span>();
+    });
+
+    <span class="cmt">// Step 2: Sleep until delivery time</span>
+    <span class="kw">await</span> step.<span class="fn">sleepUntil</span>(<span class="str">'wait for delivery time'</span>, <span class="kw">new</span> Date(deliverAt));
+
+    <span class="cmt">// Step 3: Send the notification via Omi API</span>
+    <span class="kw">await</span> step.<span class="fn">do</span>(<span class="str">'send notification'</span>, <span class="kw">async</span> () =&gt; {
+      <span class="kw">const</span> res = <span class="kw">await</span> <span class="fn">fetch</span>(
+        <span class="str">`https://api.omi.me/v2/integrations/${</span><span class="kw">this</span>.env.OMI_APP_ID<span class="str">}/notification`</span> +
+        <span class="str">`?uid=${</span>userId<span class="str">}&amp;message=${</span><span class="fn">encodeURIComponent</span>(message)<span class="str">}`</span>,
+        {
+          method: <span class="str">'POST'</span>,
+          headers: { Authorization: <span class="str">`Bearer ${</span><span class="kw">this</span>.env.OMI_APP_SECRET<span class="str">}`</span> }
+        }
+      );
+      <span class="kw">if</span> (!res.ok) <span class="kw">throw new</span> Error(<span class="str">`Omi API error: ${</span>res.status<span class="str">}`</span>);
+    });
+
+    <span class="cmt">// Step 4: Mark as delivered</span>
+    <span class="kw">await</span> step.<span class="fn">do</span>(<span class="str">'mark delivered'</span>, <span class="kw">async</span> () =&gt; {
+      <span class="kw">await</span> <span class="kw">this</span>.env.DB.<span class="fn">prepare</span>(
+        <span class="str">`UPDATE reminders SET status = 'delivered' WHERE id = ?`</span>
+      ).<span class="fn">bind</span>(reminderId).<span class="fn">run</span>();
+    });
+  }
+}</pre>
+
+    <!-- ============================================================ -->
+    <h2><span class="num">8</span> Handling Cancellation</h2>
+
+    <p>
+      One powerful feature of Workflows is <code>step.waitForEvent()</code>. You
+      can race a sleep against a cancellation event, so if a user says "cancel
+      my reminder", you send an event to the running workflow instance and it
+      stops.
+    </p>
+
+    <pre><span class="cmt">// Alternative Step 2: Race sleep vs. cancel</span>
+<span class="kw">try</span> {
+  <span class="kw">await</span> step.<span class="fn">waitForEvent</span>(<span class="str">'await cancel or timeout'</span>, {
+    event: <span class="str">'cancel'</span>,
+    timeout: deliverAt  <span class="cmt">// timeout = delivery time</span>
+  });
+  <span class="cmt">// If we get here, user cancelled</span>
+  <span class="kw">await</span> step.<span class="fn">do</span>(<span class="str">'mark cancelled'</span>, <span class="kw">async</span> () =&gt; {
+    <span class="kw">await</span> <span class="kw">this</span>.env.DB.<span class="fn">prepare</span>(
+      <span class="str">`UPDATE reminders SET status = 'cancelled' WHERE id = ?`</span>
+    ).<span class="fn">bind</span>(reminderId).<span class="fn">run</span>();
+  });
+  <span class="kw">return</span>; <span class="cmt">// Exit without sending notification</span>
+} <span class="kw">catch</span> (e) {
+  <span class="cmt">// Timeout reached = time to deliver!</span>
+  <span class="cmt">// Continue to step 3…</span>
+}</pre>
+
+    <div class="callout info">
+      <strong>Cancellation flow:</strong> When your webhook handler detects a
+      "cancel my reminder" intent, find the workflow instance ID (stored in D1
+      alongside the reminder) and send an event to it via the Workflows API:
+      <code
+        >env.REMINDER_WORKFLOW.sendEvent(instanceId, { event: 'cancel' })</code
+      >
+    </div>
+
+    <!-- ============================================================ -->
+    <h2><span class="num">9</span> Webhook Handler Design</h2>
+
+    <pre><span class="cmt">// server/api/omi/webhook.post.ts</span>
+<span class="kw">export default</span> <span class="fn">defineEventHandler</span>(<span class="kw">async</span> (event) =&gt; {
+  <span class="kw">const</span> body = <span class="kw">await</span> <span class="fn">readBody</span>(event);
+  <span class="kw">const</span> { session_id, segments, uid } = body;
+
+  <span class="cmt">// Accumulate transcript segments in KV for context</span>
+  <span class="kw">const</span> existing = <span class="kw">await</span> event.context.cloudflare.env.KV
+    .<span class="fn">get</span>(<span class="str">`session:${</span>session_id<span class="str">}`</span>, <span class="str">'json'</span>) ?? [];
+  existing.<span class="fn">push</span>(...segments);
+  <span class="kw">await</span> event.context.cloudflare.env.KV
+    .<span class="fn">put</span>(<span class="str">`session:${</span>session_id<span class="str">}`</span>, JSON.<span class="fn">stringify</span>(existing), { expirationTtl: 3600 });
+
+  <span class="cmt">// Run AI intent extraction on accumulated transcript</span>
+  <span class="kw">const</span> transcript = existing.<span class="fn">map</span>(s =&gt; s.text).<span class="fn">join</span>(<span class="str">' '</span>);
+  <span class="kw">const</span> intent = <span class="kw">await</span> <span class="fn">extractIntent</span>(transcript, event.context.cloudflare.env);
+
+  <span class="kw">if</span> (intent?.type === <span class="str">'reminder'</span>) {
+    <span class="cmt">// Spawn a Workflow instance</span>
+    <span class="kw">const</span> reminderId = <span class="fn">crypto</span>.randomUUID();
+    <span class="kw">const</span> instance = <span class="kw">await</span> event.context.cloudflare.env.REMINDER_WORKFLOW
+      .<span class="fn">create</span>({ id: reminderId, params: {
+        userId: uid,
+        message: intent.message,
+        deliverAt: intent.deliverAt,
+        reminderId
+      }});
+
+    <span class="cmt">// Confirm to user via immediate notification</span>
+    <span class="kw">await</span> <span class="fn">sendOmiNotification</span>(uid, <span class="str">`✓ Reminder set: "${</span>intent.message<span class="str">}"`</span>);
+  }
+
+  <span class="kw">if</span> (intent?.type === <span class="str">'cancel_reminder'</span>) {
+    <span class="cmt">// Look up active workflow instance and cancel</span>
+    <span class="kw">const</span> reminder = <span class="kw">await</span> <span class="fn">findActiveReminder</span>(uid, intent.query);
+    <span class="kw">if</span> (reminder) {
+      <span class="kw">await</span> event.context.cloudflare.env.REMINDER_WORKFLOW
+        .<span class="fn">sendEvent</span>(reminder.id, { event: <span class="str">'cancel'</span> });
+    }
+  }
+
+  <span class="kw">return</span> { status: <span class="str">'ok'</span> };
+});</pre>
+
+    <!-- ============================================================ -->
+    <h2><span class="num">10</span> Key Considerations</h2>
+
+    <div class="grid-2">
+      <div class="card">
+        <h3>Deduplication</h3>
+        <p>
+          Transcripts arrive in segments. A user saying "remind me at 3pm" might
+          span 2–3 webhook calls. Use KV to accumulate segments per session and
+          run intent extraction on the full context. Use a deduplication key
+          (e.g. hash of intent + timestamp) to avoid spawning duplicate
+          workflows.
+        </p>
+      </div>
+      <div class="card">
+        <h3>Timezone Handling</h3>
+        <p>
+          "Remind me at 3pm" needs the user's timezone. Store this in D1 as a
+          user preference (set during onboarding or extracted from their Omi
+          profile). Without it, default to UTC and confirm with the user.
+        </p>
+      </div>
+      <div class="card">
+        <h3>Relative vs. Absolute Times</h3>
+        <p>
+          "In 4 hours" is straightforward — compute from
+          <code>Date.now()</code>. "At 3pm tomorrow" requires timezone + date
+          parsing. Use a library like <code>date-fns-tz</code> or handle via
+          your AI extraction prompt (return ISO 8601).
+        </p>
+      </div>
+      <div class="card">
+        <h3>Event-Based Triggers</h3>
+        <p>
+          "Remind me when I get home" is harder — it requires location or
+          context awareness. Consider storing these as conditional reminders in
+          D1 and evaluating them against user context during subsequent
+          transcript webhooks.
+        </p>
+      </div>
+      <div class="card">
+        <h3>Rate Limits</h3>
+        <p>
+          Omi allows 1 proactive notification per user per app every 30 seconds.
+          For scheduled reminders using direct notifications, you have more
+          headroom, but still batch multiple due reminders with a short delay
+          between calls.
+        </p>
+      </div>
+      <div class="card">
+        <h3>Workflow Limits</h3>
+        <p>
+          CF Workflows state persists for 3 days (free) or 30 days (paid). For
+          reminders further out, consider storing in D1 and using a cron trigger
+          to spawn workflows a few hours before delivery time.
+        </p>
+      </div>
+    </div>
+
+    <hr />
+
+    <div class="diagram">
+      <div class="diagram-title">D1 Schema Sketch</div>
+      <pre style="margin: 0; border: none; background: transparent; padding: 0">
+<span class="kw">CREATE TABLE</span> reminders (
+  id           <span class="type">TEXT</span> PRIMARY KEY,
+  user_id      <span class="type">TEXT</span> NOT NULL,
+  message      <span class="type">TEXT</span> NOT NULL,
+  deliver_at   <span class="type">TEXT</span> NOT NULL,   <span class="cmt">-- ISO 8601</span>
+  status       <span class="type">TEXT</span> DEFAULT <span class="str">'scheduled'</span>,  <span class="cmt">-- scheduled | delivered | cancelled | failed</span>
+  workflow_id  <span class="type">TEXT</span>,           <span class="cmt">-- CF Workflow instance ID for cancellation</span>
+  created_at   <span class="type">TEXT</span> DEFAULT (datetime(<span class="str">'now'</span>)),
+  delivered_at <span class="type">TEXT</span>
+);
+
+<span class="kw">CREATE INDEX</span> idx_reminders_user <span class="kw">ON</span> reminders(user_id, status);
+<span class="kw">CREATE INDEX</span> idx_reminders_deliver <span class="kw">ON</span> reminders(deliver_at, status);
+
+<span class="kw">CREATE TABLE</span> users (
+  omi_uid      <span class="type">TEXT</span> PRIMARY KEY,
+  timezone     <span class="type">TEXT</span> DEFAULT <span class="str">'UTC'</span>,
+  preferences  <span class="type">TEXT</span>,  <span class="cmt">-- JSON blob</span>
+  created_at   <span class="type">TEXT</span> DEFAULT (datetime(<span class="str">'now'</span>))
+);</pre>
+    </div>
+
+    <hr />
+
+    <div class="callout info">
+      <strong>Next steps:</strong> Register your app in the Omi developer
+      portal, set up the webhook endpoint in your Nuxt app, wire up a Cloudflare
+      Workflow binding in your <code>wrangler.toml</code> /
+      <code>nuxt.config.ts</code>, and start with a simple "echo" test — have
+      the webhook send an immediate notification back to confirm the round-trip
+      works, then layer in AI extraction and scheduling.
+    </div>
+  </body>
+</html>
