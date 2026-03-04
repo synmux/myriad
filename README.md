@@ -61,3 +61,5 @@ See [`AGENTS.md`](AGENTS.md) for commands, conventions, and detailed guidance.
 ## License
 
 See [`LICENSE`](LICENSE).
+
+foo
