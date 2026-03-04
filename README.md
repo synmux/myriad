@@ -8,7 +8,7 @@ A grab-bag of experiments, prototypes, scripts, research, and configurations I'v
 
 ## Repository Structure
 
-This repo uses a **branch-per-project** model:
+This repo uses a **branch-per-project** model.
 
 | Branch                                                                 | Contents                                                             |
 | ---------------------------------------------------------------------- | -------------------------------------------------------------------- |
