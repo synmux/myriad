@@ -1,5 +1,4 @@
 ---
-title: Domain Availability Checker
 type: task
 status: draft
 created: 2026-03-11
@@ -189,8 +188,7 @@ const row = new TextRenderable(renderer, {
 
 The following 422 TLDs are supported by Cloudflare Registrar as of March 2026. The tool checks `{name}.{tld}` for each entry.
 
-<details>
-<summary>Full TLD list (422 entries, click to expand)</summary>
+### Full TLD list (422 entries)
 
 #### A
 
@@ -295,8 +293,6 @@ The following 422 TLDs are supported by Cloudflare Registrar as of March 2026. T
 #### Z
 
 `zone`
-
-</details>
 
 **Maintenance note:** This list should be stored as a data file (e.g. `tlds.json`) in the project, not hardcoded inline. When Cloudflare adds or removes TLDs, only the data file needs updating.
 
