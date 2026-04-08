@@ -14,6 +14,7 @@ Usage:    python main.py [count]
 """
 
 import secrets
+import subprocess
 import sys
 import types
 
@@ -29,6 +30,7 @@ if "pkg_resources" not in sys.modules:
 
 import pronouncing  # noqa: E402
 from english_words import get_english_words_set
+from simple_term_menu import TerminalMenu
 
 # Filler word banks – padded onto each anchor to build short phrases.
 
@@ -418,20 +420,68 @@ def _parse_count(argv: list[str]) -> int:
     return count
 
 
-def main() -> None:
-    """Run the rhyming passphrase generator as a CLI tool.
+def _copy_to_clipboard(text: str) -> None:
+    """Copy text to the macOS system clipboard using pbcopy."""
+    subprocess.run(["pbcopy"], input=text.encode(), check=True)
 
-    Parses an optional count argument, builds the word pool, and prints
-    the requested number of generated passphrases to stdout.
+
+def _select_passphrase(passphrases: list[str]) -> str | None:
+    """Display an interactive menu for passphrase selection.
+
+    Shows the generated passphrases in a navigable terminal menu.
+    The first item is pre-selected. Returns the chosen passphrase,
+    or None if the user cancels.
+
+    Args:
+        passphrases: The list of generated passphrases to choose from.
+
+    Returns:
+        The selected passphrase string, or None if cancelled.
+    """
+    menu = TerminalMenu(
+        passphrases,
+        title="Select a passphrase:\n",
+        cursor_index=0,
+        menu_cursor="  > ",
+        menu_cursor_style=("fg_cyan", "bold"),
+        menu_highlight_style=("bold",),
+        status_bar="Enter: copy to clipboard | Esc/q: cancel",
+        status_bar_style=("fg_gray",),
+    )
+    chosen_index = menu.show()
+    if chosen_index is None or not isinstance(chosen_index, int):
+        return None
+    return passphrases[chosen_index]
+
+
+def main() -> None:
+    """Run the rhyming passphrase generator with interactive selection.
+
+    Parses an optional count argument, builds the word pool, generates
+    passphrases, and presents an interactive terminal menu. The selected
+    passphrase is copied to the system clipboard. Falls back to plain
+    stdout output when not connected to a terminal.
     """
     count = _parse_count(sys.argv)
 
     real_words = _load_real_words()
     pool = build_anchor_pool(real_words)
-    print(f"Anchwqqqor pool: {len(pool):,} words\n")
+    print(f"Anchor pool: {len(pool):,} words\n")
 
-    for _ in range(count):
-        print(generate(pool, real_words))
+    passphrases = [generate(pool, real_words) for _ in range(count)]
+
+    if not sys.stdout.isatty():
+        for passphrase in passphrases:
+            print(passphrase)
+        return
+
+    chosen = _select_passphrase(passphrases)
+    if chosen is None:
+        print("No passphrase selected.")
+        return
+
+    _copy_to_clipboard(chosen)
+    print(f"Copied to clipboard: {chosen}")
 
 
 if __name__ == "__main__":

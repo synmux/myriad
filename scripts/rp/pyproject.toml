@@ -4,7 +4,11 @@ version = "0.1.2"
 description = "Generate rhyming passwords"
 readme = "README.md"
 requires-python = ">=3.14"
-dependencies = ["english-words>=2.0.2", "pronouncing>=0.2.0"]
+dependencies = [
+  "english-words>=2.0.2",
+  "pronouncing>=0.2.0",
+  "simple-term-menu>=1.6.0",
+]
 
 [project.scripts]
 rp = "main:main"
