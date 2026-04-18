@@ -9,7 +9,18 @@ proper nouns, abbreviations, and obscurities.
 Format:  "<phrase A> / <phrase B> / <two digits>"
 Example: "The underground parade / an undelivered accolade / 38"
 
-Install:  pip install pronouncing english-words
+Interactive keys (in a TTY):
+  up/down   navigate passphrases
+  enter     copy the highlighted passphrase to the clipboard and exit
+  x         toggle whether spaces are displayed (the displayed char
+            count shrinks with the visible text; the limit, however, is
+            always enforced against the spaced length)
+  l         set a character limit (0 = no limit, min 9 when set);
+            regenerates all passphrases under the new limit
+  r         regenerate the current batch with the same settings
+  esc / q   cancel without copying
+
+Install:  pip install pronouncing english-words textual
 Usage:    python main.py [count]
 """
 
@@ -30,7 +41,13 @@ if "pkg_resources" not in sys.modules:
 
 import pronouncing  # noqa: E402
 from english_words import get_english_words_set
-from simple_term_menu import TerminalMenu
+
+# Passphrase-shape constants shared by the generator and the UI limit validator.
+SUFFIX_LEN = len(" / 12")  # 5: " / NN"
+COUPLET_SEP_LEN = len(" / ")  # 3: separator between phrase halves
+MIN_ANCHOR_LEN = 4  # mirrors the len(word) < 4 check in _is_good_anchor
+MIN_COUPLET_LEN = 2 * MIN_ANCHOR_LEN + COUPLET_SEP_LEN + SUFFIX_LEN  # 16
+MIN_SINGLE_LEN = MIN_ANCHOR_LEN + SUFFIX_LEN  # 9 ("Abcd / 12")
 
 # Filler word banks – padded onto each anchor to build short phrases.
 
@@ -344,51 +361,110 @@ def _build_phrase(anchor: str, num_fillers: int) -> str:
 # Generator
 
 
-def generate(pool: list[str], real_words: set[str], max_attempts: int = 300) -> str:
-    """Generate a single rhyming passphrase.
+def _capitalise(phrase: str) -> str:
+    """Upper-case the first character of a phrase, preserving the rest."""
+    return phrase[0].upper() + phrase[1:] if phrase else phrase
 
-    1. Pick a random anchor from the pool.
-    2. Find its phonetic rhymes (via CMU dict), filtered for quality.
-    3. Wrap each anchor in filler words (2–4 fillers total, 4–6 words total).
-    4. Append two random digits.
+
+def _couplet_filler_splits(total: int) -> list[tuple[int, int]]:
+    """Return every legal (fillers_a, fillers_b) split for a given total.
+
+    Each half must hold 0–2 fillers (matching the range supported by
+    ``_build_phrase``), and together they must sum to ``total``. The
+    splits are returned in a stable order so the descent is deterministic.
+
+    Args:
+        total: The total filler budget to distribute across both halves.
 
     Returns:
-        A passphrase in the format "<phrase A> / <phrase B> / <two digits>".
+        A list of (fillers_a, fillers_b) pairs whose components are both
+        in the range 0–2 and whose sum equals ``total``.
+    """
+    return [(a, total - a) for a in range(0, 3) if 0 <= total - a <= 2]
+
+
+def generate(
+    pool: list[str],
+    real_words: set[str],
+    limit: int = 0,
+    max_attempts: int = 300,
+) -> str:
+    """Generate a single rhyming passphrase, optionally under a length budget.
+
+    When ``limit`` is 0 the function returns the first rhyming couplet it
+    builds and keeps drawing fresh anchors until one has valid rhymes —
+    unlimited generation never drops to the non-rhyming form. When
+    ``limit`` is set, it descends through progressively shorter forms for
+    the same anchor before giving up and trying a new anchor:
+
+    1. Couplet with filler budget ``total_fillers`` walking from 4 down
+       to 0, trying every legal split within each budget.
+    2. Single-statement fallback using just ``word_a``, trying filler
+       counts from 2 down to 0. Only engaged when ``limit > 0``; with
+       the limit disabled we skip this step and redraw instead.
+
+    The ``/ NN`` two-digit suffix is always preserved. The shortest
+    possible output is ``"Abcd / 12"`` (``MIN_SINGLE_LEN`` = 9 chars);
+    setting ``limit`` below that is guaranteed to fail.
+
+    Args:
+        pool: Anchor words produced by :func:`build_anchor_pool`.
+        real_words: GCIDE-backed word set used to validate rhyme candidates.
+        limit: Maximum total character length, counting spaces. 0 disables
+            the check entirely.
+        max_attempts: Maximum number of fresh anchors to draw before
+            giving up.
+
+    Returns:
+        A passphrase string whose length (including spaces) satisfies the
+        limit, in the format ``"<phrase A> / <phrase B> / <two digits>"``
+        or ``"<phrase> / <two digits>"`` when the single-statement
+        fallback is used (only possible when ``limit > 0``).
 
     Raises:
-        ValueError: If no anchor words are available in the input pool.
-        RuntimeError: If no valid rhyming pair can be built within max_attempts.
+        ValueError: If the anchor pool is empty.
+        RuntimeError: If no phrase that fits the limit can be built
+            within ``max_attempts``.
     """
     if not pool:
         raise ValueError("Anchor pool is empty; cannot generate passphrases")
 
     for _ in range(max_attempts):
         word_a = secrets.choice(pool)
-        candidates = [
+        suffix = f" / {secrets.randbelow(90) + 10}"
+
+        # Couplet descent: prefer the rhyming form when rhymes exist.
+        rhymes = [
             r
             for r in pronouncing.rhymes(word_a)
             if r != word_a and _is_good_anchor(r, real_words)
         ]
-        if not candidates:
-            continue
+        if rhymes:
+            word_b = secrets.choice(rhymes)
+            for total in range(4, -1, -1):
+                for fillers_a, fillers_b in _couplet_filler_splits(total):
+                    left = _capitalise(_build_phrase(word_a, fillers_a))
+                    right = _build_phrase(word_b, fillers_b)
+                    phrase = f"{left} / {right}{suffix}"
+                    if limit == 0 or len(phrase) <= limit:
+                        return phrase
 
-        word_b = secrets.choice(candidates)
+        # Single-statement fallback: drop the rhyme partner entirely.
+        # Only used when a character limit forces the compromise; under
+        # unlimited generation we keep drawing anchors until one rhymes.
+        if limit > 0:
+            for fillers in (2, 1, 0):
+                left = _capitalise(_build_phrase(word_a, fillers))
+                phrase = f"{left}{suffix}"
+                if len(phrase) <= limit:
+                    return phrase
 
-        # Distribute 2–4 filler words across both halves (each half ≤ 2).
-        total_fillers = secrets.randbelow(3) + 2
-        min_fillers_a = max(1, total_fillers - 2)
-        max_fillers_a = min(2, total_fillers - 1)
-        fillers_a = secrets.randbelow(max_fillers_a - min_fillers_a + 1) + min_fillers_a
-        fillers_b = total_fillers - fillers_a
+        # Neither form fit this anchor; draw a new one and try again.
 
-        left = _build_phrase(word_a, fillers_a)
-        right = _build_phrase(word_b, fillers_b)
-        digits = f"{secrets.randbelow(90) + 10}"
-
-        left = left[0].upper() + left[1:]
-        return f"{left} / {right} / {digits}"
-
-    raise RuntimeError(f"Could not find a rhyming pair after {max_attempts} attempts")
+    raise RuntimeError(
+        f"Could not generate a passphrase under {limit} characters"
+        f" after {max_attempts} attempts"
+    )
 
 
 # CLI
@@ -425,42 +501,353 @@ def _copy_to_clipboard(text: str) -> None:
     subprocess.run(["pbcopy"], input=text.encode(), check=True)
 
 
-def _select_passphrase(passphrases: list[str]) -> str | None:
-    """Display an interactive menu for passphrase selection.
+# Textual UI
 
-    Shows the generated passphrases in a navigable terminal menu.
-    The first item is pre-selected. Returns the chosen passphrase,
-    or None if the user cancels.
+
+def _run_interactive_app(
+    count: int,
+    pool: list[str],
+    real_words: set[str],
+    seeded: list[str],
+) -> str | None:
+    """Run the interactive Textual picker and return the chosen passphrase.
+
+    Imported lazily inside the function so piped / non-TTY callers do
+    not pay the Textual import cost.
 
     Args:
-        passphrases: The list of generated passphrases to choose from.
+        count: Number of passphrases to keep in the picker list.
+        pool: Anchor pool used for regeneration under a new limit.
+        real_words: Word set used to validate rhyme candidates.
+        seeded: Pre-generated passphrase batch to display initially.
 
     Returns:
-        The selected passphrase string, or None if cancelled.
+        The chosen passphrase in the form the user saw on screen
+        (spaces stripped if the spaces toggle was off), or None if
+        the user cancelled.
     """
-    menu = TerminalMenu(
-        passphrases,
-        title="Select a passphrase:\n",
-        cursor_index=0,
-        menu_cursor="  > ",
-        menu_cursor_style=("fg_cyan", "bold"),
-        menu_highlight_style=("bold",),
-        status_bar="Enter: copy to clipboard | Esc/q: cancel",
-        status_bar_style=("fg_gray",),
-    )
-    chosen_index = menu.show()
-    if chosen_index is None or not isinstance(chosen_index, int):
-        return None
-    return passphrases[chosen_index]
+    from textual import work
+    from textual.app import App, ComposeResult
+    from textual.binding import Binding
+    from textual.containers import Container, Vertical
+    from textual.reactive import reactive
+    from textual.screen import ModalScreen
+    from textual.widgets import Input, Label, OptionList, Static
+    from textual.worker import Worker, WorkerState
+
+    class LimitModal(ModalScreen[int | None]):
+        """Prompt for a character-limit integer.
+
+        Dismisses with the validated integer (0 meaning "no limit") or
+        None if the user cancels with Escape. Values between 1 and
+        ``MIN_SINGLE_LEN - 1`` are rejected inline via a toast because
+        no passphrase shorter than ``"Abcd / 12"`` can be built.
+        """
+
+        DEFAULT_CSS = """
+        LimitModal {
+            align: center middle;
+        }
+        LimitModal > Vertical {
+            width: 50;
+            height: auto;
+            padding: 1 2;
+            border: thick $primary;
+            background: $surface;
+        }
+        LimitModal .hint {
+            color: $text-muted;
+            padding-top: 1;
+        }
+        """
+
+        BINDINGS = [Binding("escape", "cancel", "Cancel", show=False)]
+
+        def compose(self) -> ComposeResult:
+            """Build the modal content."""
+            yield Vertical(
+                Label(f"Character limit (0 = no limit, min {MIN_SINGLE_LEN}):"),
+                Input(
+                    value="0",
+                    type="integer",
+                    restrict=r"[0-9]*",
+                    id="limit-input",
+                ),
+                Label("ENTER: confirm · ESC: cancel", classes="hint"),
+            )
+
+        def on_mount(self) -> None:
+            """Focus the input and pre-select the default so typing overwrites."""
+            inp = self.query_one("#limit-input", Input)
+            inp.focus()
+            # Try the public action first; fall back to direct selection
+            # assignment for older Textual releases that did not expose it.
+            try:
+                inp.action_select_all()
+            except AttributeError:
+                try:
+                    from textual.widgets._input import Selection
+
+                    inp.selection = Selection(0, len(inp.value))
+                except Exception:
+                    # Last-resort: clear the value so the first keystroke
+                    # becomes the whole input.
+                    inp.value = ""
+
+        def on_input_submitted(self, event: Input.Submitted) -> None:
+            """Validate and dismiss with the parsed integer."""
+            raw = event.value.strip()
+            value = int(raw) if raw else 0
+            if value != 0 and value < MIN_SINGLE_LEN:
+                self.app.notify(
+                    f"Limit must be 0 or at least {MIN_SINGLE_LEN} characters.",
+                    severity="error",
+                )
+                return
+            self.dismiss(value)
+
+        def action_cancel(self) -> None:
+            """Dismiss without returning a new limit."""
+            self.dismiss(None)
+
+    class PassphraseApp(App[str | None]):
+        """Interactive picker for rhyming passphrases.
+
+        The app takes over the whole terminal, but the actual UI is a
+        self-sizing card centred on screen. The card expands to fit the
+        widest rendered row and contracts again when a tight character
+        limit makes the passphrases shorter.
+        """
+
+        CSS = """
+        Screen {
+            align: center middle;
+            background: $background;
+        }
+        #card {
+            width: auto;
+            height: auto;
+            max-width: 90%;
+            max-height: 90%;
+            padding: 1 2;
+            border: thick $primary;
+            background: $surface;
+        }
+        #status-bar {
+            width: 100%;
+            height: 1;
+            background: $primary 30%;
+            color: $text;
+            padding: 0 1;
+            margin-bottom: 1;
+        }
+        #passphrase-list {
+            width: auto;
+            height: auto;
+            max-height: 20;
+            border: none;
+            padding: 0;
+            background: $surface;
+        }
+        #key-hints {
+            width: 100%;
+            height: 1;
+            color: $text-muted;
+            margin-top: 1;
+            text-align: center;
+        }
+        """
+
+        BINDINGS = [
+            Binding("x", "toggle_spaces", "Toggle spaces"),
+            Binding("l", "set_limit", "Set limit"),
+            Binding("r", "regenerate", "Regenerate"),
+            Binding("escape", "cancel", "Cancel"),
+            Binding("q", "cancel", "Cancel", show=False),
+        ]
+
+        spaces_on: reactive[bool] = reactive(True)
+        limit: reactive[int] = reactive(0)
+
+        def __init__(
+            self,
+            count: int,
+            pool: list[str],
+            real_words: set[str],
+            seeded: list[str],
+        ) -> None:
+            super().__init__()
+            self._count = count
+            self._pool = pool
+            self._real_words = real_words
+            self._passphrases: list[str] = list(seeded)
+            # Pending-limit state lets on_worker_state_changed know what
+            # limit the in-flight regeneration is targeting, and what to
+            # report if it fails.
+            self._pending_limit: int | None = None
+
+        def compose(self) -> ComposeResult:
+            """Build the main-screen layout as a centred card."""
+            yield Container(
+                Static(self._status_text(), id="status-bar"),
+                OptionList(id="passphrase-list"),
+                Static(
+                    "x: toggle spaces  ·  l: set limit  ·  r: regenerate"
+                    "  ·  enter: copy  ·  esc: cancel",
+                    id="key-hints",
+                ),
+                id="card",
+            )
+
+        def on_mount(self) -> None:
+            """Populate the list with the seeded batch."""
+            self._refresh_list()
+
+        # Rendering helpers
+
+        def _status_text(self) -> str:
+            pool_size = f"{len(self._pool):,}"
+            limit_txt = "none" if self.limit == 0 else str(self.limit)
+            spaces_txt = "on" if self.spaces_on else "off"
+            return (
+                f" Pool: {pool_size}  ·  Limit: {limit_txt}"
+                f"  ·  Spaces: {spaces_txt}"
+            )
+
+        def _display_form(self, spaced: str) -> str:
+            """Return the passphrase in its current display form.
+
+            Strips interior spaces when the toggle is off. The canonical
+            (spaced) string is never mutated.
+            """
+            return spaced if self.spaces_on else spaced.replace(" ", "")
+
+        def _refresh_status(self) -> None:
+            self.query_one("#status-bar", Static).update(self._status_text())
+
+        def _refresh_list(self) -> None:
+            option_list = self.query_one("#passphrase-list", OptionList)
+            previous = option_list.highlighted
+            option_list.clear_options()
+
+            if self._passphrases:
+                # Char count reflects the displayed form so it decreases
+                # when spaces are toggled off. Limit enforcement still
+                # uses the canonical spaced length inside ``generate``,
+                # which is what the user-facing count converges to when
+                # spaces are on.
+                display_forms = [self._display_form(p) for p in self._passphrases]
+                column_width = max(len(d) for d in display_forms)
+                rows = [
+                    f"{display:<{column_width}}  [{len(display)} chars]"
+                    for display in display_forms
+                ]
+                option_list.add_options(rows)
+
+                if previous is None or previous >= len(self._passphrases):
+                    option_list.highlighted = 0
+                else:
+                    option_list.highlighted = previous
+
+        # Actions
+
+        def action_toggle_spaces(self) -> None:
+            """Flip the display-spaces toggle; no regeneration needed."""
+            self.spaces_on = not self.spaces_on
+            self._refresh_list()
+            self._refresh_status()
+
+        def action_set_limit(self) -> None:
+            """Prompt for a new character limit and regenerate if accepted."""
+
+            def handle(new_limit: int | None) -> None:
+                if new_limit is None or new_limit == self.limit:
+                    return
+                self._regenerate_under(new_limit)
+
+            self.push_screen(LimitModal(), handle)
+
+        def action_regenerate(self) -> None:
+            """Draw a fresh batch of passphrases under the current limit."""
+            self._regenerate_under(self.limit)
+
+        def action_cancel(self) -> None:
+            """Exit without copying anything."""
+            self.exit(None)
+
+        # Regeneration
+
+        @work(thread=True, exclusive=True, name="regenerate")
+        def _regenerate_worker(self, new_limit: int) -> list[str]:
+            """Regenerate the passphrase batch on a worker thread.
+
+            Returning normally signals success; raising ``RuntimeError``
+            signals failure. Both cases land in ``on_worker_state_changed``
+            so UI updates happen on the main thread.
+            """
+            return [
+                generate(self._pool, self._real_words, limit=new_limit)
+                for _ in range(self._count)
+            ]
+
+        def _regenerate_under(self, new_limit: int) -> None:
+            """Kick off a background regeneration under ``new_limit``."""
+            self._pending_limit = new_limit
+            self._regenerate_worker(new_limit)
+
+        def on_worker_state_changed(self, event: Worker.StateChanged) -> None:
+            """Swap in the regenerated batch, or roll back on failure."""
+            if event.worker.name != "regenerate":
+                return
+            pending = self._pending_limit
+            if pending is None:
+                return
+
+            if event.state is WorkerState.SUCCESS:
+                result = event.worker.result
+                if isinstance(result, list):
+                    self.limit = pending
+                    self._passphrases = result
+                    self._refresh_list()
+                    self._refresh_status()
+                self._pending_limit = None
+            elif event.state is WorkerState.ERROR:
+                self.notify(
+                    f"Could not fit {self._count} passphrases under "
+                    f"{pending} characters.",
+                    severity="error",
+                )
+                self.notify(
+                    f"Keeping previous limit "
+                    f"({'none' if self.limit == 0 else self.limit}).",
+                    severity="warning",
+                )
+                self._pending_limit = None
+
+        # Selection
+
+        def on_option_list_option_selected(
+            self, event: OptionList.OptionSelected
+        ) -> None:
+            """Copy the highlighted passphrase's displayed form and exit."""
+            index = event.option_index
+            if index is None or index < 0 or index >= len(self._passphrases):
+                return
+            chosen = self._passphrases[index]
+            self.exit(self._display_form(chosen))
+
+    app = PassphraseApp(count=count, pool=pool, real_words=real_words, seeded=seeded)
+    return app.run()
 
 
 def main() -> None:
     """Run the rhyming passphrase generator with interactive selection.
 
     Parses an optional count argument, builds the word pool, generates
-    passphrases, and presents an interactive terminal menu. The selected
-    passphrase is copied to the system clipboard. Falls back to plain
-    stdout output when not connected to a terminal.
+    an initial batch of passphrases, and (in a TTY) hands control to
+    the Textual picker. The selected passphrase is copied to the system
+    clipboard. Falls back to plain stdout output when not connected to
+    a terminal.
     """
     count = _parse_count(sys.argv)
 
@@ -475,7 +862,7 @@ def main() -> None:
             print(passphrase)
         return
 
-    chosen = _select_passphrase(passphrases)
+    chosen = _run_interactive_app(count, pool, real_words, passphrases)
     if chosen is None:
         print("No passphrase selected.")
         return
