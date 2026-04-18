@@ -35,6 +35,11 @@ lint:
     - markdownlint@0.48.0
     - prettier@3.8.1
     - trufflehog@3.94.1
+  ignore:
+    - linters:
+        - ALL
+      paths:
+        - .github/workflows/claude*yml
 actions:
   enabled:
     - trunk-announce
