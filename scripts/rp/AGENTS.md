@@ -26,7 +26,7 @@ Single-file project. Everything lives in `main.py`:
 `generate()` respects an optional character limit by walking through progressively shorter output forms **for the same anchor** before drawing a new anchor:
 
 1. **Couplet descent**: if `word_a` has good rhymes, pick `word_b` and try `total_fillers` from 4 down to 0. For each total, iterate every legal `(fillers_a, fillers_b)` split with both halves in `[0, 2]`. Return the first candidate that fits.
-2. **Single-statement fallback**: if no couplet form fits (or `word_a` has no good rhymes), drop the rhyme partner and try `"<phrase_a> / NN"` with fillers 2 → 1 → 0.
+2. **Single-statement fallback** (limit-only): if a couplet form can't fit under a non-zero `limit` (or `word_a` has no good rhymes), drop the rhyme partner and try `"<phrase_a> / NN"` with fillers 2 → 1 → 0. This step is **skipped entirely when `limit == 0`** — unlimited generation must stay rhyming, so we redraw instead of emitting a non-rhyming phrase.
 3. If neither form fits this anchor, draw a new anchor and restart. After `max_attempts` fruitless draws, raise `RuntimeError`.
 
 The `" / NN"` two-digit suffix is always preserved. Shortest possible output is `"Abcd / 12"` (9 chars); any non-zero limit below `MIN_SINGLE_LEN` (9) is guaranteed to fail.

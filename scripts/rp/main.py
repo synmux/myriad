@@ -391,15 +391,17 @@ def generate(
 ) -> str:
     """Generate a single rhyming passphrase, optionally under a length budget.
 
-    When ``limit`` is 0 the function returns the first form it builds — a
-    rhyming couplet with 2–4 filler words if possible. When ``limit`` is
-    set, it descends through progressively shorter forms for the same
-    anchor before giving up and trying a new anchor:
+    When ``limit`` is 0 the function returns the first rhyming couplet it
+    builds and keeps drawing fresh anchors until one has valid rhymes —
+    unlimited generation never drops to the non-rhyming form. When
+    ``limit`` is set, it descends through progressively shorter forms for
+    the same anchor before giving up and trying a new anchor:
 
     1. Couplet with filler budget ``total_fillers`` walking from 4 down
        to 0, trying every legal split within each budget.
     2. Single-statement fallback using just ``word_a``, trying filler
-       counts from 2 down to 0.
+       counts from 2 down to 0. Only engaged when ``limit > 0``; with
+       the limit disabled we skip this step and redraw instead.
 
     The ``/ NN`` two-digit suffix is always preserved. The shortest
     possible output is ``"Abcd / 12"`` (``MIN_SINGLE_LEN`` = 9 chars);
@@ -417,7 +419,7 @@ def generate(
         A passphrase string whose length (including spaces) satisfies the
         limit, in the format ``"<phrase A> / <phrase B> / <two digits>"``
         or ``"<phrase> / <two digits>"`` when the single-statement
-        fallback is used.
+        fallback is used (only possible when ``limit > 0``).
 
     Raises:
         ValueError: If the anchor pool is empty.
@@ -448,11 +450,14 @@ def generate(
                         return phrase
 
         # Single-statement fallback: drop the rhyme partner entirely.
-        for fillers in (2, 1, 0):
-            left = _capitalise(_build_phrase(word_a, fillers))
-            phrase = f"{left}{suffix}"
-            if limit == 0 or len(phrase) <= limit:
-                return phrase
+        # Only used when a character limit forces the compromise; under
+        # unlimited generation we keep drawing anchors until one rhymes.
+        if limit > 0:
+            for fillers in (2, 1, 0):
+                left = _capitalise(_build_phrase(word_a, fillers))
+                phrase = f"{left}{suffix}"
+                if len(phrase) <= limit:
+                    return phrase
 
         # Neither form fit this anchor; draw a new one and try again.
 
