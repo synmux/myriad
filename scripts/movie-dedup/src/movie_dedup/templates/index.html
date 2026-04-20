@@ -1,0 +1,25 @@
+{% extends "base.html" %} {% block title %}movie-dedup · scan{% endblock %} {%
+block body %}
+<section class="card">
+  <h1>Scan library</h1>
+  <p class="muted">Library root: <code>{{ library_root }}</code></p>
+  {% if scan %}
+  <p>
+    Last scan started {{ scan.started_at }} {% if scan.running %} —
+    <strong>running…</strong>{% else %} — finished at {{ scan.finished_at }}{%
+    endif %}
+  </p>
+  <p>
+    {{ scan.flagged_count }} flagged directories ·
+    <a href="/results">view results</a>
+  </p>
+  {% endif %}
+  <form action="/scan" method="post">
+    <button type="submit" class="primary">Scan now</button>
+  </form>
+  <p class="muted small" style="margin-top: 16px">
+    ⚠ Deletions are permanent — files are unlinked, not moved to Trash (required
+    for network volumes). Dry-run preview is shown before any file is deleted.
+  </p>
+</section>
+{% endblock %}

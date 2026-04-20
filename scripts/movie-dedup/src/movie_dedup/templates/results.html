@@ -1,0 +1,80 @@
+{% extends "base.html" %} {% block title %}movie-dedup · results{% endblock %}
+{% block body %}
+<section class="card header-card">
+  <div>
+    <h1>Flagged directories</h1>
+    {% include "_progress.html" %}
+  </div>
+  <div class="actions">
+    <form action="/clear" method="post" class="inline">
+      <button type="submit" class="secondary">Clear all</button>
+    </form>
+    <form action="/preview" method="post" class="inline">
+      <button type="submit" class="primary">Preview deletions →</button>
+    </form>
+  </div>
+</section>
+
+{% for d in scan.directories %}
+<details class="dir" open>
+  <summary>
+    <span class="dir-name">{{ d.name }}</span>
+    <span class="muted">{{ d.copies|length }} copies</span>
+  </summary>
+  <table class="copies">
+    <thead>
+      <tr>
+        <th>Remove</th>
+        <th>Filename</th>
+        <th>Resolution</th>
+        <th>Codec</th>
+        <th class="num">Size</th>
+        <th class="num">+ companions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for c in d.copies %}
+      <tr class="{% if c.remove %}row-remove{% else %}row-keep{% endif %}">
+        <td>
+          <input
+            type="checkbox"
+            {%
+            if
+            c.remove
+            %}checked{%
+            endif
+            %}
+            hx-post="/toggle"
+            hx-trigger="change"
+            hx-target="#scan-summary"
+            hx-swap="outerHTML"
+            hx-vals='{"directory": {{ d.directory|tojson }}, "video_path": {{ c.video_path|tojson }}, "remove": "{{ "on" if not c.remove else "off" }}"}'
+          />
+        </td>
+        <td class="filename"><code>{{ c.filename }}</code></td>
+        <td>
+          {% if c.bucket %}
+          <span class="bucket bucket-{{ c.bucket|lower|replace('4k','fourk') }}"
+            >{{ c.bucket }}</span
+          >
+          <span class="muted small">{{ c.width }}×{{ c.height }}</span>
+          {% else %}
+          <span class="muted">unprobed</span>
+          {% endif %}
+        </td>
+        <td>{{ c.codec or "?" }}</td>
+        <td class="num">{{ c.size|human_bytes }}</td>
+        <td class="num muted">{{ c.companion_bytes|human_bytes }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</details>
+{% else %}
+<section class="card">
+  <p class="muted">
+    No flagged directories {% if scan.running %}yet — scan is still running.{%
+    else %}— the library is clean.{% endif %}
+  </p>
+</section>
+{% endfor %} {% endblock %}

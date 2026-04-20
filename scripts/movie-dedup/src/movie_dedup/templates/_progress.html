@@ -1,0 +1,23 @@
+<p
+  class="muted"
+  id="scan-summary"
+  {%
+  if
+  scan
+  and
+  scan.running
+  %}
+  hx-get="/scan/progress"
+  hx-trigger="every 2s"
+  hx-swap="outerHTML"
+  {%
+  endif
+  %}
+>
+  {% if scan and scan.running %} Scanning… {{ scan.scanned_dirs }} / {{
+  scan.total_dirs }} directories ·
+  <strong>{{ scan.flagged_count }}</strong> flagged so far {% elif scan %} Scan
+  complete · {{ scan.flagged_count }} flagged directories ·
+  <strong>{{ scan.total_removable_bytes|human_bytes }}</strong> selected for
+  removal {% else %} No scan run yet. {% endif %}
+</p>

@@ -1,0 +1,263 @@
+:root {
+  --bg: #0f1115;
+  --fg: #e6e6e6;
+  --muted: #8a8f98;
+  --card: #1a1d23;
+  --border: #2a2e36;
+  --accent: #4f9eff;
+  --danger: #e05252;
+  --warn: #f0a044;
+  --ok: #4fb87a;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font:
+    14px/1.5 -apple-system,
+    BlinkMacSystemFont,
+    "Inter",
+    system-ui,
+    sans-serif;
+  color: var(--fg);
+  background: var(--bg);
+}
+
+code {
+  font:
+    12px/1.5 "SF Mono",
+    Menlo,
+    monospace;
+  color: #cfcfcf;
+}
+
+header.site {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+header.site .brand {
+  font-weight: 600;
+  text-decoration: none;
+  color: var(--accent);
+}
+header.site nav a {
+  margin-left: 16px;
+  color: var(--muted);
+  text-decoration: none;
+}
+header.site nav a:hover {
+  color: var(--fg);
+}
+
+main {
+  max-width: 1200px;
+  margin: 20px auto;
+  padding: 0 20px;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin-bottom: 16px;
+}
+
+.header-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+.header-card h1 {
+  margin: 0 0 4px 0;
+  font-size: 20px;
+}
+
+.muted {
+  color: var(--muted);
+}
+.small {
+  font-size: 11px;
+}
+.num {
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.inline {
+  display: inline-block;
+  margin: 0;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+button,
+.button {
+  font: inherit;
+  padding: 8px 14px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: #262a32;
+  color: var(--fg);
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+}
+
+button:hover,
+.button:hover {
+  background: #2f343d;
+}
+button.primary,
+.button.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+button.primary:hover {
+  background: #3b87e6;
+}
+button.danger {
+  background: var(--danger);
+  border-color: var(--danger);
+  color: #fff;
+}
+button.danger:hover {
+  background: #c84343;
+}
+button.secondary,
+.button.secondary {
+  background: transparent;
+}
+
+details.dir {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+
+details.dir > summary {
+  padding: 12px 16px;
+  cursor: pointer;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  user-select: none;
+}
+
+details.dir > summary .dir-name {
+  font-weight: 600;
+  flex: 1;
+}
+details.dir[open] > summary {
+  border-bottom: 1px solid var(--border);
+}
+
+table.copies {
+  width: 100%;
+  border-collapse: collapse;
+}
+table.copies th,
+table.copies td {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  vertical-align: middle;
+}
+table.copies th {
+  font-weight: 500;
+  color: var(--muted);
+  font-size: 12px;
+}
+table.copies tr:last-child td {
+  border-bottom: 0;
+}
+table.copies input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+}
+table.copies .filename code {
+  word-break: break-all;
+}
+table.copies tr.row-remove,
+table.copies tr:has(input[type="checkbox"]:checked) {
+  background: rgba(224, 82, 82, 0.06);
+}
+table.copies tr.row-keep code,
+table.copies tr:not(:has(input[type="checkbox"]:checked)) code {
+  color: var(--ok);
+}
+
+.bucket {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  border: 1px solid var(--border);
+}
+.bucket-fourk {
+  color: #fff;
+  background: #6b3fa0;
+  border-color: #6b3fa0;
+}
+.bucket-1080p {
+  color: #fff;
+  background: #2e7d46;
+  border-color: #2e7d46;
+}
+.bucket-720p {
+  color: #fff;
+  background: #1f6088;
+  border-color: #1f6088;
+}
+.bucket-sd {
+  color: #fff;
+  background: #7a5c2e;
+  border-color: #7a5c2e;
+}
+
+ul.file-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+ul.file-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 16px;
+  border-bottom: 1px solid var(--border);
+}
+ul.file-list li:last-child {
+  border-bottom: 0;
+}
+
+ul.stats {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+ul.stats li strong {
+  color: var(--fg);
+  font-size: 18px;
+  margin-right: 4px;
+}

@@ -1,0 +1,31 @@
+{% extends "base.html" %} {% block title %}movie-dedup · done{% endblock %} {%
+block body %}
+<section class="card">
+  <h1>Deletion complete</h1>
+  <ul class="stats">
+    <li><strong>{{ counts.deleted }}</strong> deleted</li>
+    <li><strong>{{ counts.skipped }}</strong> skipped</li>
+    <li><strong>{{ counts.error }}</strong> errors</li>
+    <li><strong>{{ total_bytes|human_bytes }}</strong> reclaimed</li>
+  </ul>
+  <div class="actions">
+    <form action="/scan" method="post" class="inline">
+      <button type="submit" class="primary">Rescan (Pass 3)</button>
+    </form>
+    <a href="/" class="button secondary">Home</a>
+  </div>
+</section>
+
+{% if errors %}
+<section class="card">
+  <h2>Issues</h2>
+  <ul class="file-list">
+    {% for e in errors %}
+    <li>
+      <code>{{ e.path }}</code>
+      <span class="muted">[{{ e.outcome }}] {{ e.error or "" }}</span>
+    </li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %} {% endblock %}

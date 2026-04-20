@@ -1,0 +1,42 @@
+{% extends "base.html" %} {% block title %}movie-dedup · preview{% endblock %}
+{% block body %}
+<section class="card header-card">
+  <div>
+    <h1>Preview deletions</h1>
+    <p class="muted">
+      {{ count }} files · <strong>{{ grand_total|human_bytes }}</strong> will be
+      <strong>permanently deleted</strong> (no Trash — network volume).
+    </p>
+  </div>
+  <div class="actions">
+    <a href="/results" class="button secondary">← Cancel</a>
+    <form action="/delete" method="post" class="inline">
+      <button type="submit" class="danger">Permanently delete</button>
+    </form>
+  </div>
+</section>
+
+{% for d in per_directory %}
+<details class="dir" open>
+  <summary>
+    <span class="dir-name">{{ d.name }}</span>
+    <span class="muted"
+      >{{ d.files|length }} files · {{ d.subtotal|human_bytes }}</span
+    >
+  </summary>
+  <ul class="file-list">
+    {% for f in d.files %}
+    <li>
+      <code>{{ f.path }}</code>
+      <span class="num muted">{{ f.size|human_bytes }}</span>
+    </li>
+    {% endfor %}
+  </ul>
+</details>
+{% else %}
+<section class="card">
+  <p class="muted">
+    Nothing selected for removal. <a href="/results">← back</a>
+  </p>
+</section>
+{% endfor %} {% endblock %}
