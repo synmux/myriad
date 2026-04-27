@@ -25,14 +25,14 @@ set -euo pipefail
 # Resolve the project root from the script location so the script works no
 # matter where it's invoked from.
 project_root="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-cd "$project_root"
+cd "${project_root}"
 
 # -----------------------------------------------------------------------------
 # Step 1 — .env initialisation
 # -----------------------------------------------------------------------------
 if [[ ! -f .env ]]; then
 	if [[ ! -f env.template ]]; then
-		echo "ERROR: env.template not found in $project_root." >&2
+		echo "ERROR: env.template not found in ${project_root}." >&2
 		echo "Cannot create .env. Aborting." >&2
 		exit 1
 	fi
@@ -89,7 +89,7 @@ config_directories=(
 
 echo "Creating directory tree..."
 for directory in "${media_directories[@]}" "${config_directories[@]}"; do
-	mkdir -p "$directory"
+	mkdir -p "${directory}"
 done
 
 # -----------------------------------------------------------------------------
@@ -99,16 +99,16 @@ done
 # created directories already have the right owner. Otherwise, attempt the
 # chown and degrade gracefully if it fails so the script stays idempotent.
 current_uid="$(id -u)"
-if [[ $current_uid -eq 0 ]] || [[ $current_uid -eq $target_uid ]]; then
+if [[ ${current_uid} -eq 0 ]] || [[ ${current_uid} -eq ${target_uid} ]]; then
 	if chown -R "${target_uid}:${target_gid}" media-data config 2>/dev/null; then
 		echo "Ownership set to ${target_uid}:${target_gid}."
 	else
-		echo "WARNING: chown failed even though running as UID $current_uid." >&2
+		echo "WARNING: chown failed even though running as UID ${current_uid}." >&2
 		echo "         Containers may hit permission errors on first run." >&2
 	fi
 else
 	cat <<EOF >&2
-Skipping chown: running as UID $current_uid, target is ${target_uid}.
+Skipping chown: running as UID ${current_uid}, target is ${target_uid}.
 Directories were created but not re-owned. If your *arr containers can't
 write into them, re-run with sudo:
 
