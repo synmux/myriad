@@ -1,0 +1,71 @@
+# -----------------------------------------------------------------------------
+# Lidarr — music automation.
+# -----------------------------------------------------------------------------
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: lidarr-config
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lidarr
+  labels:
+    app: lidarr
+    app.kubernetes.io/part-of: arr-stack
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: lidarr
+  template:
+    metadata:
+      labels:
+        app: lidarr
+        app.kubernetes.io/part-of: arr-stack
+    spec:
+      containers:
+        - name: lidarr
+          image: lscr.io/linuxserver/lidarr:latest
+          ports:
+            - name: http
+              containerPort: 8686
+          envFrom:
+            - configMapRef:
+                name: arr-stack-config
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: data
+              mountPath: /data
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: lidarr-config
+        - name: data
+          persistentVolumeClaim:
+            claimName: media-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: lidarr
+  labels:
+    app: lidarr
+    app.kubernetes.io/part-of: arr-stack
+spec:
+  type: ClusterIP
+  selector:
+    app: lidarr
+  ports:
+    - name: http
+      port: 8686
+      targetPort: http

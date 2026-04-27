@@ -1,0 +1,269 @@
+# -----------------------------------------------------------------------------
+# *arr stack with Prowlarr, SABnzbd, and DrunkenSlug (Usenet)
+# -----------------------------------------------------------------------------
+# Folder layout on the host (created on first start by linuxserver.io images):
+#
+#   ./media-data/
+#       usenet/
+#           incomplete/   <- SABnzbd in-progress downloads
+#           complete/
+#               tv/       <- finished TV downloads (Sonarr imports from here)
+#               movies/   <- finished movie downloads (Radarr imports)
+#               music/    <- finished music downloads (Lidarr imports)
+#       media/
+#           tv/           <- final Sonarr library
+#           movies/       <- final Radarr library
+#           music/        <- final Lidarr library
+#
+# CRITICAL: every container mounts the same host directory at the same path
+# (`/data`). This is what makes hardlinks and atomic moves work between
+# SABnzbd's `complete` folder and the *arr media libraries. If the paths
+# diverge — e.g. SABnzbd sees `/downloads` and Sonarr sees `/tv` — *arr will
+# silently fall back to copying files (slow, double disk usage).
+#
+# After `docker compose up -d`, configure in this order:
+#   1. SABnzbd     (http://localhost:8080)  - set Folders > Temp = /data/usenet/incomplete,
+#                                                   Complete = /data/usenet/complete
+#   2. Prowlarr    (http://localhost:9696)  - Indexers > Add > DrunkenSlug (Newznab preset),
+#                                              paste API key, test, save.
+#                                              Settings > Apps > add Sonarr/Radarr/Lidarr
+#                                              using container names (http://sonarr:8989 etc).
+#                                              Settings > Download Clients > add SABnzbd
+#                                              (http://sabnzbd:8080).
+#   3. *arr apps   (Sonarr/Radarr/Lidarr)   - Prowlarr will have already pushed the indexer
+#                                              and download client. Verify Settings >
+#                                              Media Management > Root Folder = /data/media/<app>.
+# -----------------------------------------------------------------------------
+
+x-arr-common: &arr-common
+  # Anchor reused by every *arr service to keep env, restart policy, and the
+  # shared media volume in one place. YAML merges (`<<: *arr-common`) below
+  # pull these values in, so changes here propagate to all services.
+  restart: unless-stopped
+  environment:
+    - PUID=${PUID:-1000}
+    - PGID=${PGID:-1000}
+    - TZ=${TZ:-Europe/London}
+  networks:
+    - arr-network
+
+networks:
+  arr-network:
+    # User-defined bridge network so containers can resolve each other by
+    # name (e.g. Sonarr connects to `http://sabnzbd:8080`). The default
+    # `bridge` network does not provide DNS between containers.
+    driver: bridge
+
+services:
+  # ---------------------------------------------------------------------------
+  # Prowlarr — central indexer manager. Configure DrunkenSlug here once;
+  # Prowlarr syncs it (with API key) to every *arr app via their APIs.
+  # ---------------------------------------------------------------------------
+  prowlarr:
+    <<: *arr-common
+    image: lscr.io/linuxserver/prowlarr:latest
+    container_name: prowlarr
+    ports:
+      - "9696:9696"
+    volumes:
+      - ./config/prowlarr:/config
+
+  # ---------------------------------------------------------------------------
+  # SABnzbd — Usenet downloader. The *arr apps hand it NZB files; it fetches
+  # from Usenet, unpacks, and drops the result into /data/usenet/complete/<cat>
+  # where Sonarr/Radarr/Lidarr pick it up via hardlink-and-move.
+  # ---------------------------------------------------------------------------
+  sabnzbd:
+    <<: *arr-common
+    image: lscr.io/linuxserver/sabnzbd:latest
+    container_name: sabnzbd
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./config/sabnzbd:/config
+      - ./media-data:/data
+
+  # ---------------------------------------------------------------------------
+  # Sonarr — TV show automation.
+  # ---------------------------------------------------------------------------
+  sonarr:
+    <<: *arr-common
+    image: lscr.io/linuxserver/sonarr:latest
+    container_name: sonarr
+    ports:
+      - "8989:8989"
+    volumes:
+      - ./config/sonarr:/config
+      - ./media-data:/data
+
+  # ---------------------------------------------------------------------------
+  # Radarr — movie automation.
+  # ---------------------------------------------------------------------------
+  radarr:
+    <<: *arr-common
+    image: lscr.io/linuxserver/radarr:latest
+    container_name: radarr
+    ports:
+      - "7878:7878"
+    volumes:
+      - ./config/radarr:/config
+      - ./media-data:/data
+
+  # ---------------------------------------------------------------------------
+  # Lidarr — music automation. Remove this block if you don't want music.
+  # ---------------------------------------------------------------------------
+  lidarr:
+    <<: *arr-common
+    image: lscr.io/linuxserver/lidarr:latest
+    container_name: lidarr
+    ports:
+      - "8686:8686"
+    volumes:
+      - ./config/lidarr:/config
+      - ./media-data:/data
+
+  # ---------------------------------------------------------------------------
+  # Bazarr — subtitle automation. Reads Sonarr/Radarr libraries and downloads
+  # subtitles to match. Mounts the same /data root so it can write subs next
+  # to the media files.
+  # ---------------------------------------------------------------------------
+  bazarr:
+    <<: *arr-common
+    image: lscr.io/linuxserver/bazarr:latest
+    container_name: bazarr
+    ports:
+      - "6767:6767"
+    volumes:
+      - ./config/bazarr:/config
+      - ./media-data:/data
+
+  # ---------------------------------------------------------------------------
+  # gluetun + qBittorrent — VPN-routed torrent client (DISABLED by default).
+  # ---------------------------------------------------------------------------
+  # Uncomment both services below to add BitTorrent support. The Usenet path
+  # (SABnzbd) doesn't need a VPN — Usenet traffic is a single encrypted TCP
+  # connection to your news provider and you're not sharing IPs with peers.
+  # BitTorrent is peer-to-peer, so a VPN with killswitch is the standard
+  # safety measure: if the tunnel drops, gluetun's firewall blocks all
+  # traffic, so your real IP never leaks to a swarm.
+  #
+  # Architecture:
+  #   - gluetun runs the VPN tunnel and exposes the qBit web UI + peer ports.
+  #   - qBittorrent uses `network_mode: "service:gluetun"`, sharing gluetun's
+  #     network namespace — all qBit traffic exits via the VPN.
+  #   - Other containers (Sonarr/Radarr/Prowlarr) reach qBit at the gluetun
+  #     hostname: http://gluetun:8082. (qBittorrent has no network of its
+  #     own, so its container name doesn't resolve on arr-network.)
+  #
+  # To enable:
+  #   1. Set VPN_* values in .env (see env.example.template for guidance on
+  #      Mullvad, ProtonVPN, NordVPN, AirVPN, PIA, etc.).
+  #   2. Uncomment both blocks below.
+  #   3. docker compose up -d gluetun qbittorrent
+  #   4. In Prowlarr → Settings → Download Clients → Add → qBittorrent:
+  #        Host: gluetun, Port: 8082, Username/Password: from qBit web UI.
+  #
+  # gluetun:
+  #   image: qmcgaw/gluetun:latest
+  #   container_name: gluetun
+  #   cap_add:
+  #     - NET_ADMIN
+  #   devices:
+  #     - /dev/net/tun:/dev/net/tun
+  #   environment:
+  #     - VPN_SERVICE_PROVIDER=${VPN_SERVICE_PROVIDER:-}
+  #     - VPN_TYPE=${VPN_TYPE:-wireguard}
+  #     - WIREGUARD_PRIVATE_KEY=${WIREGUARD_PRIVATE_KEY:-}
+  #     - WIREGUARD_ADDRESSES=${WIREGUARD_ADDRESSES:-}
+  #     - SERVER_COUNTRIES=${VPN_SERVER_COUNTRIES:-}
+  #     - TZ=${TZ:-Europe/London}
+  #   ports:
+  #     - "8082:8082"        # qBittorrent web UI (exposed via gluetun)
+  #     - "6881:6881"        # qBittorrent peer port (TCP)
+  #     - "6881:6881/udp"    # qBittorrent peer port (UDP)
+  #   volumes:
+  #     - ./config/gluetun:/gluetun
+  #   networks:
+  #     - arr-network
+  #   restart: unless-stopped
+  #
+  # qbittorrent:
+  #   image: lscr.io/linuxserver/qbittorrent:latest
+  #   container_name: qbittorrent
+  #   network_mode: "service:gluetun"   # routes all traffic via the VPN
+  #   depends_on:
+  #     - gluetun
+  #   environment:
+  #     - PUID=${PUID:-1000}
+  #     - PGID=${PGID:-1000}
+  #     - TZ=${TZ:-Europe/London}
+  #     - WEBUI_PORT=8082
+  #   volumes:
+  #     - ./config/qbittorrent:/config
+  #     - ./media-data:/data
+  #   restart: unless-stopped
+
+  # ---------------------------------------------------------------------------
+  # plundrio — put.io as an *arr download client (DISABLED by default).
+  # ---------------------------------------------------------------------------
+  # Architecturally different from gluetun + qBittorrent. With put.io, your
+  # machine NEVER joins the BitTorrent swarm: put.io's servers download
+  # torrents on their infrastructure, then plundrio pulls the completed
+  # files to your /data tree over HTTPS. No VPN is needed because no peer-
+  # to-peer traffic ever leaves your machine. Trade-off: you pay put.io,
+  # and the put.io provider knows what you're downloading.
+  #
+  # plundrio implements the Transmission RPC API, so to *arr apps it
+  # appears as a regular Transmission download client. Chosen over the
+  # older putioarr because plundrio is more actively maintained, env-var-
+  # configured (no TOML config file to manage), and supports parallel
+  # downloads via PLDR_WORKERS.
+  #
+  # plundrio and gluetun+qBittorrent are alternatives, but they're not
+  # mutually exclusive — you can run both and let *arr apps choose per
+  # release based on what indexers return. The active SABnzbd path is
+  # independent of either.
+  #
+  # To enable:
+  #   1. Get a put.io OAuth token (see env.example.template for the
+  #      register-an-app walkthrough at https://app.put.io/oauth).
+  #   2. Set PUTIO_TOKEN in .env.
+  #   3. Uncomment the block below.
+  #   4. docker compose up -d plundrio
+  #   5. In Prowlarr → Settings → Download Clients → Add → Transmission:
+  #        Host: plundrio, Port: 9091, URL Base: /transmission, Category:
+  #        e.g. tv-sonarr / movies-radarr / music-lidarr.
+  #
+  # plundrio:
+  #   image: ghcr.io/elsbrock/plundrio:latest
+  #   container_name: plundrio
+  #   environment:
+  #     - PLDR_TOKEN=${PUTIO_TOKEN:-}
+  #     - PLDR_TARGET=/data/torrents/complete
+  #     - PLDR_FOLDER=${PUTIO_FOLDER:-arr-stack}
+  #     - PLDR_WORKERS=${PUTIO_WORKERS:-4}
+  #   # Run as the same user that owns media-data/ on the host so *arr apps
+  #   # can read what plundrio writes. Comment this out if plundrio fails
+  #   # to start (some images expect to start as root and drop privileges).
+  #   user: "${PUID:-1000}:${PGID:-1000}"
+  #   ports:
+  #     - "9091:9091"
+  #   volumes:
+  #     - ./config/plundrio:/config
+  #     - ./media-data:/data
+  #   networks:
+  #     - arr-network
+  #   restart: unless-stopped
+
+  # ---------------------------------------------------------------------------
+  # Existing service preserved from the prior compose file.
+  # ---------------------------------------------------------------------------
+  broadlinkmanager:
+    image: techblog/broadlinkmanager
+    container_name: broadlinkmanager
+    network_mode: bridge
+    restart: unless-stopped
+    volumes:
+      - ./data:/opt/broadlinkmanager/data
+    environment:
+      - ENABLE_GOOGLE_ANALYTICS=True

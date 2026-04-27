@@ -1,0 +1,58 @@
+# -----------------------------------------------------------------------------
+# Secrets — must never be committed.
+# -----------------------------------------------------------------------------
+.env
+
+# -----------------------------------------------------------------------------
+# Application state and configuration.
+#
+# Each *arr app stores its full state under config/<app>/ as SQLite databases.
+# After first run these contain API keys (DrunkenSlug, SABnzbd, the *arr apps
+# themselves), download history, library metadata, custom formats, and
+# notification credentials. Treat as secret.
+# -----------------------------------------------------------------------------
+config/
+
+# -----------------------------------------------------------------------------
+# Media downloads and final library — too large for source control, and
+# regenerable from the indexer anyway.
+# -----------------------------------------------------------------------------
+media-data/
+
+# -----------------------------------------------------------------------------
+# broadlinkmanager runtime state (existing service in this compose file).
+# -----------------------------------------------------------------------------
+data/
+
+# -----------------------------------------------------------------------------
+# Backup archives produced by backup.sh.
+# -----------------------------------------------------------------------------
+backups/
+*.tar.gz
+*.tar.zst
+
+# -----------------------------------------------------------------------------
+# Kubernetes Secret manifests with real credentials. The *.example.yaml
+# templates are committed; anything matching the patterns below is not.
+# These deliberately do NOT match `secret.example.yaml` — that file has a
+# dot before "example", not a hyphen, and is intended to be committed.
+# -----------------------------------------------------------------------------
+kubernetes/**/secret.yaml
+kubernetes/**/secrets.yaml
+kubernetes/**/secret-*.yaml
+kubernetes/**/secrets-*.yaml
+kubernetes/**/*-secret.yaml
+kubernetes/**/*-secrets.yaml
+
+# -----------------------------------------------------------------------------
+# OS and editor cruft.
+# -----------------------------------------------------------------------------
+.DS_Store
+.AppleDouble
+.LSOverride
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+*~

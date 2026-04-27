@@ -1,0 +1,96 @@
+# -----------------------------------------------------------------------------
+# plundrio — put.io as a Transmission RPC download client.
+#
+# No special privileges needed: plundrio is just an HTTPS client. Mounts
+# the shared media-data PVC at /data so completed downloads land at
+# /data/torrents/complete/<release> and the *arr apps can hardlink them
+# into /data/media/ exactly as they do for SABnzbd downloads.
+#
+# Prerequisites:
+#   - Apply the base stack first (`kubectl apply -k ..`).
+#   - Create the `putio-credentials` Secret (see secret.example.yaml).
+# -----------------------------------------------------------------------------
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: plundrio-config
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: plundrio
+  labels:
+    app: plundrio
+    app.kubernetes.io/part-of: arr-stack
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: plundrio
+  template:
+    metadata:
+      labels:
+        app: plundrio
+        app.kubernetes.io/part-of: arr-stack
+    spec:
+      # Run as the same UID/GID that owns media-data so files plundrio
+      # writes are accessible to the *arr Pods.
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+      containers:
+        - name: plundrio
+          image: ghcr.io/elsbrock/plundrio:latest
+          ports:
+            - name: rpc
+              containerPort: 9091
+          env:
+            - name: PLDR_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: putio-credentials
+                  key: PUTIO_TOKEN
+            - name: PLDR_TARGET
+              value: /data/torrents/complete
+            - name: PLDR_FOLDER
+              value: arr-stack
+            - name: PLDR_WORKERS
+              value: "4"
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: data
+              mountPath: /data
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: plundrio-config
+        - name: data
+          persistentVolumeClaim:
+            claimName: media-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: plundrio
+  labels:
+    app: plundrio
+    app.kubernetes.io/part-of: arr-stack
+spec:
+  type: ClusterIP
+  selector:
+    app: plundrio
+  ports:
+    - name: rpc
+      port: 9091
+      targetPort: rpc

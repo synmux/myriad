@@ -1,0 +1,30 @@
+# -----------------------------------------------------------------------------
+# Kustomize entrypoint for the *arr stack.
+#
+# Apply with:
+#   kubectl apply -k .
+#
+# This installs the seven services that are active by default in the Compose
+# stack (Prowlarr, SABnzbd, Sonarr, Radarr, Lidarr, Bazarr) plus the shared
+# namespace, ConfigMap, and storage.
+#
+# Optional services (gluetun + qBittorrent, plundrio) live in optional/ and
+# are NOT included here. After creating the relevant Secret(s), apply them
+# separately with:
+#   kubectl apply -k optional/
+# -----------------------------------------------------------------------------
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: arr-stack
+
+resources:
+  - namespace.yaml
+  - configmap.yaml
+  - storage.yaml
+  - prowlarr.yaml
+  - sabnzbd.yaml
+  - sonarr.yaml
+  - radarr.yaml
+  - lidarr.yaml
+  - bazarr.yaml

@@ -1,0 +1,169 @@
+# -----------------------------------------------------------------------------
+# gluetun + qBittorrent — VPN-routed local torrent client.
+#
+# K8s equivalent of Compose's `network_mode: "service:gluetun"`: both
+# containers run in the SAME Pod, sharing one network namespace. qBit
+# binds to localhost in the Pod's namespace, gluetun routes outbound
+# traffic through the VPN tunnel. Other Pods reach qBit via the
+# `qbittorrent` Service, which targets this Pod.
+#
+# Prerequisites:
+#   - Apply the base stack first (`kubectl apply -k ..`).
+#   - Create the `vpn-credentials` Secret (see secret.example.yaml).
+#   - Cluster must allow the NET_ADMIN capability and access to
+#     /dev/net/tun. PSP/PSS-restricted clusters may need a policy
+#     exception or a privileged container.
+# -----------------------------------------------------------------------------
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: gluetun-config
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: qbittorrent-config
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gluetun-qbittorrent
+  labels:
+    app: gluetun-qbittorrent
+    app.kubernetes.io/part-of: arr-stack
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: gluetun-qbittorrent
+  template:
+    metadata:
+      labels:
+        app: gluetun-qbittorrent
+        app.kubernetes.io/part-of: arr-stack
+    spec:
+      containers:
+        # ---------------------------------------------------------------------
+        # gluetun — VPN tunnel + killswitch firewall for the whole Pod.
+        # ---------------------------------------------------------------------
+        - name: gluetun
+          image: qmcgaw/gluetun:latest
+          securityContext:
+            capabilities:
+              add: ["NET_ADMIN"]
+          env:
+            - name: VPN_SERVICE_PROVIDER
+              valueFrom:
+                secretKeyRef:
+                  name: vpn-credentials
+                  key: VPN_SERVICE_PROVIDER
+            - name: VPN_TYPE
+              valueFrom:
+                secretKeyRef:
+                  name: vpn-credentials
+                  key: VPN_TYPE
+            - name: WIREGUARD_PRIVATE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: vpn-credentials
+                  key: WIREGUARD_PRIVATE_KEY
+            - name: WIREGUARD_ADDRESSES
+              valueFrom:
+                secretKeyRef:
+                  name: vpn-credentials
+                  key: WIREGUARD_ADDRESSES
+            - name: SERVER_COUNTRIES
+              valueFrom:
+                secretKeyRef:
+                  name: vpn-credentials
+                  key: VPN_SERVER_COUNTRIES
+                  optional: true
+            - name: TZ
+              valueFrom:
+                configMapKeyRef:
+                  name: arr-stack-config
+                  key: TZ
+          ports:
+            # All these ports belong to the Pod (shared namespace) — qBit
+            # listens on them inside its own container, but gluetun is the
+            # one that exposes them at the Pod level.
+            - name: qb-web
+              containerPort: 8082
+            - name: qb-tcp
+              containerPort: 6881
+              protocol: TCP
+            - name: qb-udp
+              containerPort: 6881
+              protocol: UDP
+          volumeMounts:
+            - name: gluetun-config
+              mountPath: /gluetun
+            - name: dev-net-tun
+              mountPath: /dev/net/tun
+
+        # ---------------------------------------------------------------------
+        # qBittorrent — torrent client. Shares gluetun's network namespace
+        # because both containers are in the same Pod, so all qBit traffic
+        # exits via the VPN.
+        # ---------------------------------------------------------------------
+        - name: qbittorrent
+          image: lscr.io/linuxserver/qbittorrent:latest
+          envFrom:
+            - configMapRef:
+                name: arr-stack-config
+          env:
+            - name: WEBUI_PORT
+              value: "8082"
+          volumeMounts:
+            - name: qbittorrent-config
+              mountPath: /config
+            - name: data
+              mountPath: /data
+      volumes:
+        - name: gluetun-config
+          persistentVolumeClaim:
+            claimName: gluetun-config
+        - name: qbittorrent-config
+          persistentVolumeClaim:
+            claimName: qbittorrent-config
+        - name: data
+          persistentVolumeClaim:
+            claimName: media-data
+        - name: dev-net-tun
+          hostPath:
+            path: /dev/net/tun
+            type: CharDevice
+---
+# Service exposes the qBit web UI at the Pod's IP. Other Pods address
+# qBit via this Service name (e.g. http://qbittorrent:8082) — the same
+# DNS pattern as the rest of the stack.
+apiVersion: v1
+kind: Service
+metadata:
+  name: qbittorrent
+  labels:
+    app: gluetun-qbittorrent
+    app.kubernetes.io/part-of: arr-stack
+spec:
+  type: ClusterIP
+  selector:
+    app: gluetun-qbittorrent
+  ports:
+    - name: web
+      port: 8082
+      targetPort: qb-web

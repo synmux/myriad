@@ -1,0 +1,16 @@
+# -----------------------------------------------------------------------------
+# arr-stack-config — non-secret values consumed by every workload.
+# Equivalent to the PUID / PGID / TZ block in the Docker Compose .env file.
+#
+# Adjust to match the user/group that owns the underlying media-data volume.
+# On Linux: `id` on the host. On Docker Desktop's Kubernetes: 1000:1000 is
+# usually fine.
+# -----------------------------------------------------------------------------
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: arr-stack-config
+data:
+  PUID: "1000"
+  PGID: "1000"
+  TZ: "Europe/London"

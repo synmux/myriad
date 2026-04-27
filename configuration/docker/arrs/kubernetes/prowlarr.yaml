@@ -1,0 +1,69 @@
+# -----------------------------------------------------------------------------
+# Prowlarr — central indexer manager.
+# Doesn't mount /data: Prowlarr only manages indexers and pushes config to
+# the *arr apps via their APIs. It never touches media files itself.
+# -----------------------------------------------------------------------------
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: prowlarr-config
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prowlarr
+  labels:
+    app: prowlarr
+    app.kubernetes.io/part-of: arr-stack
+spec:
+  replicas: 1
+  strategy:
+    # SQLite-backed: never run two replicas against one config volume.
+    type: Recreate
+  selector:
+    matchLabels:
+      app: prowlarr
+  template:
+    metadata:
+      labels:
+        app: prowlarr
+        app.kubernetes.io/part-of: arr-stack
+    spec:
+      containers:
+        - name: prowlarr
+          image: lscr.io/linuxserver/prowlarr:latest
+          ports:
+            - name: http
+              containerPort: 9696
+          envFrom:
+            - configMapRef:
+                name: arr-stack-config
+          volumeMounts:
+            - name: config
+              mountPath: /config
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: prowlarr-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: prowlarr
+  labels:
+    app: prowlarr
+    app.kubernetes.io/part-of: arr-stack
+spec:
+  type: ClusterIP
+  selector:
+    app: prowlarr
+  ports:
+    - name: http
+      port: 9696
+      targetPort: http

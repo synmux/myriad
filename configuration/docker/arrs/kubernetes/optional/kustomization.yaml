@@ -1,0 +1,26 @@
+# -----------------------------------------------------------------------------
+# Kustomize entrypoint for optional services.
+#
+# Apply with:
+#   kubectl apply -k optional/
+#
+# The base stack must already be running (`kubectl apply -k .` from the
+# parent directory) — the namespace, ConfigMap, and shared media-data PVC
+# are prerequisites.
+#
+# Before applying, create the Secret(s) referenced by these manifests:
+#   cp secret.example.yaml secret.yaml
+#   $EDITOR secret.yaml      # fill in real values
+#   kubectl apply -f secret.yaml
+#
+# secret.yaml is gitignored (see project root .gitignore). Don't commit
+# real credentials.
+# -----------------------------------------------------------------------------
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: arr-stack
+
+resources:
+  - gluetun-qbittorrent.yaml
+  - plundrio.yaml

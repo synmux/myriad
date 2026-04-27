@@ -1,0 +1,53 @@
+# -----------------------------------------------------------------------------
+# Shared media-data storage — equivalent of `./media-data:/data` in the
+# Compose stack. Every workload that touches media files mounts this PVC at
+# /data: SABnzbd, Sonarr, Radarr, Lidarr, Bazarr (and qBittorrent + plundrio
+# when the optional manifests are applied). Prowlarr is the exception — it
+# manages indexers via APIs but never reads or writes media itself, so it
+# only mounts /config. The shared /data mount is what keeps hardlinks
+# working across the SABnzbd → library boundary (and the torrents → library
+# boundary, when plundrio is enabled).
+#
+# Default: a static hostPath PV. This is what works out of the box on
+# single-node clusters (Docker Desktop, kind, k3s, Minikube). The node's
+# kernel sees one filesystem, so multi-pod RWX access is fine in practice
+# even though hostPath isn't a "real" RWX driver.
+#
+# For multi-node clusters, replace this with a true RWX storage class:
+#   - NFS subdir provisioner
+#       https://github.com/kubernetes-sigs/nfs-subdir-external-provisioner
+#   - Longhorn (RWX volumes via NFS-on-top-of-Longhorn block)
+#       https://longhorn.io
+#   - Ceph CephFS via Rook (https://rook.io)
+#   - Cloud: AWS EFS, Azure Files, GCP Filestore
+#
+# IMPORTANT: edit `hostPath.path` below to match your environment. The
+# default points at the original Compose layout's media-data/ directory.
+# -----------------------------------------------------------------------------
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: arr-stack-media-data
+spec:
+  capacity:
+    storage: 100Gi # informational for hostPath; not enforced by the kernel
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: arr-stack-shared
+  hostPath:
+    path: /Users/dave/work/media-data
+    type: DirectoryOrCreate
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: media-data
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 100Gi
+  storageClassName: arr-stack-shared
+  volumeName: arr-stack-media-data # static binding to the PV above
