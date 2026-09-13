@@ -1,0 +1,5 @@
+allowBuilds:
+  esbuild: true
+minimumReleaseAge: 10080 # minutes; 1 week
+autoInstallPeers: true
+childConcurrency: 16
