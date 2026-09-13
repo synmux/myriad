@@ -5,9 +5,8 @@ MYRIAD_MISE_ACTIVE = 'true'
 env_file = '.env'
 
 [tools]
-bun = { version = '1.3.14' }
-node = { version = '24.19.0' }
-rust = { version = '1.97.1' }
+node = { version = '24.20.0' }
+rust = { version = '1.98.1' }
 
 [tasks]
 'smu' = { run = "git submodule update --remote", description = "Bump submodules" }
