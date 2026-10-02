@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>PayloadContent</key>
+  <array>
+
+    <!-- Google Chrome -->
+    <dict>
+      <key>PayloadContent</key>
+      <dict>
+        <key>com.google.Chrome</key>
+        <dict>
+          <key>Forced</key>
+          <array>
+            <dict>
+              <key>mcx_preference_settings</key>
+              <dict>
+                <key>DefaultBrowserSettingEnabled</key>
+                <false/>
+              </dict>
+            </dict>
+          </array>
+        </dict>
+      </dict>
+      <key>PayloadDisplayName</key>
+      <string>Google Chrome Policies</string>
+      <key>PayloadIdentifier</key>
+      <string>uk.syn.browser-prompts.chrome</string>
+      <key>PayloadType</key>
+      <string>com.apple.ManagedClient.preferences</string>
+      <key>PayloadUUID</key>
+      <string>0C47A9C2-560B-4C54-AD5B-9D5D859A821E</string>
+      <key>PayloadVersion</key>
+      <integer>1</integer>
+    </dict>
+
+    <!-- Perplexity Comet -->
+    <dict>
+      <key>PayloadDisplayName</key>
+      <string>Perplexity Comet Policies</string>
+      <key>PayloadIdentifier</key>
+      <string>ai.perplexity.comet.default-browser-prompt</string>
+      <key>PayloadType</key>
+      <string>ai.perplexity.comet</string>
+      <key>PayloadUUID</key>
+      <string>45EC1D9D-12DB-4E45-ACD1-92F6F6806FB5</string>
+      <key>PayloadVersion</key>
+      <integer>1</integer>
+
+      <key>DefaultBrowserSettingEnabled</key>
+      <false/>
+    </dict>
+
+  </array>
+
+  <key>PayloadDisplayName</key>
+  <string>Disable Chrome and Comet Default Browser Prompts</string>
+  <key>PayloadIdentifier</key>
+  <string>uk.syn.browser-default-prompts</string>
+  <key>PayloadOrganization</key>
+  <string>Local</string>
+  <key>PayloadScope</key>
+  <string>User</string>
+  <key>PayloadType</key>
+  <string>Configuration</string>
+  <key>PayloadUUID</key>
+  <string>E8B30E6C-BD87-4DC5-907A-8EE489D4C9EF</string>
+  <key>PayloadVersion</key>
+  <integer>1</integer>
+</dict>
+</plist>
