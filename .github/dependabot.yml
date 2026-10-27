@@ -6,7 +6,7 @@ updates:
       interval: daily
     open-pull-requests-limit: 100
     assignees:
-      - daveio
+      - synmux
     groups:
       all-dependencies:
         patterns:
