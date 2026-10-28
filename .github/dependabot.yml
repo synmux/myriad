@@ -13,3 +13,16 @@ updates:
       all-dependencies:
         patterns:
           - "*"
+  - package-ecosystem: gitsubmodule
+    cooldown:
+      default-days: 7
+    directory: /submodules/
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 100
+    assignees:
+      - synmux
+    groups:
+      all-dependencies:
+        patterns:
+          - "*"
