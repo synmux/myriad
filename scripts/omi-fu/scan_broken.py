@@ -4,7 +4,7 @@ A conversation counts as broken when it is more than 24 hours old and either:
 
 1. its status never reached `completed` (`in_progress`, `processing` or `merging`), or
 2. it is `completed`, but the server still reports it as being processed
-   (`home_step` is `transcribing` or `writing_notes`).
+    (`home_step` is `transcribing` or `writing_notes`).
 
 Two options widen the match:
 

@@ -1,5 +1,6 @@
 import json
 import os
+from typing import Any
 
 import requests
 
@@ -15,18 +16,9 @@ def main() -> None:
 
 
 def delete_one(conversation: str) -> bool:
-    """
-    Delete a conversation
-
-    Args:
-        conversation (str): Description.
-
-    Returns:
-        bool: Description.
-    """
     URL = f"https://api.omi.me/v1/dev/user/conversations/{conversation}"
     headers = {"Authorization": f"Bearer {API_KEY}"}
-    r = requests.delete(URL, headers=headers)
+    r = requests.delete(URL, headers=headers, timeout=30)
     r.raise_for_status()
     print(r.text)
     resp = r.json()
@@ -38,23 +30,11 @@ def delete_one(conversation: str) -> bool:
         return False
 
 
-def list_all(json_file: str | None = None) -> dict:
-    """
-    List all conversations and optionally dump them to a file.
-
-    Args:
-        write_json (bool): Description, optional (default: False).
-
-    Returns:
-        dict: Description.
-
-    Raises:
-        RuntimeError: Description.
-    """
+def list_all(json_file: str | None = None) -> dict[str, Any]:
     URL = "https://api.omi.me/v1/dev/user/conversations"
     headers = {"Authorization": f"Bearer {API_KEY}"}
 
-    conversations = {}  # keyed by id to drop overlaps between pages
+    conversations: dict[str, Any] = {}  # keyed by id to drop overlaps between pages
     offset, limit = 0, 200
 
     while True:
@@ -62,6 +42,7 @@ def list_all(json_file: str | None = None) -> dict:
             URL,
             headers=headers,
             params={"limit": limit, "offset": offset, "include_transcript": True},
+            timeout=30,
         )
         r.raise_for_status()
 

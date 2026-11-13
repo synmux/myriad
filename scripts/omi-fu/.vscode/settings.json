@@ -1,3 +1,4 @@
 {
-  "python.defaultInterpreterPath": "/Users/syn/src/github.com/synmux/myriad/scripts/omi-fu/.venv/bin/python"
+  "python.defaultInterpreterPath": "/Users/syn/src/github.com/synmux/myriad/scripts/omi-fu/.venv/bin/python",
+  "python.analysis.typeCheckingMode": "strict"
 }
