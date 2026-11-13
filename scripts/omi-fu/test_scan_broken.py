@@ -6,14 +6,21 @@ Run with: uv run python -m unittest test_scan_broken -v
 import unittest
 from datetime import UTC, datetime
 
-from scan_broken import Fetch, cleanup_reason, list_conversations
+from scan_broken import (
+    Conversation,
+    Fetch,
+    QueryParams,
+    cleanup_reason,
+    list_conversations,
+    structured_text,
+)
 
 NOW = datetime(2026, 11, 13, 2, 0, tzinfo=UTC)
 MONTHS_AGO = "2026-04-13T20:10:53.066117Z"
 ONE_HOUR_AGO = "2026-11-13T01:00:00Z"
 
 
-def conversation(**overrides: object) -> dict:
+def conversation(**overrides: object) -> Conversation:
     """A finished, healthy conversation row, with the given fields replaced."""
     healthy = {
         "id": "example",
@@ -167,6 +174,21 @@ class ConversationsWithoutASummary(unittest.TestCase):
         )
 
 
+class StructuredText(unittest.TestCase):
+    def test_field_is_read_from_the_structured_block(self) -> None:
+        self.assertEqual(structured_text(conversation(), "title"), "Example")
+
+    def test_missing_or_null_block_or_field_reads_as_empty_text(self) -> None:
+        for row in (
+            conversation(structured=None),
+            conversation(structured={}),
+            conversation(structured={"title": None}),
+            {"id": "no-structured-block"},
+        ):
+            with self.subTest(row=row):
+                self.assertEqual(structured_text(row, "title"), "")
+
+
 class Timestamps(unittest.TestCase):
     def test_timestamp_without_a_timezone_is_read_as_utc(self) -> None:
         twenty_five_hours_ago = conversation(
@@ -183,7 +205,7 @@ class Timestamps(unittest.TestCase):
         self.assertIsNone(cleanup_reason(twenty_four_hours_ago, NOW))
 
 
-def numbered_conversations(count: int) -> list[dict]:
+def numbered_conversations(count: int) -> list[Conversation]:
     """Conversations one minute apart, so every `created_at` is distinct."""
     return [
         {
@@ -195,7 +217,7 @@ def numbered_conversations(count: int) -> list[dict]:
 
 
 def omi_list_server(
-    rows: list[dict],
+    rows: list[Conversation],
     rows_per_response: int | None = None,
     inclusive_end_date: bool = True,
 ) -> Fetch:
@@ -206,7 +228,7 @@ def omi_list_server(
     an empty truncated page. `rows_per_response` truncates every larger page.
     """
 
-    def fetch(params: dict) -> tuple[list[dict], bool]:
+    def fetch(params: QueryParams) -> tuple[list[Conversation], bool]:
         if params.get("offset"):
             return [], True
         end_date = params.get("end_date")
@@ -218,7 +240,7 @@ def omi_list_server(
             or (inclusive_end_date and row["created_at"] == end_date)
         ]
         matching.sort(key=lambda row: row["created_at"], reverse=True)
-        page = matching[: params["limit"]]
+        page = matching[: int(params["limit"])]
         if rows_per_response is not None and len(page) > rows_per_response:
             return page[:rows_per_response], True
         return page, False
@@ -261,7 +283,9 @@ class ListingConversations(unittest.TestCase):
         self.assertEqual(list(list_conversations("merging", omi_list_server([]))), [])
 
     def test_truncated_page_that_brings_nothing_new_stops_the_scan_loudly(self) -> None:
-        def exhausted_server(params: dict) -> tuple[list[dict], bool]:
+        def exhausted_server(
+            params: QueryParams,
+        ) -> tuple[list[Conversation], bool]:
             return [], True
 
         with self.assertRaises(RuntimeError):

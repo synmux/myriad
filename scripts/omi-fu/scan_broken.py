@@ -30,6 +30,7 @@ from collections import Counter
 from collections.abc import Callable, Iterator
 from datetime import UTC, datetime, timedelta
 from functools import partial
+from typing import Any
 
 import requests
 
@@ -43,8 +44,11 @@ STILL_PROCESSING_HOME_STEPS = ("transcribing", "writing_notes")
 # shortcut: no list returns status `failed`, so those rows are never scanned; probe by ID if one is suspected.
 LISTABLE_STATUSES = (*UNFINISHED_STATUSES, "completed")
 
+# One row from the app API list. The rows are unvalidated JSON, so their values stay untyped.
+type Conversation = dict[str, Any]
+type QueryParams = dict[str, str | int]
 # Fetches one list page for the given query parameters: (rows, truncated by the server).
-type Fetch = Callable[[dict], tuple[list[dict], bool]]
+type Fetch = Callable[[QueryParams], tuple[list[Conversation], bool]]
 
 
 def auth_headers() -> dict[str, str]:
@@ -62,8 +66,23 @@ def auth_headers() -> dict[str, str]:
     return {"Authorization": f"Bearer {id_token}"}
 
 
+def structured_text(conversation: Conversation, field: str) -> str:
+    """
+    Read one text field from a conversation's `structured` block.
+
+    Args:
+        conversation (Conversation): One row from the list.
+        field (str): The field to read, such as `title`.
+
+    Returns:
+        str: The text, or an empty string when the block or the field is missing or null.
+    """
+    structured: dict[str, Any] = conversation.get("structured") or {}
+    return structured.get(field) or ""
+
+
 def cleanup_reason(
-    conversation: dict,
+    conversation: Conversation,
     now: datetime,
     include_discarded: bool = False,
     include_no_summary: bool = False,
@@ -72,7 +91,7 @@ def cleanup_reason(
     Decide whether a conversation row from the app API list should be cleaned up.
 
     Args:
-        conversation (dict): One row from the list.
+        conversation (Conversation): One row from the list.
         now (datetime): The current time, timezone-aware.
         include_discarded (bool): Also match discarded conversations.
         include_no_summary (bool): Also match kept conversations with an empty summary.
@@ -97,22 +116,23 @@ def cleanup_reason(
     if conversation.get("discarded"):
         return "discarded" if include_discarded else None
 
-    overview = (conversation.get("structured") or {}).get("overview") or ""
-    if include_no_summary and not overview.strip():
+    if include_no_summary and not structured_text(conversation, "overview").strip():
         return "no summary"
     return None
 
 
-def fetch_page(headers: dict[str, str], params: dict) -> tuple[list[dict], bool]:
+def fetch_page(
+    headers: dict[str, str], params: QueryParams
+) -> tuple[list[Conversation], bool]:
     """
     Fetch one page of the conversation list.
 
     Args:
         headers (dict[str, str]): Headers from auth_headers().
-        params (dict): Query parameters for the list.
+        params (QueryParams): Query parameters for the list.
 
     Returns:
-        tuple[list[dict], bool]: The rows, and whether the server truncated the page.
+        tuple[list[Conversation], bool]: The rows, and whether the server truncated the page.
     """
     response = requests.get(
         BASE_URL, headers=headers, params=params, timeout=TIMEOUT_SECONDS
@@ -126,7 +146,7 @@ def fetch_page(headers: dict[str, str], params: dict) -> tuple[list[dict], bool]
     )
 
 
-def list_conversations(status: str, fetch: Fetch) -> Iterator[dict]:
+def list_conversations(status: str, fetch: Fetch) -> Iterator[Conversation]:
     """
     Yield every conversation with the given status once, discarded ones included.
 
@@ -138,7 +158,11 @@ def list_conversations(status: str, fetch: Fetch) -> Iterator[dict]:
         RuntimeError: The scan would be incomplete, so its result cannot be trusted.
     """
     seen_ids: set[str] = set()
-    params: dict = {"statuses": status, "include_discarded": "true", "limit": PAGE_SIZE}
+    params: QueryParams = {
+        "statuses": status,
+        "include_discarded": "true",
+        "limit": PAGE_SIZE,
+    }
     while True:
         page, truncated = fetch(params)
 
@@ -227,7 +251,7 @@ def main() -> int:
             )
             if reason and conversation["id"] not in matches:
                 matches[conversation["id"]] = reason
-                title = (conversation.get("structured") or {}).get("title") or ""
+                title = structured_text(conversation, "title")
                 print(
                     f"match         {conversation['id']} {conversation['created_at'][:10]} {reason} | {title[:40]}"
                 )
