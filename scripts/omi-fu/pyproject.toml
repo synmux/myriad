@@ -1,0 +1,15 @@
+[project]
+name = "omi-fu"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [{ name = "syn", email = "syn@syn.as" }]
+requires-python = ">=3.14"
+dependencies = ["requests>=2.34.2"]
+
+[project.scripts]
+omi-fu = "omi_fu:main"
+
+[build-system]
+requires = ["uv_build>=0.13.7,<0.14.0"]
+build-backend = "uv_build"

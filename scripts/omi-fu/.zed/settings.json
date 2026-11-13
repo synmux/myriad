@@ -1,0 +1,11 @@
+{
+  "semantic_tokens": "full",
+  "languages": {
+    "Python": {
+      "document_folding_ranges": "on",
+      "document_symbols": "on",
+      "soft_wrap_indent": "extra_one",
+      "soft_wrap": "bounded"
+    }
+  }
+}
