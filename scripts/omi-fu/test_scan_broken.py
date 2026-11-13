@@ -22,7 +22,7 @@ ONE_HOUR_AGO = "2026-11-13T01:00:00Z"
 
 def conversation(**overrides: object) -> Conversation:
     """A finished, healthy conversation row, with the given fields replaced."""
-    healthy = {
+    healthy: Conversation = {
         "id": "example",
         "status": "completed",
         "home_step": "ready",
