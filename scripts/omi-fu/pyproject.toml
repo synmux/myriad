@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 authors = [{ name = "syn", email = "syn@syn.as" }]
-requires-python = ">=3.14"
+requires-python = ">=3.15.2"
 dependencies = ["requests>=2.34.2"]
 
 [project.scripts]
